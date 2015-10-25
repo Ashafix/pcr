@@ -1,0 +1,12 @@
+<html><body>
+<form enctype="multipart/form-data" action="cgi-bin/save_file.py" method="post">
+<p>File: <input type="file" name="fastafile"></p>
+<p>Target Sequence(s): <textarea name="fastasequence"></textarea></p>
+<p>Primer3 parameter file: <input type="file" name="primer3file"></p>
+<p>Maximimum length of repeats which are searched: <input type="number" name="maxrepeats" value="3"></p>
+<p>Maximimum number of primers to be returned: <input type="number" name="primerpairs" value="20" min="1" max="100" step="1"></p>
+<p>Maximimum similarity of primer pairs: <input type="number" name="maxsimilarity" value="1"  min="0" max="1" step="0.1"></p>
+<p>Search for nested primers: <input type="checkbox" name="nested" checked>
+<p><input type="submit" value="Submit job"></p>
+</form>
+</body></html>
