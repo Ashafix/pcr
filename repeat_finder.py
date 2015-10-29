@@ -732,21 +732,21 @@ gfServer=''
 global gfPCR
 gfPCR=''
 global max_repeats
-max_repeats=-1
+max_repeats = -1
 global max_primerpairs
-max_primerpairs=-1
+max_primerpairs = -1
 global nested
-nested=0
+nested = 0
 global output_filename
 output_filename='batchprimer_output.txt'
 global max_threads
-max_threads=1
+max_threads = 1
 global remove_temp_files
-remove_temp_files=False
+remove_temp_files = False
 
 import_parameters()
 
-parameters_legal=False
+parameters_legal = False
 
 if not os.path.isfile(fasta_filename):
 	print 'Fasta file could not be found'
@@ -763,27 +763,27 @@ elif not os.path.isfile(gfPCR):
 elif not os.path.isdir(primer3_directory):
 	print 'Primer3 directory does not exist'
 	print primer3_directory
-elif serverport<=0:
+elif serverport <= 0:
 	print 'Please specificy a legal numerical value for the server port'
-elif int(max_repeats)<0:
+elif int(max_repeats) < 0:
 	print 'Please specificy a legal numerical value for the max repeats'
-elif max_primerpairs<0:
+elif max_primerpairs < 0:
 	print 'Please specificy a legal numerical value for the max primer pairs'
-elif max_threads<1:
+elif max_threads < 1:
 	print 'Please specific a legal numerical value for the maximum amount of threads'
 #test if the in-silico PCR server is ready
 elif not test_server(gfServer,servername,serverport):
 	print 'gfServer not ready, please start it'
 else:
-	parameters_legal=True
+	parameters_legal = True
 
-if parameters_legal==False:
+if parameters_legal == False:
 	exit()
 
 
-########################################
-#passed all tests, now program can start
-########################################
+#########################################
+#passed all tests, now program can start#
+#########################################
 
 ###multiprocess
 print 'program started, please be patient'
@@ -797,7 +797,7 @@ for line in open(fasta_filename, 'ru'):
 	else:
 		sequences[-1] += line
 
-results=p.map(get_primers,sequences)
+results = p.map(get_primers,sequences)
 output=[]
 stdoutput=[]
 for a in results:
