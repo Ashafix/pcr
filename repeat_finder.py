@@ -2,6 +2,7 @@ import sys
 import os
 from subprocess import Popen, PIPE
 import subprocess
+from multiprocessing import Pool
 
 print ''
 
@@ -96,9 +97,11 @@ def import_parameters():
 		for i in xrange(len(sys.argv)):
 			if str(sys.argv[i]).upper() == '-FASTA':
 				fasta_filename = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-PRIMER3_SETTINGS' or str(sys.argv[i]).upper() == '-PRIMER_SETTINGS':
+			elif str(sys.argv[i]).upper() == '-PRIMER3_SETTINGS' or \
+				str(sys.argv[i]).upper() == '-PRIMER_SETTINGS':
 				standard_primer_settings_filename = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-PRIMER3_DIRECTORY' or str(sys.argv[i]).upper() == '-PRIMER_DIRECTORY':
+			elif str(sys.argv[i]).upper() == '-PRIMER3_DIRECTORY' or \
+				str(sys.argv[i]).upper() == '-PRIMER_DIRECTORY':
 				primer3_directory = sys.argv[i + 1]
 			elif str(sys.argv[i]).upper() == '-PRIMER3_EXE':
 				primer3_exe = sys.argv[i + 1]
@@ -123,7 +126,16 @@ def import_parameters():
 			elif str(sys.argv[i]).upper() == '-REMOVETEMPFILES':
 				remove_temp_files = bool(sys.argv[i + 1])
 
-	if fasta_filename == '' or standard_primer_settings_filename == '' or primer3_directory == '' or primer3_exe == '' or servername == '' or serverport == -1 or max_repeats == -1 or gfServer == '' or gfPCR == '' or abs(nested) > 1:
+	if fasta_filename == '' or \
+		standard_primer_settings_filename == '' or \
+		primer3_directory == '' or \
+		primer3_exe == '' or \
+		servername == '' or \
+		serverport == -1 or \
+		max_repeats == -1 or \
+		gfServer == '' or \
+		gfPCR == '' or \
+		abs(nested) > 1:
 		print fasta_filename
 		print standard_primer_settings_filename
 		print primer3_directory
@@ -208,7 +220,7 @@ def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
 
 	return True
 
-
+#cleans a filename
 def makefilename(old_name):
 	old_name = old_name.replace(' ', '_')
 	old_name = old_name.translate(None, '=!/\<>:"|?*\'')
@@ -229,11 +241,14 @@ def check_specificity(primerF, primerR, targetSequence, isPCRoutput):
 	while i < len(temp_output):
 		line = temp_output[i]
 		if found == False and isPCRamplicon == '':
-			if line.find(' ' + primerF + ' ' + primerR + '\n') >= 0 and line.startswith('>'):
+			if line.find(' ' + primerF + ' ' + primerR + '\n') >= 0 and \
+				line.startswith('>'):
 				found = True
-		elif found == True and (not line.startswith('>') and line.find(';') == -1):
+		elif found == True and (not line.startswith('>') and \
+			line.find(';') == -1):
 			isPCRamplicon += line
-		elif line.startswith('>') or line.find(';') >= 0 and found == True:
+		elif line.startswith('>') or line.find(';') >= 0 and \
+			found == True:
 			i = len(temp_output)
 		i += 1
 
@@ -279,13 +294,17 @@ def get_amplicon_from_primer3output(primerF, primerR, primer3output):
 		if end_line == 0:
 			if line.startswith('SEQUENCE_TEMPLATE='):
 				sequence = line[len('SEQUENCE_TEMPLATE=') + 1:]
-			elif line.startswith('PRIMER_LEFT_') and line.find('_SEQUENCE=' + primerF) > 0 and sequence != '':
+			elif line.startswith('PRIMER_LEFT_') and \
+				line.find('_SEQUENCE=' + primerF) > 0 and \
+				sequence != '':
 				primerF_found = True
 
 			if primerF_found == True:
-				if line.startswith('PRIMER_RIGHT_') and line.find('_SEQUENCE=' + primerR) > 0:
+				if line.startswith('PRIMER_RIGHT_') and \
+					line.find('_SEQUENCE=' + primerR) > 0:
 					end_line = i
-			elif primerF_found == True and line.startswith('PRIMER_RIGHT_') and line.find('_SEQUENCE=' + primerR) <= 0:
+			elif primerF_found == True and line.startswith('PRIMER_RIGHT_') and \
+				line.find('_SEQUENCE=' + primerR) <= 0:
 				primerF_found = False
 
 	return sequence[amplicon_start - 1 + len(primerF):amplicon_end]
@@ -300,8 +319,12 @@ def primer_stats(primerF, primerR, primer3output):
 
 	for i in xrange(len(temp_output)):
 		if found == -1:
-			if temp_output[i].startswith('PRIMER_LEFT_') and temp_output[i].find('_SEQUENCE=') > 0 and temp_output[i].endswith(primerF):
-				if temp_output[i + 1].startswith('PRIMER_RIGHT_') and temp_output[i + 1].find('_SEQUENCE=') > 0 and temp_output[i + 1].endswith(primerR):
+			if temp_output[i].startswith('PRIMER_LEFT_') and \
+				temp_output[i].find('_SEQUENCE=') > 0 and \
+				temp_output[i].endswith(primerF):
+				if temp_output[i + 1].startswith('PRIMER_RIGHT_') and \
+					temp_output[i + 1].find('_SEQUENCE=') > 0 and \
+					temp_output[i + 1].endswith(primerR):
 					found = temp_output[i][len('PRIMER_LEFT_'):temp_output[i].find('_SEQUENCE')]
 		else:
 			if temp_output[i].startswith('PRIMER_LEFT_' + found + '_TM='):
@@ -333,7 +356,8 @@ def amplicon_name(primerF, primerR, amplicon, isPCRoutput):
 	i = 0
 	isPCRamplicon = ''
 	while i < len(temp_output):
-		if temp_output[i].find(' ' + primerF + ' ') and temp_output[i].find(' ' + primerRold) == len(temp_output) - len(primerRold):
+		if temp_output[i].find(' ' + primerF + ' ') and \
+			temp_output[i].find(' ' + primerRold) == len(temp_output) - len(primerRold):
 			return temp_output[i][0:temp_output[i].find(' ')]
 		if temp_output[i].startswith('>') or temp_output[i].find(';') > -1:
 			if isPCRamplicon.replace('\n', '') == primerF + amplicon.lower() + primerR:
@@ -419,13 +443,18 @@ def check_fasta(sequence, fasta_type, strict):
 	passed = True
 	fasta_type = fasta_type.upper()
 
-	if fasta_type == 'PROTEIN' or fasta_type == 'AA' or fasta_type.startswith('AMINOACID') or fasta_type.startswith('AMINO ACID'):
+	if fasta_type == 'PROTEIN' or \
+		fasta_type == 'AA' or \
+		fasta_type.startswith('AMINOACID') or \
+		fasta_type.startswith('AMINO ACID'):
 		fasta_type = 'P'
 		if strict:
 			allowed_characters = 'ARNDCEQGHILKMFPSTWYV'
 		else:
 			allowed_characters = 'ARNDBCEQZGHILKMFPSTWYV'
-	elif fasta_type.startswith('NUC') or fasta_type == 'DNA' or fasta_type == 'BASES':
+	elif fasta_type.startswith('NUC') or \
+		fasta_type == 'DNA' or \
+		fasta_type == 'BASES':
 		fasta_type = 'N'
 		allowed_characters = 'ATGC'
 	else:
@@ -568,13 +597,18 @@ def get_primers(sequence):
 
 			make_nested_primers = False
 			if len(accepted_primers) == 0:
-				if i + 1 >= len(primer3_list) and nested != 1:
+				if i + 1 >= len(primer3_list) and \
+					nested != 1:
 					stdoutput += 'no suitable primer pairs could be found, consider relaxing the primer3 parameters\n'
-				elif i != 0 and i + 1 < len(primer3_list) and nested != 1:
+				elif i != 0 and \
+					i + 1 < len(primer3_list) and \
+					nested != 1:
 					if primer3_list[i + 1].startswith('SEQUENCE_ID'):
 						stdoutput += 'no suitable primer pairs could be found, consider relaxing the primer3 parameters\n'
 
-			elif len(accepted_primers)!= 0 and len(accepted_primers) < max_primerpairs and nested != -1:
+			elif len(accepted_primers)!= 0 and \
+				len(accepted_primers) < max_primerpairs and \
+				nested != -1:
 				if i + 1 >= len(primer3_list):
 					make_nested_primers = True
 				elif i != 0 and i + 1 < len(primer3_list):
@@ -610,7 +644,8 @@ def get_primers(sequence):
 							#checks if the new, nested primer pair is specific
 							amplicon = get_amplicon_from_primer3output(primerF_nested, primerR_nested, primer3_nested_output)
 
-							if dinucleotide_repeat(primerF_nested) >= 6 or dinucleotide_repeat(primerR_nested) >= 6:
+							if dinucleotide_repeat(primerF_nested) >= 6 or \
+								dinucleotide_repeat(primerR_nested) >= 6:
 								stdoutput += primerF_nested + ' ' + primerR_nested + ' rejected, repeats\n'
 							else:
 								process = Popen([gfPCR, servername, str(serverport), pcr_location, primerF_nested, primerR_nested, 'stdout'], stdout = subprocess.PIPE, stdin = subprocess.PIPE)
@@ -633,7 +668,9 @@ def get_primers(sequence):
 					max_primerpairs = 0
 			####
 			#added in v1.03 for forced nested primers
-			elif nested == 1 and (i + 1 >= len(primer3_list) or (i != 0 and primer3_list[i + 1].startswith('SEQUENCE_ID'))) and len(accepted_nested_templates) > 0:
+			elif nested == 1 and (i + 1 >= len(primer3_list) or \
+				(i != 0 and primer3_list[i + 1].startswith('SEQUENCE_ID'))) and \
+				len(accepted_nested_templates) > 0:
 				stdoutput += 'forced to trying to find nested primers\n'
 				#creates new primer3 file with fixed reverse primer
 				for j in xrange(len(accepted_nested_templates)):
@@ -776,7 +813,6 @@ if parameters_legal == False:
 
 ###multiprocess
 print 'program started, please be patient'
-from multiprocessing import Pool
 p = Pool(processes = max_threads)
 
 sequences = []
