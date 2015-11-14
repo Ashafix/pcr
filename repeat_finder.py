@@ -67,7 +67,7 @@ def exclude_list(sequence):
 
 
 #imports filenames from commandline
-def import_parameters():
+def import_parameters(*arg):
 	global fasta_filename
 	global standard_primer_settings_filename
 	global primer3_directory
@@ -87,40 +87,43 @@ def import_parameters():
 		if str(sys.argv).find('-help') > -1:
 			print_help()
 			exit()
+		arg_list = sys.argv
+	else:
+		arg_list = arg
+	
+		for i in xrange(len(arg_list)):
+			if str(arg_list[i]).upper() == '-FASTA':
+				fasta_filename = arg_list[i + 1]
+			elif str(arg_list[i]).upper() == '-PRIMER3_SETTINGS' or \
+				str(arg_list[i]).upper() == '-PRIMER_SETTINGS':
+				standard_primer_settings_filename = arg_list[i + 1]
+			elif str(arg_list[i]).upper() == '-PRIMER3_DIRECTORY' or \
+				str(arg_list[i]).upper() == '-PRIMER_DIRECTORY':
+				primer3_directory = arg_list[i + 1]
+			elif str(arg_list[i]).upper() == '-PRIMER3_EXE':
+				primer3_exe = arg_list[i + 1]
+			elif str(arg_list[i]).upper() == '-SERVERNAME':
+				servername = arg_list[i + 1]
+			elif str(arg_list[i]).upper() == '-SERVERPORT':
+				serverport = int(arg_list[i + 1])
+			elif str(arg_list[i]).upper() == '-MAXREPEATS':
+				max_repeats = int(arg_list[i + 1])
+			elif str(arg_list[i]).upper() == '-PRIMERPAIRS':
+				max_primerpairs = int(arg_list[i + 1])
+			elif str(arg_list[i]).upper()=='-GFSERVER':
+				gfServer = arg_list[i + 1]
+			elif str(arg_list[i]).upper() == '-GFPCR':
+				gfPCR = arg_list[i + 1]
+			elif str(arg_list[i]).upper() == '-NESTED':
+				nested = int(arg_list[i + 1])
+			elif str(arg_list[i]).upper() == '-OUTPUT':
+				output_filename = arg_list[i + 1]
+			elif str(arg_list[i]).upper() == '-MAXTHREADS':
+				max_threads = int(arg_list[i + 1])
+			elif str(arg_list[i]).upper() == '-REMOVETEMPFILES':
+				remove_temp_files = bool(arg_list[i + 1])
 
-		for i in xrange(len(sys.argv)):
-			if str(sys.argv[i]).upper() == '-FASTA':
-				fasta_filename = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-PRIMER3_SETTINGS' or \
-				str(sys.argv[i]).upper() == '-PRIMER_SETTINGS':
-				standard_primer_settings_filename = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-PRIMER3_DIRECTORY' or \
-				str(sys.argv[i]).upper() == '-PRIMER_DIRECTORY':
-				primer3_directory = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-PRIMER3_EXE':
-				primer3_exe = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-SERVERNAME':
-				servername = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-SERVERPORT':
-				serverport = int(sys.argv[i + 1])
-			elif str(sys.argv[i]).upper() == '-MAXREPEATS':
-				max_repeats = int(sys.argv[i + 1])
-			elif str(sys.argv[i]).upper() == '-PRIMERPAIRS':
-				max_primerpairs = int(sys.argv[i + 1])
-			elif str(sys.argv[i]).upper()=='-GFSERVER':
-				gfServer = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-GFPCR':
-				gfPCR = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-NESTED':
-				nested = int(sys.argv[i + 1])
-			elif str(sys.argv[i]).upper() == '-OUTPUT':
-				output_filename = sys.argv[i + 1]
-			elif str(sys.argv[i]).upper() == '-MAXTHREADS':
-				max_threads = int(sys.argv[i + 1])
-			elif str(sys.argv[i]).upper() == '-REMOVETEMPFILES':
-				remove_temp_files = bool(sys.argv[i + 1])
-
-	if fasta_filename == '' or \
+	if (fasta_filename == '' or \
 		standard_primer_settings_filename == '' or \
 		primer3_directory == '' or \
 		primer3_exe == '' or \
@@ -129,7 +132,8 @@ def import_parameters():
 		max_repeats == -1 or \
 		gfServer == '' or \
 		gfPCR == '' or \
-		abs(nested) > 1:
+		abs(nested) > 1) and \
+		len(arg) == 0:
 		print fasta_filename
 		print standard_primer_settings_filename
 		print primer3_directory
@@ -1215,6 +1219,7 @@ def start_repeat_finder():
 	fasta_file.close()
 
 	print 'done'
+
 if __name__ == "__main__":
 	start_repeat_finder()
 
