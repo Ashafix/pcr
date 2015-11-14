@@ -734,108 +734,114 @@ def get_primers(sequence):
 	temp.close()
 	return output, stdoutput
 
-###########################
-###########################
-#program starts here#######
-###########################
-###########################
-
-#Step 1: checks whether all input files and folders exist, and if the parameters are legal values
-global fasta_filename
-fasta_filename = ''
-global standard_primer_settings_filename
-standard_primer_settings_filename = ''
-global primer3_directory
-primer3_directory = ''
-global primer3_exe
-primer3_exe = ''
-global servername
-servername = ''
-global serverport
-serverport =- 1
-global gfServer
-gfServer = ''
-global gfPCR
-gfPCR = ''
-global max_repeats
-max_repeats = -1
-global max_primerpairs
-max_primerpairs = -1
-global nested
-nested = 0
-global output_filename
-output_filename = 'batchprimer_output.txt'
-global max_threads
-max_threads = 1
-global remove_temp_files
-remove_temp_files = False
-
-import_parameters()
-
-parameters_legal = False
-
-if not os.path.isfile(fasta_filename):
-	print 'Fasta file could not be found'
-	print fasta_filename
-elif not os.path.isfile(standard_primer_settings_filename):
-	print 'Primer3 settings file could not be found'
-	print standard_primer_settings_filename
-elif not os.path.isfile(primer3_exe):
-	print 'Primer3.exe file could not be found'
-	print primer3_exe
-elif not os.path.isfile(gfPCR):
-	print 'gfPCR.exe file could not be found'
-	print gfPCR
-elif not os.path.isdir(primer3_directory):
-	print 'Primer3 directory does not exist'
-	print primer3_directory
-elif serverport <= 0:
-	print 'Please specificy a legal numerical value for the server port'
-elif int(max_repeats) < 0:
-	print 'Please specificy a legal numerical value for the max repeats'
-elif max_primerpairs < 0:
-	print 'Please specificy a legal numerical value for the max primer pairs'
-elif max_threads < 1:
-	print 'Please specific a legal numerical value for the maximum amount of threads'
-#test if the in-silico PCR server is ready
-elif not test_server(gfServer, servername, serverport):
-	print 'gfServer not ready, please start it'
-else:
-	parameters_legal = True
-
-if parameters_legal == False:
-	exit()
 
 
-#########################################
-#passed all tests, now program can start#
-#########################################
-
-###multiprocess
-print 'program started, please be patient'
-p = Pool(processes = max_threads)
-
-sequences = []
-for line in open(fasta_filename, 'ru'):
-	if line.startswith('>'):
-		sequences.append(line)
+def start_repeat_finder():
+	###########################
+	###########################
+	#program starts here#######
+	###########################
+	###########################
+	
+	#Step 1: checks whether all input files and folders exist, and if the parameters are legal values
+	global fasta_filename
+	fasta_filename = ''
+	global standard_primer_settings_filename
+	standard_primer_settings_filename = ''
+	global primer3_directory
+	primer3_directory = ''
+	global primer3_exe
+	primer3_exe = ''
+	global servername
+	servername = ''
+	global serverport
+	serverport =- 1
+	global gfServer
+	gfServer = ''
+	global gfPCR
+	gfPCR = ''
+	global max_repeats
+	max_repeats = -1
+	global max_primerpairs
+	max_primerpairs = -1
+	global nested
+	nested = 0
+	global output_filename
+	output_filename = 'batchprimer_output.txt'
+	global max_threads
+	max_threads = 1
+	global remove_temp_files
+	remove_temp_files = False
+	
+	import_parameters()
+	
+	parameters_legal = False
+	
+	if not os.path.isfile(fasta_filename):
+		print 'Fasta file could not be found'
+		print fasta_filename
+	elif not os.path.isfile(standard_primer_settings_filename):
+		print 'Primer3 settings file could not be found'
+		print standard_primer_settings_filename
+	elif not os.path.isfile(primer3_exe):
+		print 'Primer3.exe file could not be found'
+		print primer3_exe
+	elif not os.path.isfile(gfPCR):
+		print 'gfPCR.exe file could not be found'
+		print gfPCR
+	elif not os.path.isdir(primer3_directory):
+		print 'Primer3 directory does not exist'
+		print primer3_directory
+	elif serverport <= 0:
+		print 'Please specificy a legal numerical value for the server port'
+	elif int(max_repeats) < 0:
+		print 'Please specificy a legal numerical value for the max repeats'
+	elif max_primerpairs < 0:
+		print 'Please specificy a legal numerical value for the max primer pairs'
+	elif max_threads < 1:
+		print 'Please specific a legal numerical value for the maximum amount of threads'
+	#test if the in-silico PCR server is ready
+	elif not test_server(gfServer, servername, serverport):
+		print 'gfServer not ready, please start it'
 	else:
-		sequences[-1] += line
+		parameters_legal = True
+	
+	if parameters_legal == False:
+		exit()
+	
+	
+	#########################################
+	#passed all tests, now program can start#
+	#########################################
+	
+	###multiprocess
+		print 'program started, please be patient'
+	p = Pool(processes = max_threads)
 
-results = p.map(get_primers, sequences)
-output = []
-stdoutput = []
-for a in results:
-	output.append(a[0])
-	stdoutput.append(a[1])
-final_output.write(''.join(output))
+	sequences = []
+	for line in open(fasta_filename, 'ru'):
+		if line.startswith('>'):
+			sequences.append(line)
+		else:
+			sequences[-1] += line
 
-print ''.join(stdoutput)
+	results = p.map(get_primers, sequences)
+	output = []
+	stdoutput = []
+	for a in results:
+		output.append(a[0])
+		stdoutput.append(a[1])
+	final_output.write(''.join(output))
 
-final_output.close()
-fasta_file.close()
+	print ''.join(stdoutput)
 
-print 'done'
+	final_output.close()
+	fasta_file.close()
+
+	print 'done'
+if __name__ == "__main__":
+	start_repeat_finder()
+
 
 #Versions
 #2015/2/1 V1.00 stable beta version
