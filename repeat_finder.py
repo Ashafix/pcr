@@ -4,7 +4,6 @@ from subprocess import Popen, PIPE
 import subprocess
 from multiprocessing import Pool
 
-
 #prints help
 def print_help():
 	print 'Usage'
@@ -12,7 +11,7 @@ def print_help():
 	print '-PRIMER3_SETTINGS %filename : Specifies filename which specifies the settings which are used for searching primers, e.g. -PRIMER3_SETTINGS BRCA_markers_primers.txt'
 	print '-PRIMER3_DIRECTOY %directory : Specifies a directory where the output files will be saved, e.g. PRIMER3_DIRECTORY c:/pcr/BRCA_markers/'
 	print '-PRIMER3_EXE %filename : Specifies the location of the primer3_core.exe, e.g. -PRIMER3_EXE primer3_core.exe'
-	print '-SERVERNAME name : Specifies the name of the isPCR server {usually name of the computername), e.g. -SERVERNAME pcrcomputer'
+	print '-SERVERNAME name : Specifies the name of the isPCR server (usually name of the computer running isPCR), e.g. -SERVERNAME pcrcomputer'
 	print '-SERVERPORT number : Specifies the port which is used to communicate with the isPCR server, e.g. -SERVERPORT 33334'
 	print '-MAXREPEATS number : Specifies the maximum length of repeats to search, e.g. -MAXREPEATS 3, searches for repeats of di- and trinucleotides'
 	print '-PRIMERPAIRS number : Specifies the number of suitable primer pairs which will be returned'
@@ -67,7 +66,7 @@ def exclude_list(sequence):
 
 
 #imports filenames from commandline
-def import_parameters(*arg):
+def import_parameters(*arguments):
 	global fasta_filename
 	global standard_primer_settings_filename
 	global primer3_directory
@@ -87,41 +86,44 @@ def import_parameters(*arg):
 		if str(sys.argv).find('-help') > -1:
 			print_help()
 			exit()
-		arg_list = sys.argv
+		else:
+			input_args = sys.argv
 	else:
-		arg_list = arg
-	
-		for i in xrange(len(arg_list)):
-			if str(arg_list[i]).upper() == '-FASTA':
-				fasta_filename = arg_list[i + 1]
-			elif str(arg_list[i]).upper() == '-PRIMER3_SETTINGS' or \
-				str(arg_list[i]).upper() == '-PRIMER_SETTINGS':
-				standard_primer_settings_filename = arg_list[i + 1]
-			elif str(arg_list[i]).upper() == '-PRIMER3_DIRECTORY' or \
-				str(arg_list[i]).upper() == '-PRIMER_DIRECTORY':
-				primer3_directory = arg_list[i + 1]
-			elif str(arg_list[i]).upper() == '-PRIMER3_EXE':
-				primer3_exe = arg_list[i + 1]
-			elif str(arg_list[i]).upper() == '-SERVERNAME':
-				servername = arg_list[i + 1]
-			elif str(arg_list[i]).upper() == '-SERVERPORT':
-				serverport = int(arg_list[i + 1])
-			elif str(arg_list[i]).upper() == '-MAXREPEATS':
-				max_repeats = int(arg_list[i + 1])
-			elif str(arg_list[i]).upper() == '-PRIMERPAIRS':
-				max_primerpairs = int(arg_list[i + 1])
-			elif str(arg_list[i]).upper()=='-GFSERVER':
-				gfServer = arg_list[i + 1]
-			elif str(arg_list[i]).upper() == '-GFPCR':
-				gfPCR = arg_list[i + 1]
-			elif str(arg_list[i]).upper() == '-NESTED':
-				nested = int(arg_list[i + 1])
-			elif str(arg_list[i]).upper() == '-OUTPUT':
-				output_filename = arg_list[i + 1]
-			elif str(arg_list[i]).upper() == '-MAXTHREADS':
-				max_threads = int(arg_list[i + 1])
-			elif str(arg_list[i]).upper() == '-REMOVETEMPFILES':
-				remove_temp_files = bool(arg_list[i + 1])
+		input_args = []
+		for argument in arguments:
+			input_args.append(arguments)
+
+	for i in xrange(len(input_args)):
+		if str(input_args[i]).upper() == '-FASTA':
+			fasta_filename = input_args[i + 1]
+		elif str(input_args[i]).upper() == '-PRIMER3_SETTINGS' or \
+			str(input_args[i]).upper() == '-PRIMER_SETTINGS':
+			standard_primer_settings_filename = input_args[i + 1]
+		elif str(input_args[i]).upper() == '-PRIMER3_DIRECTORY' or \
+			str(input_args[i]).upper() == '-PRIMER_DIRECTORY':
+			primer3_directory = input_args[i + 1]
+		elif str(input_args[i]).upper() == '-PRIMER3_EXE':
+			primer3_exe = input_args[i + 1]
+		elif str(input_args[i]).upper() == '-SERVERNAME':
+			servername = input_args[i + 1]
+		elif str(input_args[i]).upper() == '-SERVERPORT':
+			serverport = int(input_args[i + 1])
+		elif str(input_args[i]).upper() == '-MAXREPEATS':
+			max_repeats = int(input_args[i + 1])
+		elif str(input_args[i]).upper() == '-PRIMERPAIRS':
+			max_primerpairs = int(input_args[i + 1])
+		elif str(input_args[i]).upper()=='-GFSERVER':
+			gfServer = input_args[i + 1]
+		elif str(input_args[i]).upper() == '-GFPCR':
+			gfPCR = input_args[i + 1]
+		elif str(input_args[i]).upper() == '-NESTED':
+			nested = int(input_args[i + 1])
+		elif str(input_args[i]).upper() == '-OUTPUT':
+			output_filename = input_args[i + 1]
+		elif str(input_args[i]).upper() == '-MAXTHREADS':
+			max_threads = int(input_args[i + 1])
+		elif str(input_args[i]).upper() == '-REMOVETEMPFILES':
+			remove_temp_files = bool(input_args[i + 1])
 
 	if (fasta_filename == '' or \
 		standard_primer_settings_filename == '' or \
@@ -133,7 +135,7 @@ def import_parameters(*arg):
 		gfServer == '' or \
 		gfPCR == '' or \
 		abs(nested) > 1) and \
-		len(arg) == 0:
+		len(arguments) == 0:
 		print fasta_filename
 		print standard_primer_settings_filename
 		print primer3_directory
@@ -182,11 +184,11 @@ def dinucleotide_repeat(sequence):
 #creates the input file for primer3
 #if primerF and primerR are given, primerR is kept fixed and primerF is excluded, useful for nested PCR
 def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
+	
 	if len(target) >= len(sequence) or sequence.find(target) < 0:
 		return False
 	new_filename = 'primer3_' + makefilename(seq_name)
 	primer3_file = open(primer3_directory + new_filename + '.txt', 'w')
-
 	primer3_file.write('SEQUENCE_ID=')
 	primer3_file.write(seq_name + '\n')
 	primer3_file.write('SEQUENCE_TEMPLATE=')
@@ -221,7 +223,7 @@ def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
 #cleans a filename
 def makefilename(old_name):
 	old_name = old_name.replace(' ', '_')
-	old_name = old_name.translate(None, '=!/\<>:"|?*\'')
+	old_name = old_name.translate(None, '+=!/\<>:"|?*\'')
 	return old_name
 
 #takes a primer pair, a input sequence for which the primers were designed and checks in the isPCRoutput if the target sequence is amplified or something else
@@ -307,7 +309,7 @@ def get_amplicon_from_primer3output(primerF, primerR, primer3output):
 
 	return sequence[amplicon_start - 1 + len(primerF):amplicon_end]
 
-#takes a primer pair and primer3ouput as input
+#takes a primer pair and primer3output as input
 #returns GC-content, primer TM, product size, product TM
 def primer_stats(primerF, primerR, primer3output):
 	primerF = primerF.upper()
@@ -327,7 +329,7 @@ def primer_stats(primerF, primerR, primer3output):
 		else:
 			if temp_output[i].startswith('PRIMER_LEFT_' + found + '_TM='):
 				primerF_TM = temp_output[i][temp_output[i].find('=') + 1:]
-			elif temp_output[i].startswith('PRIMER_RIGHT_ ' + found + '_TM='):
+			elif temp_output[i].startswith('PRIMER_RIGHT_' + found + '_TM='):
 				primerR_TM = temp_output[i][temp_output[i].find('=') + 1:]
 			elif temp_output[i].startswith('PRIMER_LEFT_' + found + '_GC_PERCENT='):
 				primerF_GC = temp_output[i][temp_output[i].find('=') + 1:]
@@ -437,7 +439,7 @@ def check_fasta(sequence, fasta_type, strict):
 	#strict: boolean, enforces perfect format, i.e. no extra line breaks or spaces, etc.
 	#sequence: string the input sequence
 	#fasta_type: protein or nucleotide
-
+	
 	passed = True
 	fasta_type = fasta_type.upper()
 
@@ -487,16 +489,18 @@ def check_fasta(sequence, fasta_type, strict):
 	return passed
 
 def get_primers(sequence):
-
+	
 	global max_primerpairs
 	global nested
 	#Step 3: creates primer3 input file for each sequence
 	output = ''
 	stdoutput = ''
 	sequences = []
+
 	sequences.append(sequence.split('\n', 1)[0][1:])
 	sequences.append(''.join(sequence.split('\n', 1)[1:]).replace('\n', ''))
-	if not check_fasta(''.join(sequences), 'NUCLEOTIDE', False):
+	
+	if not check_fasta('>' + '\n'.join(sequences), 'NUCLEOTIDE', False):
 		stdoutput = 'Sequence did not match FASTA format, no primers were designed'
 		output = stdoutput
 		return output, stdoutput
@@ -508,19 +512,20 @@ def get_primers(sequence):
 	primer3_output = ''
 	filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
 	primer3_input = ''
+	
 	with open(primer3_directory + filename, 'ru') as temp_file:
 		primer3_input += ''.join(temp_file.readlines())
 	temp_file.close()
-
+	
 	stdoutput += 'Primer3 subprocess started\n'
 	sys.stdout = open(str(os.getpid()) + ".out", "w")
 	process = Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
 	process.stdin.write(primer3_input)
 	primer3_output += process.communicate()[0] + '\n'
-
 	stdoutput += 'Primer3 finished\n'
 	primer3_list = []
 
+	
 	for lines in primer3_output.split('\n'):
 		if lines.startswith('SEQUENCE_ID'):
 			primer3_list.append(lines)
@@ -530,7 +535,7 @@ def get_primers(sequence):
 
 	isPCRoutput = ''
 	i = 0
-
+	
 	#list of primers which only amplify one amplicon
 	accepted_primers = []
 
@@ -547,8 +552,8 @@ def get_primers(sequence):
 	primerF_1st = ''
 	primerR_1st = ''
 	accepted_nested_templates = []
-
-
+	print "##################################"
+	print primer3_list
 	for i in xrange(1, len(primer3_list), 2):
 		if len(accepted_primers) < max_primerpairs:
 			primerF = primer3_list[i]
@@ -583,6 +588,9 @@ def get_primers(sequence):
 					#if the pair is accepted it will be written to the output file
 					if accept_primerpair and nested != 1:
 						accepted_primers.append(primerF + ',' + primerR)
+						x = open('tmp.txt', 'w')
+						x.write('1'+stdoutput)
+						x.close()
 						output += make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output)
 						stdoutput += output + '\n'
 					#v1.03
@@ -724,7 +732,7 @@ def get_primers(sequence):
 
 
 	if (len(accepted_primers) < max_primerpairs and nested == -1) or (len(accepted_primers) < 2 and nested != -1):
-		stdoutput += 'not enough primer pairs found'
+		stdoutput += 'not enough primer pairs found\n'
 
 	temp = open(str(os.getpid()) + ".tmp", "w")
 	temp.write(output)
@@ -734,388 +742,14 @@ def get_primers(sequence):
 
 
 
-def start_repeat_finder():
-	ssr_list = ['AAAATTC', 'ATCCCCCCCG', 'AAAATTG', 'ATCCCCCCCC', \
-	'AAATCCCGGGGG', 'AGG', 'ATTCCCCC', 'AAAATTT', 'AATTTTTTCCCC', \
-	'AATTTTTTCCCG', 'TTTTGGG', 'AAACCCCCGGG', 'AAAAATTTGGGG', \
-	'ATTCCCCCCCGG', 'AAAACCCCGGGG', 'ATTCCCCG', 'AAACCCGGG', \
-	'AATCCCGGGGGG', 'AAAACCCGGG', 'AAAATTCCG', 'ATTCCCCGG', 'ATTTCCCCCGGG', \
-	'GG', 'AATTCGGGGGGG', 'ATTTTCCCCGGG', 'TTTCCGGGGGG', 'TTTTTTTGGGG', \
-	'AATCGGGGG', 'TTTGGGGGGG', 'AAAAAAAACGGG', 'CCGGGG', 'TTTTTTCCCCC', \
-	'ATTCCG', 'AATTTCCGGGGG', 'ATTCCC', 'TTTTTTTCCCCC', 'AAAAAAACGGGG', \
-	'CCCCCCGGGGGG', 'TCCCGGG', 'ATGGGGGGG', 'AAAAACC', 'TCCCCCCG', \
-	'AAAAACG', 'TCCCCCCC', 'AAAAAATTTCGG', 'AAAAAAATTTT', 'TTTTTTTTCGGG', \
-	'TTT', 'TTCCCCC', 'TTCCCCG', 'TTC', 'AAAAAAATTTG', 'TTG', 'AAAGGGGG', \
-	'AAAAAAATTTC', 'AATCCCCCCGG', 'AATCCGGGGGGG', 'TTTCCCCCCG', \
-	'AATTTCCGG', 'ATTCCCCGGG', 'AATTGGGGGGG', 'AAAAAAAAAA', 'AAAAAAAAAC', \
-	'AAATTTCCCG', 'TTTTTTCGGGG', 'AAAAAAAAAG', 'AATTTCGG', 'AACCCGGG', \
-	'AAAATTTCCCG', 'TCGG', 'AAAATTTCCCC', 'AAAAAAAAATG', 'AACCCCCGGGGG', \
-	'AAAAAAAAAT', 'ATTCCCCCCCC', 'TTCCCGGGGG', 'ATTCCGGGGG', 'TTCCCCGGG', \
-	'ATTTTTCCC', 'CCGGGGGGGGG', 'AATTTTTGG', 'AAAAAAATTCGG', \
-	'AAAAATTTTTCC', 'AACCCCGGG', 'AAATGG', 'ATCCCCGGGGGG', 'AAGGGGGG', \
-	'AAATTTTTTTTC', 'AAATTTTTTTTG', 'TCCCGGGG', 'ATTTTCCCGG', \
-	'TTTTTTTCGGGG', 'AAGGGGGGGGG', 'AATTCCCGGGGG', 'AATTTTTTTGG', \
-	'AAATTTCCCCCC', 'AAATTTCCCCCG', 'TTTTTCCCCCCC', 'ACCCCGGGGGGG', \
-	'TTTTTCCCCCCG', 'TTCCCCCCGG', 'ATCCGGGGGG', 'ATTCCCGGGGG', 'ACCGGGGG', \
-	'AAAAATTCGG', 'TTTTGGGGGGG', 'ATCCCCCCCCG', 'ATTTCCCCC', 'ATCCCCCCCCC', \
-	'ATTTCCCCG', 'ACCCCGGGGG', 'AATTTTTCCGG', 'TTGGGG', 'TGGGGGG', \
-	'AAAAATTCCCCG', 'AAAAATTCCCCC', 'ATCCCGG', 'AAAACCGGGGGG', \
-	'TCCCCCCCCGGG', 'ATTCG', 'AATTTGGGGGGG', 'AAATTGGGGGGG', 'ATTCC', \
-	'ATCCCCCCGGGG', 'AATTTTCGGG', 'TTTTGGGGG', 'AAAAATTTCGG', 'AAAAAATTTT', \
-	'AAAAAAGGGGGG', 'TTTTCCGGGGG', 'ATTTTTTCC', 'TCGGGGGGGG', 'ATTTTTTCG', \
-	'AAAT', 'AATCCGGGGGG', 'AAAATTCCCC', 'ATTTTTTTTTGG', 'AAAATTCCCG', \
-	'AAAA', 'TCCGGG', 'AAATTCG', 'AAAACGGGGG', 'AAAG', 'AAATTTCCGGGG', \
-	'AAAAAAACCGG', 'ATTTTTC', 'ATTTTG', 'ATTTTTG', 'ATTTTC', \
-	'TTCCCCGGGGGG', 'ATTTTT', 'CCCGGGGGGGGG', 'ATTTTTT', 'ACCCCCCCGG', \
-	'TTCCCCGGGGG', 'ATTTTTCGGGGG', 'AAAAACCGG', 'TTTTTTTTTTGG', \
-	'AAAAATTTTCGG', 'AAATTTGGG', 'ACCGG', 'TTTTTCGGGG', 'ATTTTTGGG', \
-	'TTTTTTCCCCG', 'AAAATCC', 'ATTTTCGG', 'ACCCCCGG', 'CGGG', 'TTTCCCCC', \
-	'AAAATTTTCCGG', 'TTTCCCCG', 'AATCCCCCGG', 'CGGGGG', 'TTTTTCCGGGG', \
-	'AATTTTTGGG', 'ATTCGGGGGG', 'AAAAATCGGG', 'AAATTTTTCGG', 'TTTTTCCCCGG', \
-	'AATTTTGG', 'ATTTTTTTCCCG', 'AAACCGG', 'ATTTTTTTCCCC', 'AAAAATCCCG', \
-	'AAAAATCCCC', 'AAAAAAGG', 'TTTTTCCCCC', 'TTTTTTTCCCCG', 'TTTTTCCCCG', \
-	'AAAAAAAAAATT', 'TTTTTTCCGGGG', 'GGGGGG', 'ATCCG', 'ATCCC', \
-	'AAAATTCCC', 'AAAATTTCGGGG', 'TTTTCCCCCG', 'TTTTCCCCCC', 'AAAAAAAATG', \
-	'AAAAAAAATC', 'AAAAATTCCCC', 'AAATTTGGGGGG', 'AAAAATTCCCG', \
-	'AATTTTTTTTTT', 'AAAAAAAATT', 'AAAAATTTTTTT', 'AATTTGGGG', \
-	'AAAATTCGGGG', 'AACCCC', 'ATTTCCCCCG', 'AACCCG', 'ATCCCCCCCCGG', \
-	'ATTTCCCCCC', 'ATGGGGGG', 'ACCCCCCCCGGG', 'AACCCCCCCCGG', 'AACCCCG', \
-	'AACCCCC', 'TTTTCGGGGGGG', 'AACGGGGGGGG', 'ATTTCGGG', 'AAAACCCCCCGG', \
-	'AATTTCCCCC', 'TTTTTTTTCCCG', 'AATTTCCCCG', 'ATTTTCCGG', 'AAAAAAATCG', \
-	'AAAAAAATCC', 'TTTTCCCGGGG', 'AAAAAATCCGGG', 'TTTTT', 'AAAAAATTTGG', \
-	'TCCCCCGGGGGG', 'AAATCGGGGGGG', 'TTTGGG', 'AATCCCGGGGG', 'ATCCCCGGGG', \
-	'TTTTG', 'TGGGGGGGG', 'AAATTCCCCGG', 'AACCGGGGGG', 'AAAAATGGGGG', \
-	'ATGGG', 'CCCCCCGGGG', 'AAAAAAATGGG', 'CCCC', 'CCCG', 'TTTTTGGGGGGG', \
-	'AATTTTTTTTTC', 'TCCCCGGGGGGG', 'ATTTTCGGGGG', 'AAAATTTCCCCC', \
-	'AAAATTTCCCCG', 'AAAAAAAATTCG', 'AATTTTTTTTTG', 'AACGGGGGGGGG', \
-	'AAAAAAAATTCC', 'TTTTTTCCG', 'TTTTTTCCC', 'ATGGGG', 'ATTTTCCCCCG', \
-	'ATTTTCCCCCC', 'AATTCCCGGG', 'AAAAAAAACCCC', 'AACCCCCC', 'AACCCCCG', \
-	'AAAACCCCC', 'AAAACCCCG', 'AAATTTTCGGG', 'AAACCCCCCGG', 'ATTTTTTTTGG', \
-	'AAACCCCC', 'AAACCCCG', 'AAAACCCCCCG', 'AAAAAAAAAATC', 'AAAACCCCCCC', \
-	'CCCCGGGGGGG', 'AATTTTCCGG', 'AAAATT', 'ATTTTTTTTTTT', 'AAAATTTT', \
-	'AAAAACCCGGGG', 'AAAAAATTGGGG', 'ACCCCCC', 'AAAATG', 'AAAATTTC', \
-	'ACCCCCG', 'AAAATC', 'AAAATTTG', 'AATTTTCCGGG', 'AAAAAGGGG', \
-	'AAAAAAATTGGG', 'ATCCCG', 'AAAAACGGGGG', 'ATCCCC', 'ATGGGGG', \
-	'ACCCGGGG', 'AATTGGG', 'AATTGGGGGG', 'AAAAAATTTGGG', 'AAAACCG', \
-	'AAAACCC', 'AATG', 'TTCCC', 'TTCCG', 'AAAATTTCGG', 'TTCCCCGGGG', \
-	'AATCCCCCGGG', 'AAAATTCGGG', 'AAAAAAAAAAGG', 'AAACCGGGGGGG', 'AATGG', \
-	'AAAATTTTTTCC', 'ATTCCCCCGG', 'AAAATTTTTTCG', 'TTCCGG', 'AAAAAAAAACGG', \
-	'AAAAAAATCCC', 'AATTCCCCCCCG', 'AATTCCCCCCCC', 'TTTCCCCCCC', \
-	'ATTGGGGGGG', 'ACCCCCCGGGGG', 'TTTCGGG', 'AAAATGGGGGG', 'AAAAAAG', \
-	'ATTTCCCGGG', 'AAAAAAA', 'AAAAAAC', 'TTCCCCCGG', 'ACCCCCCCCCC', \
-	'AAAAAAT', 'ACCCCCCCCCG', 'AAAACGGGG', 'AAAATTTTCG', 'ATTTTTTCCCG', \
-	'TTTC', 'AAAATTTTCC', 'ATTTTTTCCCC', 'TTTG', 'CC', 'TTTTTTCC', 'CG', \
-	'AAAAAAAAATT', 'AATTCCCCCG', 'CCCCCC', 'TTTT', 'AAAATCGGG', \
-	'ACCCCCGGGG', 'AATTTTTTTCCC', 'AAAAAAAAT', 'TTTTTTTTTCCG', \
-	'AAATTTCCCC', 'AAAAAAAAA', 'AAAAAAAAC', 'TCCCCGGGG', 'AAAAAAAAG', \
-	'AAAAAAAACC', 'AATTTTTTTCCG', 'AAAAAAAACG', 'AATTTTTTCCG', \
-	'AATTTTTTCCC', 'AAATCCCG', 'AAAAATTTCCCC', 'AAATCCCC', 'AAAAATTTCCCG', \
-	'AAAAATGG', 'TTTTTCGGGGG', 'AATTTTTCCGGG', 'AAAAAATTC', 'AAAAAAAGGGG', \
-	'AAAATCCCG', 'AAAATCCCC', 'AAATCCGGGGGG', 'AAAAAATTT', 'ATGG', \
-	'AATTCCCCG', 'ATCCGGG', 'CCCCCCCCCGGG', 'AAAAAACCC', 'TCCCCCCCCCGG', \
-	'AAAAAACCG', 'AAATCCCCCCCG', 'AAATCCCCCCCC', 'AAATCCCCGGG', \
-	'AAAATCCCCCCG', 'AAAATCCCCCCC', 'ACCGGGG', 'TCCCCCCGGGGG', 'ATTTTGGG', \
-	'AAAACGG', 'TTTTCCGGG', 'AAATCGGGG', 'AAAAATCGG', 'CCCCCCCCCGG', \
-	'CCCCCCCCCCCC', 'CCCCCCCCCCCG', 'AAAAATCCGGG', 'ACCCCCCGGGG', \
-	'AAAATGGGGG', 'AAAATTCGGGGG', 'CCCCCG', 'TTTCCCG', 'AAACCGGGGGG', \
-	'TTTCCCC', 'AATTCCCCC', 'AAAATTCCCCG', 'AAAAAAATCCCG', 'AAAAAAATCCCC', \
-	'ATTTTTCC', 'ATTCCCGGGGGG', 'AAACCCCGGGGG', 'AATTTTTTTC', 'ATTTTTCG', \
-	'ACGGG', 'ATTTTTCCGGG', 'AAAATTGG', 'AAAAATTTCGGG', 'AATTTTCGGGG', \
-	'AATTTCCCCGGG', 'AAAAACCCCCGG', 'TCCCGGGGGGG', 'AATTGG', 'TTTTGG', \
-	'TTTTTTGGGG', 'CCGGGGGG', 'AAATCCCGGG', 'AATTTTGGGG', 'ATTTTTCCG', \
-	'TTTTCCCCCCCG', 'TTCG', 'TTTTCCCCCCCC', 'TTCGGGGGGG', 'TGGGGG', \
-	'AAAAAATTCCGG', 'TTTCCCGGGG', 'AAATTCCCGGGG', 'AAATTCCCGGG', 'TTTGG', \
-	'AAGGG', 'CCCCCGGGGG', 'TTTTTCCCGGG', 'AAACGGG', 'ACCGGGGGGG', \
-	'AAATTTTCC', 'ATTTTTCCCGGG', 'AAATTTTCG', 'AATTTTTGGGG', 'CGGGGGGGG', \
-	'AAAAAATGGG', 'TCGGGGGG', 'AAAAAAAAAGGG', 'AAAAAATCGGGG', \
-	'ACCGGGGGGGG', 'ATTT', 'AATTTTCCG', 'AATTTTCCC', 'AAAAATGGGGGG', \
-	'ATTG', 'ATTC', 'TCCCCGGGGG', 'AAATTTTCCGGG', 'AAATTTTTGGG', \
-	'AAAAAAACCCCC', 'AAAAAAACCCCG', 'AAATTTTTGG', 'ATCCCGGGGGG', \
-	'ATTTTTCCCC', 'ATTTTTCCCG', 'TTTTCCCCCGGG', 'TTCCGGGGGGG', 'ATTTTCGGG', \
-	'AAAATCCG', 'AAAATCCC', 'ATCGGGGGGGG', 'ATTTTCCGGG', 'AATTCGGG', \
-	'TTTCGG', 'TCCCCCCGG', 'CGGGG', 'ATTCCGGGGGG', 'AAATTTTTTTTT', \
-	'AATTTTCGGGGG', 'AAAAACCG', 'AAAAACCC', 'AAAAAAATCGG', 'AATTCCGGGGGG', \
-	'AATCCCCGGG', 'TGGGGGGG', 'TCCGGGGGGGG', 'AATTTTTTGG', 'CCCCCCCCGG', \
-	'TTTCCCCCCCCC', 'GGGGGGGGG', 'TTTCCCCCCCCG', 'AATTTTTTTTCC', 'AAATG', \
-	'AATTTTTTTTCG', 'AAATC', 'TTTTTTTTTCG', 'AAATT', 'TTTTTTTTTCC', \
-	'ATGGGGGGGGG', 'AAAAATTTGGG', 'AAACCCCCCGGG', 'CCCCC', 'CCCCG', \
-	'AAAATCCCGGG', 'TTCC', 'AAAACCCCGGG', 'TTCCCGGGG', 'TTTTTCCCGGGG', \
-	'TTGGGGGG', 'TTTTTGGG', 'TTTCCCCGGGG', 'ATTTTTGGGG', 'AATTTTCCCCGG', \
-	'AATCCCCCCCCG', 'ATTTCGG', 'ATTTCGGGG', 'AATTCCCCCGG', 'AAACCG', \
-	'AAACCC', 'CCCGGGGG', 'ATTTGG', 'AATTTTCCCGG', 'CGGGGGGG', \
-	'TTTCGGGGGG', 'AAATCCCCCCG', 'AAATCCCCCCC', 'AATTCGG', 'TTTTTTCCCCCC', \
-	'TTTTTTCCCCCG', 'ATTTTTTTTCCG', 'ATTTTTTTTCCC', 'AAAATTTTTCCC', \
-	'AAAATTTTTCCG', 'AAATTTGGGG', 'ATTTTTTCCC', 'ATTTTTTCCG', 'AAATCGG', \
-	'AATTTCCCCCC', 'AATTTCCCCCG', 'TTCGGGGGG', 'TTTTCCCCCCC', \
-	'CGGGGGGGGGGG', 'TTTTCCCCCCG', 'AAAAAATTTTCG', 'AAAATTTGGG', \
-	'AAAAAATTTTCC', 'AAAAAAAGGGGG', 'ATTTCCCGGGG', 'ATTCGG', \
-	'AAAAAAATTTTG', 'ATTTTTTTTC', 'ATTTTTTTTG', 'AAAAAATTTTTG', \
-	'ATTTTTTTTT', 'TTTTTTTTC', 'TTTTTTTTG', 'AATTTCCCGGG', 'ACGGGGGGGGG', \
-	'ACGGGGGGGGGG', 'CCGGGGGGGGGG', 'TTTTTTTTT', 'AATTTTGGGGG', \
-	'ATTCCCCCG', 'TTTCCGGGGG', 'AAATCCCGG', 'ATTCCCCCC', 'TTCCGGGGG', \
-	'ATTTTCCCCCGG', 'AAAAAAAATTTC', 'AAAAAAAATTTG', 'AAAAAATC', \
-	'AAAAATGGGG', 'AACCGGGGG', 'AAAAAAAATTTT', 'TTTTTTTCCCGG', 'AAAAAATT', \
-	'AAAAAAATTTTC', 'ATTGGGGGGGG', 'AAATTCCGGGGG', 'ATTTTGGGGGGG', \
-	'TTTCCCCCGGGG', 'AACGGGGG', 'AAAACGGGGGG', 'ATTTGGGGG', 'AAAAAAGGGG', \
-	'ATTTCCCCCGG', 'AACCCCCCCGGG', 'TCCCCCGG', 'AAAATTCCCCCG', \
-	'AAAATTCCCCCC', 'ATTCCGGGGGGG', 'ATTCCGGGG', 'GGGGGGGG', \
-	'AAATTTTCCCCG', 'AAATTTTCCCCC', 'TTTTTCGG', 'AATTTCCCG', 'AATTTCCCC', \
-	'AAAAAAACG', 'AAAAAAACC', 'AAATTTCCGG', 'AACCGGGGGGGG', 'TCCG', \
-	'AATTTCCG', 'CGGGGGGGGG', 'TCCC', 'AATTTCCC', 'AAAAACCCCC', \
-	'CCCCCCCGGG', 'AAAAACCCCG', 'AATTTTTTCCGG', 'AATTTTTCG', 'AAACGGGG', \
-	'ATTCCCGGGG', 'AATTTTTCC', 'CCCCCGGGGGGG', 'CCCCCCCCGGG', \
-	'AAAAAAAACCCG', 'AAAAAATCCC', 'AAAAAATTTTC', 'AAAAAATCCG', 'TTTTCCCGG', \
-	'AAAAAAATTCCC', 'AAAAAAATTCCG', 'AAAAAATTTTT', 'TCCGGGGGGG', \
-	'AAGGGGGGG', 'AAAAATTGGGGG', 'ATTTTTGGGGG', 'TTTTTTTTCC', \
-	'ATTCCCCCCCCG', 'TTTTTTTTCG', 'AAAAAATTCCC', 'AAAAAATTCCG', \
-	'AAAAGGGGGG', 'AATTTTTTTCG', 'AATTTTTTTCC', 'ATTCCCCCCCCC', \
-	'ATTTTCCCCG', 'ATTTTCCCCC', 'TTTCGGGGG', 'TTTCCCCCCGG', 'AAAAATTCCG', \
-	'AAAAATTCCC', 'TTTTTCCCCCGG', 'AAATTCCCCCGG', 'AAAAACCCCGGG', \
-	'ATTTTGGGGGG', 'AATTTTCCGGGG', 'AAAACCCCCCCG', 'ATTTCCCGG', \
-	'AAATCCCCGG', 'AATCCCGGG', 'ATCCGGGGGGG', 'AACGG', 'AAAAATTCCCGG', \
-	'ATTGG', 'AAAAAATTTC', 'TTTTGGGG', 'AAAAAATTTG', 'ATTTTTTGG', \
-	'CCGGGGGGGG', 'AAAAATTTCCG', 'TTGGGGGGGGG', 'AAAAATTTCCC', 'ATG', \
-	'AAAATTCCGG', 'ATC', 'TCCGGGGGG', 'AAAAAAACCCG', 'ATT', 'TTTCCCGGGGG', \
-	'AAAAAAACCCC', 'CGGGGGGGGGG', 'ATTTTTTTTTCG', 'ATTTTTTTTTCC', \
-	'ATTTCCGGGG', 'AAAACCCCCGGG', 'TTTTTTTT', 'ATTTTTTGGGG', 'CCCCGGGGGG', \
-	'AAATTTTTCCCC', 'AAATTTTTCCCG', 'TTTTTTTG', 'TTTTTTTC', 'TCCCCCCCGGG', \
-	'ATCCGGGGGGGG', 'AATTTTTCCCG', 'AAAAAATTCGGG', 'AATTTTTCCCC', \
-	'AAAAACCCC', 'AAAATCCGGG', 'AAAGGG', 'AAAAACCCG', 'AAAAACCGGG', \
-	'AACCCCCCCC', 'ATCCCCCG', 'AACCCCCCCG', 'ATCCCCCC', 'ACGGGGGGG', \
-	'ACCCCCCG', 'ACCCCCCC', 'AAAAAACCGGGG', 'AAAATGG', 'ATTTTCCCGGGG', \
-	'TTTCCCGG', 'ACCG', 'ATTTTTTTCCC', 'ACCC', 'ATTTTTTTCCG', \
-	'ATTTTTTTTCGG', 'ATTTCGGGGG', 'TGG', 'AATTTTC', 'AATTTTG', \
-	'ATTTTTTTCCGG', 'AGGGGGGGGGG', 'AATTTTT', 'AATTCCCCGGGG', 'AATTCCCCCC', \
-	'CCCCCCCC', 'CCCCCCCG', 'ATTTTTCCGGGG', 'TTTTTCCCGG', 'CCCCCGGGG', \
-	'ATCGG', 'AAAATTTTTCC', 'AAAATTTTTCG', 'AAAAAACCCCGG', 'AATTTCCCGGGG', \
-	'TTTTTCCCC', 'CCCCCGGG', 'TTTTTCCCG', 'AAATTCCC', 'AAACCCCCCCGG', \
-	'AAATTCCG', 'AAATTC', 'AAATTG', 'TCCCCCCGGG', 'AAAATCCCCGG', 'AAATTT', \
-	'AAAAATTCCGGG', 'AAAC', 'AAAACCCCCCCC', 'TTGGGGG', 'AACCCCCCCCCC', \
-	'AACCCCCCCCCG', 'AAATGGGG', 'AAATTCC', 'AATTCCCCGGG', 'AAAATTGGGGGG', \
-	'ATCCCCCCCCCC', 'TTTTTTCGGGGG', 'TTCGGG', 'AAAAATCG', 'TTCGGGGG', \
-	'AAAAATCC', 'ATCCCCCGGGGG', 'AAAAAATTGGG', 'TTTTTTTCCC', 'TTTTTTTCCG', \
-	'ATCCCCCCCCCG', 'AAATGGGGGG', 'ATTTCCCCGG', 'AAACCCCGGGG', 'AAATGGGGG', \
-	'TTCCCCCCCCCG', 'TTGGGGGGG', 'TTCCCCCCCCCC', 'AAATGGG', 'TTGGGGGGGGGG', \
-	'AAAAAAAAACC', 'AAAAAAAAACG', 'AAATTTTTT', 'TTTTTTTCCGGG', 'AATTTT', \
-	'TTTTTCGGG', 'ATTTTTTTT', 'AAATTGGG', 'ATTGGG', 'AATTTC', 'TTTTCCGG', \
-	'AATTTG', 'ATTTTTTTG', 'TTTTTTCGG', 'ATTTTTTTC', 'AACCCCGG', \
-	'AATTTTTTTCGG', 'AAACCCCCCCG', 'AATTTGG', 'AAACCCCCCCC', \
-	'ATTTTTTTTTTG', 'AATTCCGGGGG', 'ATTTCCCCCCCC', 'ATTTCCCCCCCG', \
-	'AAACCCGG', 'AAAAAATCCCC', 'TTTCGGGGGGG', 'ATTTT', 'AAAAAATCCCG', \
-	'AATCGGG', 'AAAACCCCCGG', 'AAAAAAAATTT', 'AAATTCCCCC', 'AAAATCGGGGG', \
-	'ATTTC', 'AAATTCCCCG', 'ACCCCCGGGGGG', 'ATTTG', 'AAAAAAAATTC', \
-	'AAAAAAAATTG', 'ATCCGG', 'TCCCCGGG', 'AATTCCGG', 'AAAACCCGG', \
-	'AAAAGGG', 'ATTCCCCCCG', 'ATTCCCCCCC', 'CCCCCCCCC', 'TTTTTTTTCCC', \
-	'TTCCCCCCCCC', 'TTCCCC', 'TTTCCCCGGG', 'TTCCCCCCCCG', 'TTCCCG', \
-	'ATTCGGGGG', 'TTTCCCCCC', 'TTTCCCCCG', 'TTTTTTCCGG', 'ATTTGGGGGG', \
-	'AAAAATTCGGGG', 'AAATTTCC', 'AAAAATTTTGG', 'AATTCCCCCCGG', 'AAATTTCG', \
-	'AAAACCCC', 'AAAACCCG', 'TTTTTTGGGGG', 'ATCCCCCGG', 'TTCCCCCCC', \
-	'AATTTCCCCCCG', 'TTCCCCCCG', 'AATTTCCCCCCC', 'AATTCCCCGG', \
-	'AATTTCGGGGG', 'AATTTTTTTT', 'ATTTTTTTGGGG', 'AAAAAAAACCGG', \
-	'ATTTTTTCCGG', 'AATTTTTTTG', 'ATTTTTTTGGG', 'AAAAAAAATGGG', \
-	'AAAATTTTG', 'AAAAAAACGG', 'TCCCG', 'TCCCC', 'AAAAAAAAGG', 'AAAATTTTT', \
-	'ATTTTTCCCGG', 'AA', 'TTTTTTTTTGGG', 'ATCCCGGGG', 'AATTGGGG', \
-	'ATTCGGGGGGGG', 'TTTTTCCCCGGG', 'ATTTTCGGGGGG', 'AAAATCCGGGG', \
-	'AAACCCGGGG', 'AAAAAAAAATTT', 'AAATCCGG', 'AAAATCG', 'AAATTTTCCC', \
-	'AAATTTTCCG', 'AAAAAAAAATTG', 'AAAAAACCCCG', 'AAAAAAAAATTC', \
-	'AAAAAACCCCC', 'AAATTTCCCGG', 'TCGGG', 'ACCCCCCCCGG', 'AAAAATCCGGGG', \
-	'ATCG', 'ATCC', 'TTCCCCCGGGG', 'AAAAAACGG', 'ATTTCCGGGGGG', 'AATTG', \
-	'ACCCGGGGGG', 'AAAAACCGGGGG', 'AAAGG', 'AATTTTTCGGGG', 'AATTT', \
-	'TCCCCCCCCCCG', 'TCCCCCCCCCCC', 'TTTTTGGGGGG', 'AATTCCGGGG', \
-	'AAATTTCGGG', 'AAATTTCGGGG', 'AACCCCGGGGGG', 'AAAAATCCG', 'AAAAATCCC', \
-	'AAAATTCCCGG', 'ATTTTTTTTTG', 'CCCCCCCGGGGG', 'ATTTTTTTTTC', \
-	'ATTTCCGGG', 'TCCCCCCCCGG', 'ATTTTTTTTTT', 'AAACCCCCGGGG', \
-	'AAAATCCCGG', 'AAAAGG', 'AAAACGGG', 'AAAAAAAATGG', 'AAAAAGGGGG', \
-	'AAAATTCCGGGG', 'TTTCCGGG', 'AAAATTCG', 'AAAATTCC', 'AATTCC', 'AATTCG', \
-	'AATCCGGG', 'AAATTTTCGGGG', 'TTGG', 'AAAAAAAAATC', 'TCCCCCGGGGG', \
-	'AAAACCGGGGG', 'TTTCC', 'ATTGGGGGG', 'TTTCG', 'ATTTTTTTGG', \
-	'AAATTTTGGG', 'TTTGGGG', 'AAAAAACCCC', 'AAAAAACCCG', 'AAAACCCGGGG', \
-	'AATGGGGGGGG', 'ATTTCCGGGGG', 'AAAAATTTTTCG', 'AAATTGGGG', \
-	'AATCCCCCGGGG', 'TTTTCCCCCCGG', 'TTTGGGGG', 'AAAAACCCCCC', 'AAAATTTCC', \
-	'AAAAACCCCCG', 'AAAATTTCG', 'TTTCCGGGGGGG', 'TCCCCCGGG', 'TCCCCCCCGG', \
-	'AACCGGGG', 'AAAAATGGG', 'AAAAAGGGGGGG', 'AATGGGGG', 'ATTTTTCCGG', \
-	'AAAAATTTCG', 'AAAAATTTCC', 'TTTTTCCGGGGG', 'TCCCCGGGGGG', 'TTCCCGGG', \
-	'AAAAATCCCGGG', 'ATTGGGGGGGGG', 'AAAAAAAACCG', 'AAAAAAAACCC', \
-	'AAAAATTTTTC', 'AAAAATTTTTG', 'ACCCCCGGG', 'AAAATCGG', 'TCCCCCCCG', \
-	'TCCCCCCCC', 'AAAAATTTTTT', 'TTTTCCCGGGGG', 'TTTTTTTTTT', \
-	'AAAAAAATCCG', 'TTTTTTTTTC', 'AAATTCCCC', 'TTTGGGGGG', 'AAATTCCCG', \
-	'AAGGGGGGGG', 'AATTTTTTCG', 'AATTTTTTCC', 'TGGGGGGGGGGG', 'AATTTTCCCC', \
-	'AAAATTTTTTTG', 'AAAATTTTTTTC', 'AAAAAAATTTTT', 'AACCCCCCCCG', \
-	'AACCCCCCCCC', 'AAAATTTTTTTT', 'AAAAAATCCCCC', 'AAATCCGGG', \
-	'TTTTTCCGGG', 'TTTTTTGGG', 'CCCGGGGGGGG', 'TTCCCCCCGGGG', \
-	'ATTTTTTCGGGG', 'AACCCCGGGG', 'AACC', 'AAACGGGGGGGG', 'AAAACCCCCC', \
-	'AAAACCCCCG', 'TTTCCG', 'TTTCCC', 'CCCGGGGGGG', 'ATTTGGGGGGGG', \
-	'AATCCGGGG', 'AAAAACCGGGG', 'AAATCCCGGGG', 'AAAAAAAAAAT', 'CCCCGGG', \
-	'TTTTTTG', 'TTTTTTC', 'AAACCGGG', 'AAAAGGGGGGGG', 'AATCCCCCCCGG', \
-	'AAAAAAAAAAG', 'AAAAAAAAAAA', 'AAAAAAAAAAC', 'AATCCGG', 'TTTTTTT', \
-	'AAACGG', 'TCCCCCCGGGG', 'AAAAATCGGGG', 'AAAAGGGGGGG', 'ATTTCG', \
-	'ATTTCC', 'ATCGGG', 'AATTTTCCCCC', 'AATTTTCCCCG', 'AAAAAAAAAATG', \
-	'AAACCCCCGG', 'AATTTTTCGGG', 'ATTCGGGG', 'AAAAAATTCCCG', 'ACGGGG', \
-	'AATTTCCCCGG', 'AAAATTTTTCGG', 'AAAACCGGG', 'AAAAAATTTTGG', \
-	'ATTTTTTCGG', 'TCGGGGGGGGG', 'TTGGG', 'ATCCCCCGGG', 'TTCCCCCG', \
-	'CCCCCGGGGGG', 'AAAATTTTGGG', 'GGGGGGG', 'AATTCCCCCGGG', 'AATGGGG', \
-	'TCCGGGGG', 'ACCCCCCCG', 'ACGGGGG', 'AATTCCC', 'AATTCCG', \
-	'AATCCCCCCCCC', 'ATCGGGGG', 'ATTTTCCCCCCC', 'ATTTTCCCCCCG', \
-	'AAATCCCCG', 'AAATCCCCC', 'AAAAAAAAAAAT', 'AAATTTTTTG', 'ATTTTTTCGGG', \
-	'AAATTTTTTC', 'TCGGGGGGGGGG', 'AAAAAAAAAAAA', 'AAAAAAAAAAAC', \
-	'TTTCGGGGGGGG', 'AAAAAAAAAAAG', 'ATCGGGGGGG', 'TGGGGGGGGG', \
-	'AAATTTTTTT', 'AAAAAAAATCGG', 'AAAAAAAGG', 'TTTTTTTTTCGG', \
-	'AAAAAATTTTTC', 'AAAATGGGGGGG', 'AATTTTGGGGGG', 'ATTTTTGG', \
-	'AGGGGGGGG', 'AAAAAACGGGGG', 'AAATCGGG', 'ATTTCCCCCCG', 'TCCCCCCCGGGG', \
-	'ATTTCCCCCCC', 'AATCCCGG', 'ACCCCCCCGGG', 'AAAATTCCCCGG', \
-	'AAAATTTTTTT', 'AATCCCCGG', 'TTTTCCCCGGGG', 'AAAAAAGGG', 'AAAATTTTTTG', \
-	'AAAATTTTTTC', 'AAATTTTCCCGG', 'AATCGGGGGG', 'TTTTCCC', 'TTTTCCG', \
-	'AAACCCCCG', 'AAACCCCCC', 'AAATTTTTGGGG', 'AAAAACCCGG', 'AAAAAATCGG', \
-	'TTTTCCCCG', 'TTTTCCCCC', 'AAAAAATGGGG', 'ATTTTCG', 'TTTTTTCCGGG', \
-	'TTCGG', 'TTTTTCCGG', 'AAATTTCCCCGG', 'TTTCCCCCGGG', 'ATCCGGGG', \
-	'AAAATTCCGGG', 'ATTTTTTTCG', 'AAAAATTGG', 'AAAAAATTCGG', 'AAAATTGGG', \
-	'AAATTCGGG', 'AAAAT', 'TCGGGG', 'AAAAA', 'AAAAC', 'AAATCGGGGGG', \
-	'AAAAG', 'AAATTTCCCGGG', 'TTTTTGG', 'AGGGGGG', 'TTTCCCCCCCG', \
-	'TTCCGGG', 'TTTCCCCCCCC', 'AAATTTTCCCC', 'ATTCCCC', 'AAATTTTCCCG', \
-	'TTTTTTTTCCG', 'ATTCCCG', 'AAATCCCCCG', 'TTTTGGGGGGGG', 'AAATCCCCCC', \
-	'AAATTCGGGG', 'CCCCCCCCG', 'AATCGG', 'AAAAAATTTCCG', 'AAATCCGGGG', \
-	'AAAAAAAAAACC', 'AAAAACGGGGGG', 'AACCC', 'AAAAAT', 'AACCG', \
-	'AAAAAAAAAACG', 'AAATTTTTTGG', 'ATTTCCCCGGG', 'AAAAAA', 'AAAAAC', \
-	'AAAAAG', 'ATTTTCCGGGGG', 'ATTTTTCGGG', 'TTTTTTTTTTT', 'ACCCGG', \
-	'TTTTTTTTTTC', 'TTTTTTTTTTG', 'TTTTTTTGG', 'AATTTCCGGGG', \
-	'TTTTTTTCCCG', 'AATGGGGGG', 'GGGGGGGGGGG', 'AACCCCCCC', 'AACCCCCCG', \
-	'ACCCCCCCCCCG', 'AAATTCCCCGGG', 'ACCCCCCCCCCC', 'ATTTTTTCCCGG', \
-	'ATTTGGGG', 'AATGGGGGGGGG', 'AAAAAAAATTGG', 'ATCCCCGG', 'AATTCGGGGGG', \
-	'ATTCCCCCGGG', 'ATTGGGGG', 'ATTTTTTTCGG', 'AAAAATCCCCGG', 'ATTTTTTT', \
-	'AAATTTTGGGG', 'TTCCCCGG', 'ATTTTTTC', 'TCGGGGGGG', 'ATTTTTTG', \
-	'AGGGGG', 'ACCCCCCGG', 'AAAATGGG', 'AAAAAAAGGG', 'AAAATTTGGGG', \
-	'AAATTTCCC', 'AAATTTCCG', 'TCG', 'TTTGGGGGGGG', 'TCC', 'ATCCCGGGGG', \
-	'TTTTTTTTGG', 'TTTCCGGGG', 'ATTTTCC', 'AATCCGGGGG', 'AAGGGGGGGGGG', \
-	'ATTTTTTGGGGG', 'AAAAAAATT', 'AAATTGGGGGG', 'AATTTTTTCGGG', 'CCCCCCGG', \
-	'AAAAAAATG', 'AAAAAAATC', 'AAAATTTTTGG', 'ATTTGGGGGGG', 'AAATTCCCCCCC', \
-	'AAATTCCCCCCG', 'AACCCGGGG', 'AAAAATCCCGG', 'AAAAAAAAATGG', 'AAATTCGG', \
-	'AAACCCCCCCCC', 'AAACCCCCCCCG', 'AAAAAACCCCCC', 'AAATTTTTTTCG', \
-	'AAAAAACCCCCG', 'TTTTCGGGG', 'AAATTTTTTTCC', 'ATCCGGGGG', 'AAACCGGGGG', \
-	'AAATTTTTTCCG', 'AAATTTTTTCCC', 'TTTTTCCC', 'CCCGGGGGG', 'TTTTTCCG', \
-	'AAAATCCCCCG', 'AAAATCCCCCC', 'CCCCCGG', 'TTTTTTTCGGG', 'AAAAAAAAGGGG', \
-	'TCCCCCG', 'TCCCCCC', 'TCCCCG', 'TCCCCC', 'AAAAAAAAAGG', \
-	'AAAACCCGGGGG', 'TTTTTTGG', 'ACCCCGGGGGG', 'GGGGGGGGGGGG', \
-	'AAATTTTTTGGG', 'AATTTCGGGGGG', 'AAAAAAATTCG', 'AAAAAAATTCC', \
-	'TTTCCCCGGGGG', 'TTTTTTTTGGGG', 'AAATTTGGGGG', 'ACCCGGGGG', \
-	'ATCCCCGGGGG', 'AAATTTTTTTT', 'AAAATTTTTGGG', 'TTTTCGGG', \
-	'AAATTTTTTTC', 'AACCCCCGGGG', 'AAATTTTTTTG', 'AAAAATTTC', 'AAAAATTTG', \
-	'ATTTTTTTTGGG', 'TTCCCCCCCCGG', 'GGGGGGGGGG', 'AAAAATTTT', \
-	'ATTTTTTGGG', 'TTTTTTTCGG', 'AAATTCCCGG', 'AATTTTTCCCGG', \
-	'AAAAATTCGGG', 'AAAATTTTCGG', 'CCG', 'AACGGG', 'CCC', 'AAAAAAATTTGG', \
-	'TTTTCCCG', 'AAAAAATCC', 'TTTTCCCC', 'AAAAAATCG', 'AAATTCGGGGG', \
-	'TTTTTTCGGG', 'AATGGGGGGG', 'AATTTCC', 'ACCCGGGGGGGG', 'AATTTCG', \
-	'AAAAACGGGG', 'TTTTC', 'AAATTTCGGGGG', 'AACCGGG', 'AATTTCCGGG', \
-	'AACCCCGGGGG', 'AAAATTTTC', 'ATTTCCCC', 'AAAAAACCCGGG', 'ATTTCCCG', \
-	'TTTTCCCGGG', 'AAAAAATCCGG', 'TTTTTTTTCGG', 'CCCCCCCGG', \
-	'AATTTTTTTGGG', 'AATCCCCCCGGG', 'ATTCCCCCCCG', 'AAAAAACGGGG', \
-	'AAAGGGGGGG', 'ATGGGGGGGGGG', 'ATTTTTCCCCCC', 'ATTTTTCCCCCG', \
-	'TTTTGGGGGG', 'AACCCGGGGGG', 'AATTCCCG', 'AATTCCCC', 'AAAATTTCCGGG', \
-	'AAAATTCCCGGG', 'TTCCCCCCCGG', 'AATCGGGG', 'AAAAAATCCCCG', 'ATCCCCGGG', \
-	'ACC', 'TTTTTTCCCG', 'TTTCCCGGGGGG', 'ACG', 'TTTTTTCCCC', \
-	'ATTTTCCCGGG', 'ATCCCCCCGG', 'AAAAATTTTCG', 'AAATTTGG', 'AAAAATTTTCC', \
-	'TTTCCCCGG', 'CCCCGGGG', 'AAAAAAGGGGG', 'TTTTTGGGGG', 'ATTTTGG', \
-	'AATCCCCCCCC', 'AATCCCCCCCG', 'AATTTCCCCCGG', 'AAAACCGG', 'TTCCGGGGGG', \
-	'AAAAAAATTTCC', 'TTTTTTCCCGG', 'AAAAAAATTTCG', 'ACCCGGG', 'AAATTTTTC', \
-	'TTTTTTTTTTTC', 'AAATTTTTG', 'TTTTTTTTTTTG', 'ATTCCCGG', 'TCCGG', \
-	'TTTGGGGGGGGG', 'AAAATTCGG', 'AAAAAAACCG', 'AAATTTCCGGG', \
-	'TTTTTTTTTTTT', 'AAAAAAACCC', 'AAACG', 'ATTTCCCCGGGG', 'AAACC', \
-	'ATGGGGGGGG', 'AAAGGGGGGGGG', 'AAAAAGG', 'AAACGGGGGGG', 'TTGGGGGGGG', \
-	'AAATTTTCGG', 'CCCGGGG', 'TTCCCGG', 'TT', 'AAAAATTT', 'AAAAAATTTCCC', \
-	'AAAAATTG', 'TG', 'AAAAATCCGG', 'AAAAATTC', 'TC', 'AAAAAGGGGGG', 'AC', \
-	'AG', 'ATCCCCCCG', 'ATCCCCCCC', 'AT', 'AAAATTTCCGG', 'TTCCGGGG', \
-	'ACCCCGGGG', 'AAAATTTGGGGG', 'AAATGGGGGGGG', 'AACCCCCGGG', \
-	'AATTTTTCGG', 'AAAAATCGGGGG', 'AGGGGGGGGG', 'ACCCG', 'ATCCCCG', \
-	'ACCGGGGGGGGG', 'ATCCCCC', 'AAATCG', 'AAATCC', 'AAAAAACCCGG', \
-	'AAATTTCCCCG', 'TTTTTTGGGGGG', 'AAATTTCCCCC', 'AAATGGGGGGG', \
-	'AAATTTTGGGGG', 'TCCCCCCCCCG', 'TCCCCCCCCCC', 'TTTTTGGGG', \
-	'ATTCCCCCCGG', 'AAAACC', 'AAAATCCCCG', 'AAAAAATTTTTT', 'AAAACG', \
-	'AAAATCCCCC', 'AAACGGGGG', 'ATTGGGG', 'CCGGGGG', 'ATTTTTTTCC', \
-	'AAAAAATG', 'AAAAAAAATCG', 'TTCCCCCCCC', 'AAAAAAAATCC', 'TTCCCCCCCG', \
-	'AGGG', 'TTTTTTTCCCC', 'AATTCCGGG', 'ATCCCCCCCGG', 'TTTTTCGGGGGG', \
-	'AAAATCCCCGGG', 'ATCCCCCGGGG', 'AAATTTTTCGGG', 'AATTTTTTGGG', \
-	'AAATCCCCCGGG', 'AAACCCGGGGG', 'AATCCCGGGG', 'AAATTGG', 'AAAAATTTGG', \
-	'AAAACCGGGG', 'AAAATTTTTC', 'ACCCCCCCCC', 'CCCGGG', 'AAAATTTTTG', \
-	'ACCCCCCCCG', 'CCCCGGGGGGGG', 'GGG', 'AAAATTTTTT', 'AAAAAACCGG', \
-	'AATTC', 'AAAAAAATCGGG', 'ATTTTTCCCCC', 'ATTTTTCCCCG', 'ACCCC', \
-	'TTTTTTTTTTCG', 'AATTGGGGG', 'TTTTTTTTTTCC', 'ATTTTCCC', 'ATTTTCCG', \
-	'AAAAACCCCGG', 'AAAATTTGG', 'AATTCCCGGGG', 'AAAAGGGGG', 'TCCCCCCCCG', \
-	'TCCCCCCCCC', 'AACCCCCCCGG', 'ATCCCGGG', 'AAACCCCGGG', 'GGGG', \
-	'AATCCCCCCC', 'AATCCCCCCG', 'AAATTTTTCCC', 'TTCCCGGGGGGG', \
-	'AAATTTTTCCG', 'AAATTTTT', 'TGGGG', 'AAAAAAAACGG', 'AATTCGGGGG', \
-	'AAATTTTG', 'AAATTTTC', 'AAACCCG', 'AAAAATTTTTGG', 'AAACCCC', \
-	'TCCCGGGGG', 'TTTTTCCCCCG', 'AAATTCCGG', 'AATCC', 'AATCG', 'AATTCGGGG', \
-	'AAAAAACC', 'AAAAAACG', 'TTCCCCCGGG', 'AAAATTTTCCCG', 'AAAATTTTCCCC', \
-	'TTCCCCCCCGGG', 'AAACCGGGG', 'GGGGG', 'AATCCCC', 'AATTTTGGG', \
-	'AATCCCG', 'AATTGGGGGGGG', 'TTTTCCCCGG', 'AAAAAATCGGG', 'AAATTCCGGG', \
-	'ATTTCCCCCCGG', 'AACCGG', 'AAAAATG', 'AAAAATC', 'AAAACCCCGG', \
-	'TTTTTTTTCCCC', 'AAAAATT', 'AATTTTTTTTG', 'AGGGGGGGGGGG', 'TCCGGGG', 
-	'AAAAAATTGG', 'AAAAAAACCGGG', 'TGGGGGGGGGG', 'AACCCGG', 'AAAAGGGG', \
-	'AATTTCCCGG', 'ACCCCCGGGGG', 'AAAATCGGGG', 'ACCCCCCGGG', 'AATTTGGGGGG', \
-	'TTCCCCCCGGG', 'AATTTGGGGG', 'AATTTTTCCCCG', 'TTTTTTTTGGG', 
-	'AAAAAAATGG', 'CCCCCCGGG', 'AAATTCCCCCG', 'AAAATCGGGGGG', \
-	'AAATTCCCCCC', 'AAAAAATTTCC', 'AAAAAATTTCG', 'AATTTTTCCCCC', \
-	'TTTTTCCCCCC', 'ATTCCCCGGGG', 'AAAATTTTCGGG', 'CCGG', 'AAAAAGGG', \
-	'AACCCCCCGG', 'AAACCCCCCG', 'AAACCCCCCC', 'ATTTTTTTTTTC', \
-	'AAAATTTCCCGG', 'TTTCCCCCCGGG', 'ATTTTCCCG', 'ATTTTCCCC', 'AAGG', \
-	'AAAAAAAATCCG', 'AAAAAAAATCCC', 'AAATCCGGGGG', 'ATTTTCCCCGG', 'CCGGG', \
-	'TTTTCGGGGG', 'TTTCCCGGG', 'AAAAATTTTTTC', 'AAAAATTTTTTG', 'ACGGGGGG', \
-	'ATTCCCCCCGGG', 'ATTTTTTTTCC', 'ATTTTTTTTCG', 'ATCCCCCCCGGG', \
-	'AAATTTT', 'AATT', 'AAAAATTTTT', 'AAAAAATTCC', 'TTTCCCCCGG', \
-	'AAAAAATTCG', 'AATGGG', 'ACCCCGG', 'AATC', 'AAATTTG', 'TCCCCCGGGG', \
-	'AAATTTC', 'TTCGGGGGGGG', 'AAAAATTTTG', 'AAAAATTTTC', 'AAG', 'AAA', \
-	'ACGG', 'AAC', 'AAATTGGGGG', 'AAT', 'TTTTTTTTTCCC', 'TTTTTTCCCGGG', \
-	'ATCCCCCCGGG', 'AACGGGGGG', 'TTTTTC', 'AATTTTTT', 'TTTTTG', \
-	'CCGGGGGGG', 'AATTTTTG', 'AATTTTTC', 'TTTTTT', 'AAAATTTCCG', \
-	'AAAATTTCCC', 'AATTTTTTGGGG', 'AAAATTTTTTGG', 'AATCCCCCC', 'AATCCCCC', \
-	'AACCGGGGGGG', 'TTTCCGG', 'AATCCCCG', 'TTTTCCCCGGG', 'AAAGGGGGG', \
-	'AATCCCCCG', 'ATCCCGGGGGGG', 'AAAAAAAAACCG', 'AAAAAAAAACCC', \
-	'AATCCCCGGGGG', 'AAAAATTCCGG', 'ACCCCCCCGGGG', 'ATTTTTGGGGGG', \
-	'TTTTCGG', 'ATTTTTTCCGGG', 'AAAAATTTTCCC', 'AGGGGGGG', 'AAACCCCGG', \
-	'AAAATTTTGG', 'AAAAATTCG', 'ATTTCCG', 'AAAAATTCC', 'AAAAAACCGGG', \
-	'AACCCGGGGG', 'TTTTTTTGGGGG', 'AAAAAATGGGGG', 'ATTTTTCGG', 'TTTCGGGG', \
-	'TCCCGGGGGGGG', 'AAATTTTTCCGG', 'TTTTTCC', 'TTTTTCG', 'AACGGGG', \
-	'AATTTCGGGG', 'AAAAATTTCCGG', 'AAATTTTCCGG', 'AATTTTTGGGGG', \
-	'TTTTCCGGGG', 'AATTCCCGG', 'ATTCCGG', 'AAAATCCGG', 'ATTTTCGGGG', \
-	'AATTTCGGG', 'ACCGGG', 'AATCCC', 'AATTTGGG', 'AATCCG', 'TTCCGGGGGGGG', \
-	'TGGG', 'AAATCCCCCCGG', 'AAAATCCCCCGG', 'AATTTTTTCGG', 'ATTCCCCCGGGG', \
-	'AAATTTTTTCC', 'AAATTTTTTCG', 'AAAAAATCCCGG', 'AAAATCCGGGGG', \
-	'TCCCGGGGGG', 'ACCCCC', 'TTTTTTTCCGG', 'AAAAAATTTTG', 'ACCCCG', \
-	'AATTTTTCCG', 'CCCCCCCCCCG', 'AATTTTTCCC', 'CCCCCCCCCCC', 'AAAAAAATTC', \
-	'AACCCCCGG', 'AAAAAAATTG', 'TTTTTTTCG', 'TTTTTTTCC', 'CCCCGG', \
-	'AACGGGGGGG', 'ACCCCCCCCCGG', 'AAAAAAATTT', 'CCCCCCCCCCGG', \
-	'ATTCCCGGG', 'ATTCGGGGGGG', 'AAATTCGGGGGG', 'AAAAAAATCCGG', \
-	'AAAAATTGGGG', 'TCGGGGG', 'AAGGGG', 'ATTTTTTCCCCC', 'ATTTTTTCCCCG', \
-	'TCCGGGGGGGGG', 'AAAAACCCGGG', 'AATCCCCGGGG', 'AAAAATTGGG', \
-	'ACCCGGGGGGG', 'ATTTCCCGGGGG', 'AACG', 'AAAAATCCCCCG', 'AAAAATCCCCCC', \
-	'AAACGGGGGG', 'TTTTCG', 'AACCCCCCGGG', 'TTTTCC', 'AAAAACCCCCCC', \
-	'ATTTTTCGGGG', 'AAAAAAAAGGG', 'AAAAAATTCCCC', 'TTTTCGGGGGG', \
-	'TTCCCCCC', 'ACCCCCCCC', 'AAAGGGGGGGG', 'TTCCCCCGGGGG', 'AAAAAACGGG', \
-	'AAATTTTGG', 'CCCCCCCGGGG', 'AAGGGGG', 'CCCCCCCCGGGG', 'TCCCGG', \
-	'AAAAAAACGGG', 'AAAAATCCCCG', 'AAAAATCCCCC', 'AATTTTCGG', \
-	'ATTCCCCGGGGG', 'AAAAAAAAATCG', 'AAAAAAAAATCC', 'CGGGGGG', \
-	'AAATTTTTTTGG', 'TTTTTTTTCCGG', 'AAATTTCGG', 'AAAAACGGG', \
-	'AAAAATTTTGGG', 'AATTTTCCCGGG', 'AAATTTTTTCGG', 'AAAAAAACCCGG', \
-	'AAAACGGGGGGG', 'AAAAAAAA', 'AATCGGGGGGGG', 'AAAAAAAC', 'AAAAAAAG', \
-	'TTCCCGGGGGG', 'AAATTTTTCC', 'ACCCCGGG', 'AAATTTTTCG', 'AAAAAAAT', \
-	'AAAAATTTTCCG', 'CCCCCCG', 'TCCCCGG', 'CCCCCCC', 'AATTTTCCCG', \
-	'ATCGGGG', 'ATTTTCCGGGG', 'AACCCCCCGGGG', 'AAAGGGG', 'AAAATTGGGG', \
-	'AAAATGGGG', 'AATTTTCG', 'ATCGGGGGGGGG', 'AATTTTCC', 'ACGGGGGGGG', \
-	'AAAAACGG', 'ATTTTGGGGG', 'ATTTTTTTCGGG', 'CCCCCCCCCC', 'TTTCCCCCCCGG', \
-	'CCCCCCCCCG', 'AAAAACCCCCCG', 'ATCGGGGGG', 'AATTTTTTTTGG', \
-	'TTTTTTTTTG', 'AAAATTGGGGG', 'AATTTTTTTTC', 'AAAATCCCGGGG', \
-	'AATTTTTTTTT', 'TTTTTTTTTGG', 'AAAAAATGG', 'AAAATTTTCCC', \
-	'AAAATTTTCCG', 'AATTTTTTG', 'AATTTTTTC', 'AAATCCCCGGGG', 'CGG', \
-	'AGGGG', 'CCCGG', 'CCCCGGGGG', 'ATTCCGGG', 'AAAATTTTGGGG', 'AATTTTTTT', \
-	'AAAAAAATTGG', 'AAAAAATTG', 'ATTTCCGG', 'ATTTCCC', 'AATTTTCCCCCG', \
-	'AATTTTCCCCCC', 'AAATCGGGGG', 'ATTTCGGGGGG', 'ATTTCGGGGGGG', \
-	'TTTTCCGGGGGG', 'ACCGGGGGG', 'AATCGGGGGGG', 'AATTCCCCCCC', \
-	'CCCCCCGGGGG', 'AATTCCCCCCG', 'AAAAAAATGGGG', 'AAATTCCGGGG', \
-	'TTTTTTTGGG', 'AAAATTTCGGG', 'TTTTTTCCCCGG', 'ATTTGGG', 'TTCGGGG', \
-	'AAATCCCCCGG', 'AACCCGGGGGGG', 'ATTCGGG', 'AAATCCG', 'AAATCCC', \
-	'ATTTTTCCCCGG', 'TTTTCCCCCGG', 'TTTTTTCG', 'ATTTTGGGG', 'AAAATTCCCCC', \
-	'TTCGGGGGGGGG', 'AAACCCGGGGGG']
+def start_repeat_finder(started_via_commandline):
+
+
+	global ssr_list
+	ssr_list = ['AAAATTC', 'ATCCCCCCCG', 'AAAATTG', 'ATCCCCCCCC', 'AAATCCCGGGGG', 'AGG', 'ATTCCCCC', 'AAAATTT', 'AATTTTTTCCCC', 'AATTTTTTCCCG', 'TTTTGGG', 'AAACCCCCGGG', 'AAAAATTTGGGG', 'ATTCCCCCCCGG', 'AAAACCCCGGGG', 'ATTCCCCG', 'AAACCCGGG', 'AATCCCGGGGGG', 'AAAACCCGGG', 'AAAATTCCG', 'ATTCCCCGG', 'ATTTCCCCCGGG', 'GG', 'AATTCGGGGGGG', 'ATTTTCCCCGGG', 'TTTCCGGGGGG', 'TTTTTTTGGGG', 'AATCGGGGG', 'TTTGGGGGGG', 'AAAAAAAACGGG', 'CCGGGG', 'TTTTTTCCCCC', 'ATTCCG', 'AATTTCCGGGGG', 'ATTCCC', 'TTTTTTTCCCCC', 'AAAAAAACGGGG']
+	global max_similarity 
 	max_similarity = 0.5
-	pcr_location = './'
+	global pcr_location
 
 	###########################
 	###########################
@@ -1152,8 +786,10 @@ def start_repeat_finder():
 	max_threads = 1
 	global remove_temp_files
 	remove_temp_files = False
-	
-	import_parameters()
+	if started_via_commandline:
+		import_parameters()
+	else:
+		print ''
 	
 	parameters_legal = False
 	
@@ -1189,16 +825,21 @@ def start_repeat_finder():
 	if parameters_legal == False:
 		exit()
 	
+	#location of hg18.2bit
+	pcr_location = gfPCR[0:len(gfPCR) - len('gfPCR') ]
 	
 	#########################################
 	#passed all tests, now program can start#
 	#########################################
 	
 	###multiprocess
-		print 'program started, please be patient'
+	print 'program started, please be patient'
 	p = Pool(processes = max_threads)
 
+	fasta_file = open(fasta_filename, 'ru')
 	sequences = []
+	final_output = open(output_filename, 'w')
+
 	for line in open(fasta_filename, 'ru'):
 		if line.startswith('>'):
 			sequences.append(line)
@@ -1206,6 +847,8 @@ def start_repeat_finder():
 			sequences[-1] += line
 
 	results = p.map(get_primers, sequences)
+	#results = get_primers(sequences[0])
+	print results
 	output = []
 	stdoutput = []
 	for a in results:
@@ -1219,9 +862,8 @@ def start_repeat_finder():
 	fasta_file.close()
 
 	print 'done'
-
 if __name__ == "__main__":
-	start_repeat_finder()
+	start_repeat_finder(True)
 
 
 #Versions
