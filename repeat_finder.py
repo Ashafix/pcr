@@ -3,6 +3,33 @@ import os
 from subprocess import Popen, PIPE
 import subprocess
 from multiprocessing import Pool
+import logging
+
+#
+#http://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
+#
+class StreamToLogger(object):
+	"""
+	Fake file-like stream object that redirects writes to a logger instance.
+	"""
+	def __init__(self, logger, log_level=logging.INFO):
+		self.logger = logger
+		self.log_level = log_level
+		self.linebuf = ''
+ 
+	def write(self, buf):
+		for line in buf.rstrip().splitlines():
+			self.logger.log(self.log_level, line.rstrip())
+
+	def flush(self):
+		return ''
+
+logging.basicConfig(
+	level = logging.DEBUG,
+	format = '%(asctime)s:%(levelname)s:%(name)s:%(message)s',
+	filename = "python.log",
+	filemode = 'a'
+)
 
 #prints help
 def print_help():
@@ -28,11 +55,22 @@ def print_help():
 #tests the gfServer and returns True if the server is working
 def test_server(gfServer, servername, serverport):
 
-	process = Popen([gfServer,'status', servername, str(serverport)], stdout = subprocess.PIPE, stdin = subprocess.PIPE)
-	x = process.communicate()[0]
-	if x.startswith('Couldn'):
+	#old code, can be removed later
+	#process = Popen([gfServer,'status', servername, str(serverport)], stdout = subprocess.PIPE, stdin = subprocess.PIPE, stderr = subprocess.PIPE, shell = True)
+	#x = process.communicate()[0]
+	
+	command_line = gfServer + ' status ' + servername + ' ' + str(serverport)
+	try:
+		gfServer_response = subprocess.check_output([command_line], shell = True, stderr = subprocess.STDOUT)
+	except:
 		return False
-	elif x.find('version') >= 0 and x.find('port') >= 0 and x.find('host') >= 0 and x.find('type') >= 0:
+	
+	if gfServer_response.startswith('Couldn'):
+		return False
+	elif gfServer_response.find('version') >= 0 and \
+		gfServer_response.find('port') >= 0 and \
+		gfServer_response.find('host') >= 0 and \
+		gfServer_response.find('type') >= 0:
 		return True
 	else:
 		return False
@@ -81,7 +119,7 @@ def import_parameters(*arguments):
 	global output_filename
 	global max_threads
 	global remove_temp_files
-
+	
 	if len(sys.argv) > 1:
 		if str(sys.argv).find('-help') > -1:
 			print_help()
@@ -90,11 +128,19 @@ def import_parameters(*arguments):
 			input_args = sys.argv
 	else:
 		input_args = []
-		for argument in arguments:
-			input_args.append(arguments)
-
+		#print arguments[0][0]
+		for argument in arguments[0][0]:
+			#print argument
+			input_args.append(argument)
+	print len(input_args)
+	print input_args[0]
+	print input_args[1]
+	print input_args[2]
+	print input_args[3]
+	print input_args[4]
 	for i in xrange(len(input_args)):
 		if str(input_args[i]).upper() == '-FASTA':
+			print 'yeah'
 			fasta_filename = input_args[i + 1]
 		elif str(input_args[i]).upper() == '-PRIMER3_SETTINGS' or \
 			str(input_args[i]).upper() == '-PRIMER_SETTINGS':
@@ -124,7 +170,8 @@ def import_parameters(*arguments):
 			max_threads = int(input_args[i + 1])
 		elif str(input_args[i]).upper() == '-REMOVETEMPFILES':
 			remove_temp_files = bool(input_args[i + 1])
-
+	print "fata"
+	print fasta_filename
 	if (fasta_filename == '' or \
 		standard_primer_settings_filename == '' or \
 		primer3_directory == '' or \
@@ -134,8 +181,7 @@ def import_parameters(*arguments):
 		max_repeats == -1 or \
 		gfServer == '' or \
 		gfPCR == '' or \
-		abs(nested) > 1) and \
-		len(arguments) == 0:
+		abs(nested) > 1):
 		print fasta_filename
 		print standard_primer_settings_filename
 		print primer3_directory
@@ -525,7 +571,6 @@ def get_primers(sequence):
 	stdoutput += 'Primer3 finished\n'
 	primer3_list = []
 
-	
 	for lines in primer3_output.split('\n'):
 		if lines.startswith('SEQUENCE_ID'):
 			primer3_list.append(lines)
@@ -588,9 +633,6 @@ def get_primers(sequence):
 					#if the pair is accepted it will be written to the output file
 					if accept_primerpair and nested != 1:
 						accepted_primers.append(primerF + ',' + primerR)
-						x = open('tmp.txt', 'w')
-						x.write('1'+stdoutput)
-						x.close()
 						output += make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output)
 						stdoutput += output + '\n'
 					#v1.03
@@ -742,8 +784,7 @@ def get_primers(sequence):
 
 
 
-def start_repeat_finder(started_via_commandline):
-
+def start_repeat_finder(started_via_commandline, *arguments):
 
 	global ssr_list
 	ssr_list = ['AAAATTC', 'ATCCCCCCCG', 'AAAATTG', 'ATCCCCCCCC', 'AAATCCCGGGGG', 'AGG', 'ATTCCCCC', 'AAAATTT', 'AATTTTTTCCCC', 'AATTTTTTCCCG', 'TTTTGGG', 'AAACCCCCGGG', 'AAAAATTTGGGG', 'ATTCCCCCCCGG', 'AAAACCCCGGGG', 'ATTCCCCG', 'AAACCCGGG', 'AATCCCGGGGGG', 'AAAACCCGGG', 'AAAATTCCG', 'ATTCCCCGG', 'ATTTCCCCCGGG', 'GG', 'AATTCGGGGGGG', 'ATTTTCCCCGGG', 'TTTCCGGGGGG', 'TTTTTTTGGGG', 'AATCGGGGG', 'TTTGGGGGGG', 'AAAAAAAACGGG', 'CCGGGG', 'TTTTTTCCCCC', 'ATTCCG', 'AATTTCCGGGGG', 'ATTCCC', 'TTTTTTTCCCCC', 'AAAAAAACGGGG']
@@ -786,16 +827,26 @@ def start_repeat_finder(started_via_commandline):
 	max_threads = 1
 	global remove_temp_files
 	remove_temp_files = False
+	
+	
 	if started_via_commandline:
 		import_parameters()
 	else:
-		print ''
-	
+		stdout_logger = logging.getLogger('STDOUT')
+		sl = StreamToLogger(stdout_logger, logging.INFO)
+		sys.stdout = sl
+ 
+		stderr_logger = logging.getLogger('STDERR')
+		sl = StreamToLogger(stderr_logger, logging.ERROR)
+		sys.stderr = sl
+		import_parameters(arguments)
+
 	parameters_legal = False
 	
 	if not os.path.isfile(fasta_filename):
 		print 'Fasta file could not be found'
 		print fasta_filename
+		print "@@@@@@@@@"
 	elif not os.path.isfile(standard_primer_settings_filename):
 		print 'Primer3 settings file could not be found'
 		print standard_primer_settings_filename
@@ -838,7 +889,7 @@ def start_repeat_finder(started_via_commandline):
 
 	fasta_file = open(fasta_filename, 'ru')
 	sequences = []
-	final_output = open(output_filename, 'w')
+	final_output = open('/tmp/' + output_filename, 'w')
 
 	for line in open(fasta_filename, 'ru'):
 		if line.startswith('>'):
@@ -848,7 +899,6 @@ def start_repeat_finder(started_via_commandline):
 
 	results = p.map(get_primers, sequences)
 	#results = get_primers(sequences[0])
-	print results
 	output = []
 	stdoutput = []
 	for a in results:
@@ -862,6 +912,8 @@ def start_repeat_finder(started_via_commandline):
 	fasta_file.close()
 
 	print 'done'
+	sys.stdout = sys.__stdout__
+	return ''.join(output)
 if __name__ == "__main__":
 	start_repeat_finder(True)
 
