@@ -4,6 +4,7 @@ from subprocess import Popen, PIPE
 import subprocess
 from multiprocessing import Pool
 import logging
+import ConfigParser
 
 #
 #http://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
@@ -30,6 +31,61 @@ logging.basicConfig(
 	filename = "python.log",
 	filemode = 'a'
 )
+
+#reads the config file with all global entries
+def read_configfile():
+
+	standard_primer_settings_filename = ''
+	primer3_directory = ''
+	primer3_exe = ''
+	servername = ''
+	serverport = ''
+	gfServer = ''
+	gfPCR = ''
+	data_dir = ''
+	
+	config = ConfigParser.ConfigParser()
+	config.read('data/batchprimer.conf')
+	for section in config.sections():
+		for option in config.options(section):
+			if option.upper() == 'PRIMER3_SETTINGS':
+				standard_primer_settings_filename = config.get(section, option)
+			elif option.upper() == 'PRIMER3_DIRECTORY':
+				primer3_directory = config.get(section, option)
+			elif option.upper() == 'PRIMER3_EXE':
+				primer3_exe = config.get(section, option)
+			elif option.upper() == 'SERVERNAME':
+				servername = config.get(section, option)
+			elif option.upper() == 'SERVERPORT':
+				serverport = config.get(section, option)
+			elif option.upper() == 'GFSERVER':
+				gfServer = config.get(section, option)
+			elif option.upper() == 'GFPCR':
+				gfPCR = config.get(section, option)
+			elif option.upper() == 'DATADIR':
+				data_dir = config.get(section, option)
+			else:
+				print ('getConfig: unknown conf entry: ' + option)
+	if standard_primer_settings_filename == '' or \
+		primer3_directory == '' or \
+		primer3_exe == '' or \
+		servername == '' or \
+		serverport == '' or \
+		gfServer == '' or \
+		gfPCR == '' or \
+		data_dir == '':
+		print ('getConfig: Missing entry')
+		return ''
+	else:
+		return {'PRIMER3_SETTINGS': standard_primer_settings_filename, \
+			'PRIMER3_DIRECTORY':primer3_directory, \
+			'PRIMER3_EXE':primer3_exe, \
+			'SERVERNAME':servername, \
+			'SERVERPORT':serverport, \
+			'GFSERVER':gfServer, \
+			'GFPCR':gfPCR, \
+			'DATADIR':data_dir}
+
 
 #prints help
 def print_help():
@@ -119,8 +175,10 @@ def import_parameters(*arguments):
 	global output_filename
 	global max_threads
 	global remove_temp_files
+	global data_dir
+	data_dir = './'
 	
-	if len(sys.argv) > 1:
+	if len(sys.argv) > 1 or len(arguments) == 0:
 		if str(sys.argv).find('-help') > -1:
 			print_help()
 			exit()
@@ -128,16 +186,9 @@ def import_parameters(*arguments):
 			input_args = sys.argv
 	else:
 		input_args = []
-		#print arguments[0][0]
 		for argument in arguments[0][0]:
-			#print argument
 			input_args.append(argument)
-	print len(input_args)
-	print input_args[0]
-	print input_args[1]
-	print input_args[2]
-	print input_args[3]
-	print input_args[4]
+
 	for i in xrange(len(input_args)):
 		if str(input_args[i]).upper() == '-FASTA':
 			print 'yeah'
@@ -170,6 +221,9 @@ def import_parameters(*arguments):
 			max_threads = int(input_args[i + 1])
 		elif str(input_args[i]).upper() == '-REMOVETEMPFILES':
 			remove_temp_files = bool(input_args[i + 1])
+		elif str(input_args[i]).upper() == '-DATADIR':
+			data_dir = input_args[i + 1]
+
 	print "fata"
 	print fasta_filename
 	if (fasta_filename == '' or \
@@ -889,7 +943,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
 
 	fasta_file = open(fasta_filename, 'ru')
 	sequences = []
-	final_output = open('/tmp/' + output_filename, 'w')
+	final_output = open(data_dir + output_filename, 'w')
 
 	for line in open(fasta_filename, 'ru'):
 		if line.startswith('>'):
