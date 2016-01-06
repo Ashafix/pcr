@@ -7,20 +7,16 @@
 #
 
 import cgi, os
-import cgitb; cgitb.enable()
-from subprocess import Popen, PIPE
-import subprocess
-import sys
-import os
 from repeat_finder import *
 from random import SystemRandom
-from string import ascii_uppercase
-from string import ascii_lowercase
-from string import digits
+from string import ascii_uppercase, ascii_lowercase, digits
 from shutil import copyfile
 
 global data_dir
 global run_name
+
+html = ''
+sequence_filename = ''
 
 #writes a sequence or sequence file to the data directory
 def write_sequence(sequence):
@@ -33,7 +29,6 @@ def write_sequence(sequence):
 		fasta_file.close()
 	else:
 		return ''
-		pass
 	return fasta_filename
 
 #cleans a fasta nucleotide sequence
@@ -52,19 +47,49 @@ def clean_sequence(sequence):
 			new_sequence += '\n'
 	return new_sequence
 
+
+#checks if a fasta file is correct
+def correct_fasta (sequence):
+	header = False #indicates whether a header was found
+	sequence = sequence.strip()
+	if not sequence.startswith('>'):
+		return False
+	fasta_lines = sequence.split('\n')
+	if len(fasta_lines) < 2:
+		return False
+	for fasta_line in fasta_lines:
+		if fasta_line.startswith('>'):
+			if header == True:
+				return False
+			header = True
+		else:
+			if header == False:
+				return False
+			header = False
+			fasta_line = fasta_line.upper()
+			if not all(nuc in ('ATGC\n\r') for c in fasta_line):
+				return False
+	return True
 config_args = read_configfile()
 data_dir = config_args['DATADIR']
 
 form = cgi.FieldStorage()
 fileitem = form['fastafile']
 
-run_name = ''.join(SystemRandom().choice(ascii_uppercase + digits) for _ in range(6))
-while os.path.isfile(run_name):
+#checks if the sequence is OK
+
+
+#checks if the input file is OK
+
+
+#creates a random name for each run
+run_name = ''
+
+while os.path.isfile(run_name) or run_name == '':
 	run_name = ''.join(SystemRandom().choice(ascii_uppercase + digits) for _ in range(6))
 
-# Test if the file was uploaded
-if fileitem.file:
-	#strip leading path from file name to avoid directory traversal attacks
+# Test if a sequence file was uploaded
+if fileitem.filename:
 	sequence = ''
 	for line in fileitem.file.readlines():
 		sequence += line
@@ -72,10 +97,7 @@ if fileitem.file:
 elif form.getvalue('fastasequence') != '':
 	sequence_filename = write_sequence(form.getvalue('fastasequence'))
 else:
-	message += 'No sequence was provided :('
-
-
-
+	html += 'No valid FASTA sequence was provided :(<br>'
 
 input_args = []
 input_args.append('-FASTA')
@@ -90,10 +112,17 @@ input_args.append('-SERVERNAME')
 input_args.append(config_args['SERVERNAME'])
 input_args.append('-SERVERPORT')
 input_args.append(config_args['SERVERPORT'])
-input_args.append('-MAXREPEATS')
-input_args.append('2')
-input_args.append('-PRIMERPAIRS')
-input_args.append('2')
+if int(form.getvalue('maxrepeats')) > 1 and int(form.getvalue('maxrepeats')) < 7:
+	input_args.append('-MAXREPEATS')
+	input_args.append(form.getvalue('maxrepeats'))
+else:
+	html += 'Error: Please provide a value between 2 and 6 for the repeat length<br>'
+if int(form.getvalue('primerpairs')) > 0 and int(form.getvalue('primerpairs')) < 101:
+	input_args.append('-PRIMERPAIRS')
+	input_args.append(form.getvalue('primerpairs'))
+else:
+	html += 'Error: Please provide a value between 1 and 100 for the number of primer pairs<br>'
+
 input_args.append('-GFSERVER')
 input_args.append(config_args['GFSERVER'])
 input_args.append('-GFPCR')
@@ -102,29 +131,43 @@ input_args.append('-DATADIR')
 input_args.append(config_args['DATADIR'])
 
 #write all input files
+#batchrun name
+if form.getvalue('batchname') != '':
+	name_file = open(data_dir + run_name + '_name.txt', 'w')
+	name_file.write(form.getvalue('batchname'))
+	name_file.close()
 #primer3 settings
 copyfile(config_args['PRIMER3_SETTINGS'], data_dir + run_name + '_primer3.ini')
 #batchprimer settings
+batchprimer_file = open(data_dir + run_name + '_batchprimer.ini', 'w')
+for input_arg in input_args:
+	batchprimer_file.write(str(input_arg) + '\n')
+batchprimer_file.close()
 
-# Test if the file was uploaded
-#message = "oops"
-#message = str(form)
+if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
+	sequence_filename and \
+	not 'Error: ' in html:
 
-message = ''
-
-#message += ' '.join(input_args) + '\n'
-if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 	batchprimer_result = start_repeat_finder(False, input_args)
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	if batchprimer_result != '':
 		result_file.write(batchprimer_result)
 	else:
 		result_file.write('FAILED')
+	#html += '<meta http-equiv="refresh" content="1;url=results.py">\n'
+	html += '<script type="text/javascript">\n'
+	#html += 'window.location.href = "results.py"\n'
+	html += '</script><title>Page Redirection</title></head><body>'
+	html += 'You should be redirected automatically, if not go to the <a href="results.py">results</a>'
+	html += '</body></html>'
+
 	result_file.close()
+elif sequence_filename:
+	html += 'Server is not ready, please try again later.<br>'
 
 print """\
 Content-Type: text/html\n
 <html><body>
 <p>%s</p>
 </body></html>
-""" % (message,)
+""" % (html,)
