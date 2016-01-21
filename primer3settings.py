@@ -2,7 +2,7 @@
 print """\
 Content-Type: text/html\n
 <html><body>
-<p>%s</p>
+<p> </p>
 </body></html>
 
 Primer3 File - http://primer3.sourceforge.net

@@ -1,0 +1,67 @@
+hr
+{
+	margin-top: 1em;
+	margin-bottom: 4em;
+}
+
+table.resulttable
+{
+    border-collapse: collapse;
+    width: 95%;
+    table-layout:fixed;
+}
+
+table.resulttable tr:hover {
+	background-color: #ffa;
+}
+
+table.resulttable th.primer
+{
+	width: 18%;
+
+}
+table.resulttable th.amplicon
+{
+	width: 50%;
+}
+
+table.resulttable th.digits4
+{
+	width: 3%;
+}
+
+table.resulttable th.location
+{
+	width: 10%;
+}
+
+table.resulttable th.size
+{
+	width: 3%;
+}
+
+table.resulttable td
+{
+    padding: 5px;
+    border: 1px solid #AAA;
+	width: 300px;
+	word-wrap:break-word;
+}
+
+tr.head
+{
+    background: #EEE;
+}
+
+table.resulttable td.sequence
+{
+	font-family: "Courier";
+}
+
+table.resulttable td.amplicon
+{
+	font-family: "Courier";
+	word-wrap:break-word;
+}
+
+

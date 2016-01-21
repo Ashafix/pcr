@@ -1,18 +1,122 @@
-<html><body>
-<form enctype="multipart/form-data" action="../cgi-bin/save_file.py" method="post">
-<p>Name your run: <input type="text" name="batchname"</p>
-<p>Specify your Primer3 paramater file or use the standard settings</p>
-<p>Primer3 parameter file: <input type="file" name="primer3file"></p>
-<p>Sequence File: <input type="file" name="fastafile"></p>
-<p>Target Sequence(s): <textarea name="fastasequence"></textarea></p>
-<p>Maximimum length of repeats which are searched: <input type="number" name="maxrepeats" value="3"></p>
-<p>Maximimum number of primers to be returned: <input type="number" name="primerpairs" value="20" min="1" max="100" step="1"></p>
-<p>Maximimum similarity of primer pairs: <input type="number" name="maxsimilarity" value="1"  min="0" max="1" step="0.1"></p>
-<p>Search for nested primers: <input type="checkbox" name="nested" checked>
-<p><input type="submit" value="Submit job" name="Submit job" formaction="cgi-bin/server.py"></p>
-<p><input type="submit" value="Change Primer3 parameters" name="Primer3 settings" formaction="cgi-bin/primer3settings.py"></p>
-<p><input type="submit" value="Test server status" name="Test server status" formaction="../cgi-bin/testserver.py"></p>
-<p><input type="submit" value="Show all results" name="Show all results" formaction="cgi-bin/results.py"></p>
-</form>
+<!DOCTYPE html>
 
-</body></html>
+<html>
+	<head>
+		<title>
+			Input form
+		</title>
+		<style type="text/css">
+			.container {
+				width: 75%;
+				clear: both;
+			}
+			.container input[type="number"] {
+				width: 10%;
+				clear: both;
+				text-align: right;
+			}
+			.container textarea {
+				padding:8px;
+				width:50%;
+				text-align: left;
+				font-family:"courier"
+			}
+			.container li {
+				padding:12px;
+				border-bottom:1px solid #eee;
+				position:relative;
+				list-style-type: none;
+				width:50%;
+			 }
+			.container button {
+				margin-left:20px;
+			}
+			.container label {
+				width:50%;
+				margin-top: 3px;
+				display:inline-block;
+				padding:3px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<li>
+				<input type="submit" value="Change Primer3 parameters" name="Primer3 settings" formaction="cgi-bin/primer3settings.py" />
+			</li>
+			<li>
+				<input type="submit" value="Test server status" name="Test server status" formaction="../cgi-bin/testserver.py" />
+			</li>
+			<li>
+				<input type="submit" value="Show all results" name="Show all results" formaction="cgi-bin/results.py" />
+			</li>
+			<fieldset>
+			<form enctype="multipart/form-data" action="../cgi-bin/save_file.py" method="post">
+				<h2>
+					Please provide all the input parameters for your primer design
+				</h2>
+				<ul>
+					<li>
+						<label>Name your run:</label>
+						<input type="text" name="batchname" />
+					</li>
+					<h3>
+						Specify your Primer3 parameter file, otherwise the standard settings are used
+					</h3>
+					<li>
+						<label>
+							Primer3 parameter file:
+						</label>
+						<input type="file" name="primer3file" />
+					</li>
+					<h3>
+						Paste your sequence(s) in FASTA format (with header) or upload a FASTA file
+					</h3>
+					<li>
+						<label>
+							Sequence File: 
+						</label>
+						<input type="file" name="fastafile" />
+					</li>
+					<li>
+						<label>
+							Target Sequence(s): 
+						</label>
+						<textarea name="fastasequence" cols="60" rows="10"></textarea>
+					</li>
+					<h3>
+						Specify your parameters here
+					</h3>
+					<li>
+						<label>
+							Maximum length of repeats which are searched: 
+						</label>
+						<input type="number" name="maxrepeats" min="2" max="6" value="3" />
+					</li>
+					<li>
+						<label>
+							Maximum number of primers to be returned: 
+						</label>
+						<input type="number" name="primerpairs" value="20" min="1" max="100" step="1" />
+					</li>
+					<li>
+						<label>
+							Maximum similarity of primer pairs:
+						</label>
+						<input type="number" name="maxsimilarity" value="1" min="0" max="1" step="0.1" />
+					</li>
+					<li>
+						<label>
+							Search for nested primers: 
+						</label>
+						<input type="checkbox" name="nested" checked="" />
+					</li>
+					<li>
+						<input type="submit" value="Submit job" name="Submit job" formaction="cgi-bin/server.py" />
+					</li>
+					</fieldset>
+				</ul>
+			</form>
+		</div>
+	</body>
+</html>
