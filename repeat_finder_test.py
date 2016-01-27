@@ -3,6 +3,7 @@
 
 import unittest
 import sys
+#import repeat_finder
 from repeat_finder import *
 
 class TestCustomMethods(unittest.TestCase):
@@ -30,11 +31,30 @@ class TestCustomMethods(unittest.TestCase):
 			self.assertTrue(test_case[1] == exclude_list(test_case[0]))
 		
 	#def import_parameters(*arguments):
-	#def find_repeats(sequence, max_length):
+	def test_find_repeats(self):
+		test_cases = [[12 * 'A', 3, 12 * 'A']]
+		test_cases.append([11 * 'G' + 12 * 'A', 3, 12 * 'A'])
+		test_cases.append([11 * 'G' + 12 * 'A' + 10 * 'C', 3, 12 * 'A'])
+		test_cases.append(['', 1, ''])
+		test_cases.append([3 * 'A', 1, ''])
+		test_cases.append([4 * 'ATGC', 3, ''])
+		test_cases.append([4 * 'AT', 3, 4 * 'AT'])
+		test_cases.append([4 * 'X', 3, ''])
+		test_cases.append([12 * 'A', -1, ''])
+		test_cases.append([3 * 'AAATCCCGGGGG', len('AAATCCCGGGGG'), 3 * 'AAATCCCGGGGG'])
+		test_cases.append([3 * 'AAATCCCGGGGG', 2, 'GGGG'])
+		self.assertEqual(len(ssr_list), 1815)
+		self.assertIn('AAAATTC', ssr_list)
+		self.assertIn('AAACCCGGGGGG', ssr_list)
+		for test_case in test_cases:
+			self.assertTrue(find_repeats(test_case[0], test_case[1]) == test_case[2])
+
 	#def dinucleotide_repeat(sequence):
 	def test_dinucleotide_repeat(self):
-		test_cases = [['', ''], ['', ''], ['', ''], ['', ''], ['', '']]
-		dinucleotide_repeat
+		test_cases = [['ACTAGAGAGTCA', 6], ['TTTTT', 4], ['ATatATAT', 4], ['', 0], ['GGCCGGCC', 2]]
+		for test_case in test_cases:
+			self.assertTrue(dinucleotide_repeat(test_case[0]) == test_case[1])
+
 	#def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
 	def test_makefilename(self):
 		test_cases = [['', ''], ['goodname.txt', 'goodname.txt'], ['/usr/bin/badname.txt', 'usrbinbadname.txt'], ['c:\\dir\\badname.txt', 'cdirbadname.txt'], ['name with spaces', 'name_with_spaces']]
@@ -57,3 +77,5 @@ class TestCustomMethods(unittest.TestCase):
 
 if __name__ == '__main__':
 	unittest.main(module = __name__, buffer = True, exit = False)
+
+
