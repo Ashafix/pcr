@@ -31,8 +31,11 @@ def write_sequence(sequence):
 		return ''
 	return fasta_filename
 
-#cleans a fasta nucleotide sequence
+
 def clean_sequence(sequence):
+	"""
+	cleans a FASTA nucleotide sequence
+	"""
 	new_sequence = ''
 	nucleotides = 'ATGC'
 	legal_header = ascii_lowercase + ascii_uppercase + digits + '_'
@@ -47,9 +50,10 @@ def clean_sequence(sequence):
 			new_sequence += '\n'
 	return new_sequence
 
-
-#checks if a fasta file is correct
 def correct_fasta (sequence):
+	"""
+	checks if a FASTA file is correct
+	"""
 	header = False #indicates whether a header was found
 	sequence = sequence.strip()
 	if not sequence.startswith('>'):
@@ -147,6 +151,11 @@ batchprimer_file.close()
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
 	not 'Error: ' in html:
+
+	input_args.append('-REMOTESERVER')
+	input_args.append('TRUE')
+	input_args.append('-RUNNAME')
+	input_args.append(run_name)
 
 	batchprimer_result = start_repeat_finder(False, input_args)
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
