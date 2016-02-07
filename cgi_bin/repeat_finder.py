@@ -885,8 +885,9 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	max_threads = 1
 	global remove_temp_files
 	remove_temp_files = False
-	
-	
+
+
+	#redirects output if not started via commandline
 	if started_via_commandline:
 		import_parameters()
 	else:
@@ -899,12 +900,12 @@ def start_repeat_finder(started_via_commandline, *arguments):
 		sys.stderr = sl
 		import_parameters(arguments)
 
+	#all input parameters are valid
 	parameters_legal = False
-	
+
 	if not os.path.isfile(fasta_filename):
 		print 'Fasta file could not be found'
 		print fasta_filename
-		print "@@@@@@@@@"
 	elif not os.path.isfile(standard_primer_settings_filename):
 		print 'Primer3 settings file could not be found'
 		print standard_primer_settings_filename
@@ -930,10 +931,10 @@ def start_repeat_finder(started_via_commandline, *arguments):
 		print 'gfServer not ready, please start it'
 	else:
 		parameters_legal = True
-	
+
 	if parameters_legal == False:
 		exit()
-	
+
 	#location of hg18.2bit
 	pcr_location = gfPCR[0:len(gfPCR) - len('gfPCR') ]
 	
