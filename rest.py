@@ -93,9 +93,8 @@ class MyRequestHandler (BaseHTTPRequestHandler) :
 				#waits until at least one CPU is idle
 				#while psutil.cpu_percent() * psutil.cpu_count(logical = False) > 80:
 				#	time.wait(1)
-				
 				#new_thread = threading.Thread(target = primer3_thread, args = primer3_input)
-				threads.append(threading.Thread(target = primer3_thread, args=(primer3_input, run_name)))
+				queue.put(threading.Thread(target = primer3_thread, args=(primer3_input, run_name)))
 				for thread in threads:
 					thread.daemon = True
 					thread.start()

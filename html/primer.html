@@ -6,6 +6,10 @@
 			Input form
 		</title>
 		<style type="text/css">
+			body {
+				background-color: #E0E0E0;
+			}		
+
 			.container {
 				width: 75%;
 				clear: both;
@@ -23,10 +27,10 @@
 			}
 			.container li {
 				padding:12px;
-				border-bottom:1px solid #eee;
+				border-bottom:5px solid #00CCCC;
 				position:relative;
 				list-style-type: none;
-				width:50%;
+				width:75%;
 			 }
 			.container button {
 				margin-left:20px;
@@ -34,34 +38,40 @@
 			.container label {
 				width:50%;
 				margin-top: 3px;
-				display:inline-block;
+				display:inline;
 				padding:3px;
+				float:left;
+				
 			}
+			input, textarea {
+    width: 20%;
+    clear: none;
+}
 		</style>
 	</head>
 	<body>
 		<div class="container">
-			<li>
-				<input type="submit" value="Change Primer3 parameters" name="Primer3 settings" formaction="cgi-bin/primer3settings.py" />
-			</li>
-			<li>
-				<input type="submit" value="Test server status" name="Test server status" formaction="../cgi-bin/testserver.py" />
-			</li>
-			<li>
-				<input type="submit" value="Show all results" name="Show all results" formaction="cgi-bin/results.py" />
-			</li>
-			<fieldset>
 			<form enctype="multipart/form-data" action="../cgi-bin/save_file.py" method="post">
+				<h1>
+					"Hemi-NeSTR: Turbo batch primer design for targeted STR genotyping of single cells" 
+				</h1>
+				<hr>
+
 				<h2>
-					Please provide all the input parameters for your primer design
+					Start a new run by providing all the input parameters for your primer design
 				</h2>
 				<ul>
+
+					<h3>
+						1. Provide a name for your name
+					</h3>
 					<li>
-						<label>Name your run:</label>
+						<label>Run name:</label>
 						<input type="text" name="batchname" />
+					
 					</li>
 					<h3>
-						Specify your Primer3 parameter file, otherwise the standard settings are used
+						2. Upload your Primer3 parameter file, otherwise the standard settings are used
 					</h3>
 					<li>
 						<label>
@@ -70,51 +80,66 @@
 						<input type="file" name="primer3file" />
 					</li>
 					<h3>
-						Paste your sequence(s) in FASTA format (with header) or upload a FASTA file
+						3. Paste your sequence(s) in FASTA format (with header) or upload a FASTA file
 					</h3>
-					<li>
+						<li>
 						<label>
 							Sequence File: 
 						</label>
 						<input type="file" name="fastafile" />
-					</li>
-					<li>
+						<br>
+					
 						<label>
 							Target Sequence(s): 
 						</label>
 						<textarea name="fastasequence" cols="60" rows="10"></textarea>
 					</li>
 					<h3>
-						Specify your parameters here
+						4. Specify your parameters here
 					</h3>
 					<li>
 						<label>
 							Maximum length of repeats which are searched: 
 						</label>
+						
 						<input type="number" name="maxrepeats" min="2" max="6" value="3" />
-					</li>
-					<li>
+						<br>
+					
 						<label>
 							Maximum number of primers to be returned: 
 						</label>
 						<input type="number" name="primerpairs" value="20" min="1" max="100" step="1" />
-					</li>
-					<li>
+						<br>
+					
 						<label>
 							Maximum similarity of primer pairs:
 						</label>
 						<input type="number" name="maxsimilarity" value="1" min="0" max="1" step="0.1" />
-					</li>
-					<li>
+						<br>
+
 						<label>
 							Search for nested primers: 
 						</label>
 						<input type="checkbox" name="nested" checked="" />
 					</li>
+										
+					<h3>
+						5. Start your job
+					</h3>
 					<li>
 						<input type="submit" value="Submit job" name="Submit job" formaction="cgi-bin/server.py" />
 					</li>
-					</fieldset>
+					<hr>
+					<h2>Check old runs, change parameters and more</h2>
+					
+						<input type="submit" value="Change Primer3 parameters" name="Primer3 settings" formaction="cgi-bin/primer3settings.py" />
+					
+					
+						<input type="submit" value="Test server status" name="Test server status" formaction="../cgi-bin/testserver.py" />
+					
+					
+						<input type="submit" value="Show all results" name="Show all results" formaction="cgi-bin/results.py" />
+					
 				</ul>
 			</form>
 		</div>
