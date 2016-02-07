@@ -514,20 +514,6 @@ def similarity(oligo1, oligo2):
 			best_score = score
 	return float(best_score) / float(len(oligo2))
 
-#remove!!!! not in use
-#inverses an oligo, i.e. shows the complimentary strand
-def inverse_oligo(oligo):
-	oligo.replace('A', 't')
-	oligo.replace('T', 'a')
-	oligo.replace('G', 'c')
-	oligo.replace('C', 'g')
-	oligo.replace('a', 'A')
-	oligo.replace('t', 'T')
-	oligo.replace('g', 'G')
-	oligo.replace('c', 'C')
-
-	return oligo
-
 #takes primers, amplicon, isPCR output and primer3 output as input
 #generates output which can be written to log file
 def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
