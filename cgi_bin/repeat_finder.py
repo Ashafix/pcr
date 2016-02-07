@@ -5,19 +5,20 @@ import subprocess
 from multiprocessing import Pool
 import logging
 import ConfigParser
+from time import time
 
 #Python2/3 comptability
 if sys.version_info < (3, 0):
-	import xrange as range
+	from __builtin__ import xrange as range
 
 global ssr_list
 ssr_list = ['AAAATTC', 'ATCCCCCCCG', 'AAAATTG', 'ATCCCCCCCC', 'AAATCCCGGGGG', 'AGG', 'ATTCCCCC', 'AAAATTT', 'AATTTTTTCCCC', 'AATTTTTTCCCG', 'TTTTGGG', 'AAACCCCCGGG', 'AAAAATTTGGGG', 'ATTCCCCCCCGG', 'AAAACCCCGGGG', 'ATTCCCCG', 'AAACCCGGG', 'AATCCCGGGGGG', 'AAAACCCGGG', 'AAAATTCCG', 'ATTCCCCGG', 'ATTTCCCCCGGG', 'GG', 'AATTCGGGGGGG', 'ATTTTCCCCGGG', 'TTTCCGGGGGG', 'TTTTTTTGGGG', 'AATCGGGGG', 'TTTGGGGGGG', 'AAAAAAAACGGG', 'CCGGGG', 'TTTTTTCCCCC', 'ATTCCG', 'AATTTCCGGGGG', 'ATTCCC', 'TTTTTTTCCCCC', 'AAAAAAACGGGG', 'CCCCCCGGGGGG', 'TCCCGGG', 'ATGGGGGGG', 'AAAAACC', 'TCCCCCCG', 'AAAAACG', 'TCCCCCCC', 'AAAAAATTTCGG', 'AAAAAAATTTT', 'TTTTTTTTCGGG', 'TTT', 'TTCCCCC', 'TTCCCCG', 'TTC', 'AAAAAAATTTG', 'TTG', 'AAAGGGGG', 'AAAAAAATTTC', 'AATCCCCCCGG', 'AATCCGGGGGGG', 'TTTCCCCCCG', 'AATTTCCGG', 'ATTCCCCGGG', 'AATTGGGGGGG', 'AAAAAAAAAA', 'AAAAAAAAAC', 'AAATTTCCCG', 'TTTTTTCGGGG', 'AAAAAAAAAG', 'AATTTCGG', 'AACCCGGG', 'AAAATTTCCCG', 'TCGG', 'AAAATTTCCCC', 'AAAAAAAAATG', 'AACCCCCGGGGG', 'AAAAAAAAAT', 'ATTCCCCCCCC', 'TTCCCGGGGG', 'ATTCCGGGGG', 'TTCCCCGGG', 'ATTTTTCCC', 'CCGGGGGGGGG', 'AATTTTTGG', 'AAAAAAATTCGG', 'AAAAATTTTTCC', 'AACCCCGGG', 'AAATGG', 'ATCCCCGGGGGG', 'AAGGGGGG', 'AAATTTTTTTTC', 'AAATTTTTTTTG', 'TCCCGGGG', 'ATTTTCCCGG', 'TTTTTTTCGGGG', 'AAGGGGGGGGG', 'AATTCCCGGGGG', 'AATTTTTTTGG', 'AAATTTCCCCCC', 'AAATTTCCCCCG', 'TTTTTCCCCCCC', 'ACCCCGGGGGGG', 'TTTTTCCCCCCG', 'TTCCCCCCGG', 'ATCCGGGGGG', 'ATTCCCGGGGG', 'ACCGGGGG', 'AAAAATTCGG', 'TTTTGGGGGGG', 'ATCCCCCCCCG', 'ATTTCCCCC', 'ATCCCCCCCCC', 'ATTTCCCCG', 'ACCCCGGGGG', 'AATTTTTCCGG', 'TTGGGG', 'TGGGGGG', 'AAAAATTCCCCG', 'AAAAATTCCCCC', 'ATCCCGG', 'AAAACCGGGGGG', 'TCCCCCCCCGGG', 'ATTCG', 'AATTTGGGGGGG', 'AAATTGGGGGGG', 'ATTCC', 'ATCCCCCCGGGG', 'AATTTTCGGG', 'TTTTGGGGG', 'AAAAATTTCGG', 'AAAAAATTTT', 'AAAAAAGGGGGG', 'TTTTCCGGGGG', 'ATTTTTTCC', 'TCGGGGGGGG', 'ATTTTTTCG', 'AAAT', 'AATCCGGGGGG', 'AAAATTCCCC', 'ATTTTTTTTTGG', 'AAAATTCCCG', 'AAAA', 'TCCGGG', 'AAATTCG', 'AAAACGGGGG', 'AAAG', 'AAATTTCCGGGG', 'AAAAAAACCGG', 'ATTTTTC', 'ATTTTG', 'ATTTTTG', 'ATTTTC', 'TTCCCCGGGGGG', 'ATTTTT', 'CCCGGGGGGGGG', 'ATTTTTT', 'ACCCCCCCGG', 'TTCCCCGGGGG', 'ATTTTTCGGGGG', 'AAAAACCGG', 'TTTTTTTTTTGG', 'AAAAATTTTCGG', 'AAATTTGGG', 'ACCGG', 'TTTTTCGGGG', 'ATTTTTGGG', 'TTTTTTCCCCG', 'AAAATCC', 'ATTTTCGG', 'ACCCCCGG', 'CGGG', 'TTTCCCCC', 'AAAATTTTCCGG', 'TTTCCCCG', 'AATCCCCCGG', 'CGGGGG', 'TTTTTCCGGGG', 'AATTTTTGGG', 'ATTCGGGGGG', 'AAAAATCGGG', 'AAATTTTTCGG', 'TTTTTCCCCGG', 'AATTTTGG', 'ATTTTTTTCCCG', 'AAACCGG', 'ATTTTTTTCCCC', 'AAAAATCCCG', 'AAAAATCCCC', 'AAAAAAGG', 'TTTTTCCCCC', 'TTTTTTTCCCCG', 'TTTTTCCCCG', 'AAAAAAAAAATT', 'TTTTTTCCGGGG', 'GGGGGG', 'ATCCG', 'ATCCC', 'AAAATTCCC', 'AAAATTTCGGGG', 'TTTTCCCCCG', 'TTTTCCCCCC', 'AAAAAAAATG', 'AAAAAAAATC', 'AAAAATTCCCC', 'AAATTTGGGGGG', 'AAAAATTCCCG', 'AATTTTTTTTTT', 'AAAAAAAATT', 'AAAAATTTTTTT', 'AATTTGGGG', 'AAAATTCGGGG', 'AACCCC', 'ATTTCCCCCG', 'AACCCG', 'ATCCCCCCCCGG', 'ATTTCCCCCC', 'ATGGGGGG', 'ACCCCCCCCGGG', 'AACCCCCCCCGG', 'AACCCCG', 'AACCCCC', 'TTTTCGGGGGGG', 'AACGGGGGGGG', 'ATTTCGGG', 'AAAACCCCCCGG', 'AATTTCCCCC', 'TTTTTTTTCCCG', 'AATTTCCCCG', 'ATTTTCCGG', 'AAAAAAATCG', 'AAAAAAATCC', 'TTTTCCCGGGG', 'AAAAAATCCGGG', 'TTTTT', 'AAAAAATTTGG', 'TCCCCCGGGGGG', 'AAATCGGGGGGG', 'TTTGGG', 'AATCCCGGGGG', 'ATCCCCGGGG', 'TTTTG', 'TGGGGGGGG', 'AAATTCCCCGG', 'AACCGGGGGG', 'AAAAATGGGGG', 'ATGGG', 'CCCCCCGGGG', 'AAAAAAATGGG', 'CCCC', 'CCCG', 'TTTTTGGGGGGG', 'AATTTTTTTTTC', 'TCCCCGGGGGGG', 'ATTTTCGGGGG', 'AAAATTTCCCCC', 'AAAATTTCCCCG', 'AAAAAAAATTCG', 'AATTTTTTTTTG', 'AACGGGGGGGGG', 'AAAAAAAATTCC', 'TTTTTTCCG', 'TTTTTTCCC', 'ATGGGG', 'ATTTTCCCCCG', 'ATTTTCCCCCC', 'AATTCCCGGG', 'AAAAAAAACCCC', 'AACCCCCC', 'AACCCCCG', 'AAAACCCCC', 'AAAACCCCG', 'AAATTTTCGGG', 'AAACCCCCCGG', 'ATTTTTTTTGG', 'AAACCCCC', 'AAACCCCG', 'AAAACCCCCCG', 'AAAAAAAAAATC', 'AAAACCCCCCC', 'CCCCGGGGGGG', 'AATTTTCCGG', 'AAAATT', 'ATTTTTTTTTTT', 'AAAATTTT', 'AAAAACCCGGGG', 'AAAAAATTGGGG', 'ACCCCCC', 'AAAATG', 'AAAATTTC', 'ACCCCCG', 'AAAATC', 'AAAATTTG', 'AATTTTCCGGG', 'AAAAAGGGG', 'AAAAAAATTGGG', 'ATCCCG', 'AAAAACGGGGG', 'ATCCCC', 'ATGGGGG', 'ACCCGGGG', 'AATTGGG', 'AATTGGGGGG', 'AAAAAATTTGGG', 'AAAACCG', 'AAAACCC', 'AATG', 'TTCCC', 'TTCCG', 'AAAATTTCGG', 'TTCCCCGGGG', 'AATCCCCCGGG', 'AAAATTCGGG', 'AAAAAAAAAAGG', 'AAACCGGGGGGG', 'AATGG', 'AAAATTTTTTCC', 'ATTCCCCCGG', 'AAAATTTTTTCG', 'TTCCGG', 'AAAAAAAAACGG', 'AAAAAAATCCC', 'AATTCCCCCCCG', 'AATTCCCCCCCC', 'TTTCCCCCCC', 'ATTGGGGGGG', 'ACCCCCCGGGGG', 'TTTCGGG', 'AAAATGGGGGG', 'AAAAAAG', 'ATTTCCCGGG', 'AAAAAAA', 'AAAAAAC', 'TTCCCCCGG', 'ACCCCCCCCCC', 'AAAAAAT', 'ACCCCCCCCCG', 'AAAACGGGG', 'AAAATTTTCG', 'ATTTTTTCCCG', 'TTTC', 'AAAATTTTCC', 'ATTTTTTCCCC', 'TTTG', 'CC', 'TTTTTTCC', 'CG', 'AAAAAAAAATT', 'AATTCCCCCG', 'CCCCCC', 'TTTT', 'AAAATCGGG', 'ACCCCCGGGG', 'AATTTTTTTCCC', 'AAAAAAAAT', 'TTTTTTTTTCCG', 'AAATTTCCCC', 'AAAAAAAAA', 'AAAAAAAAC', 'TCCCCGGGG', 'AAAAAAAAG', 'AAAAAAAACC', 'AATTTTTTTCCG', 'AAAAAAAACG', 'AATTTTTTCCG', 'AATTTTTTCCC', 'AAATCCCG', 'AAAAATTTCCCC', 'AAATCCCC', 'AAAAATTTCCCG', 'AAAAATGG', 'TTTTTCGGGGG', 'AATTTTTCCGGG', 'AAAAAATTC', 'AAAAAAAGGGG', 'AAAATCCCG', 'AAAATCCCC', 'AAATCCGGGGGG', 'AAAAAATTT', 'ATGG', 'AATTCCCCG', 'ATCCGGG', 'CCCCCCCCCGGG', 'AAAAAACCC', 'TCCCCCCCCCGG', 'AAAAAACCG', 'AAATCCCCCCCG', 'AAATCCCCCCCC', 'AAATCCCCGGG', 'AAAATCCCCCCG', 'AAAATCCCCCCC', 'ACCGGGG', 'TCCCCCCGGGGG', 'ATTTTGGG', 'AAAACGG', 'TTTTCCGGG', 'AAATCGGGG', 'AAAAATCGG', 'CCCCCCCCCGG', 'CCCCCCCCCCCC', 'CCCCCCCCCCCG', 'AAAAATCCGGG', 'ACCCCCCGGGG', 'AAAATGGGGG', 'AAAATTCGGGGG', 'CCCCCG', 'TTTCCCG', 'AAACCGGGGGG', 'TTTCCCC', 'AATTCCCCC', 'AAAATTCCCCG', 'AAAAAAATCCCG', 'AAAAAAATCCCC', 'ATTTTTCC', 'ATTCCCGGGGGG', 'AAACCCCGGGGG', 'AATTTTTTTC', 'ATTTTTCG', 'ACGGG', 'ATTTTTCCGGG', 'AAAATTGG', 'AAAAATTTCGGG', 'AATTTTCGGGG', 'AATTTCCCCGGG', 'AAAAACCCCCGG', 'TCCCGGGGGGG', 'AATTGG', 'TTTTGG', 'TTTTTTGGGG', 'CCGGGGGG', 'AAATCCCGGG', 'AATTTTGGGG', 'ATTTTTCCG', 'TTTTCCCCCCCG', 'TTCG', 'TTTTCCCCCCCC', 'TTCGGGGGGG', 'TGGGGG', 'AAAAAATTCCGG', 'TTTCCCGGGG', 'AAATTCCCGGGG', 'AAATTCCCGGG', 'TTTGG', 'AAGGG', 'CCCCCGGGGG', 'TTTTTCCCGGG', 'AAACGGG', 'ACCGGGGGGG', 'AAATTTTCC', 'ATTTTTCCCGGG', 'AAATTTTCG', 'AATTTTTGGGG', 'CGGGGGGGG', 'AAAAAATGGG', 'TCGGGGGG', 'AAAAAAAAAGGG', 'AAAAAATCGGGG', 'ACCGGGGGGGG', 'ATTT', 'AATTTTCCG', 'AATTTTCCC', 'AAAAATGGGGGG', 'ATTG', 'ATTC', 'TCCCCGGGGG', 'AAATTTTCCGGG', 'AAATTTTTGGG', 'AAAAAAACCCCC', 'AAAAAAACCCCG', 'AAATTTTTGG', 'ATCCCGGGGGG', 'ATTTTTCCCC', 'ATTTTTCCCG', 'TTTTCCCCCGGG', 'TTCCGGGGGGG', 'ATTTTCGGG', 'AAAATCCG', 'AAAATCCC', 'ATCGGGGGGGG', 'ATTTTCCGGG', 'AATTCGGG', 'TTTCGG', 'TCCCCCCGG', 'CGGGG', 'ATTCCGGGGGG', 'AAATTTTTTTTT', 'AATTTTCGGGGG', 'AAAAACCG', 'AAAAACCC', 'AAAAAAATCGG', 'AATTCCGGGGGG', 'AATCCCCGGG', 'TGGGGGGG', 'TCCGGGGGGGG', 'AATTTTTTGG', 'CCCCCCCCGG', 'TTTCCCCCCCCC', 'GGGGGGGGG', 'TTTCCCCCCCCG', 'AATTTTTTTTCC', 'AAATG', 'AATTTTTTTTCG', 'AAATC', 'TTTTTTTTTCG', 'AAATT', 'TTTTTTTTTCC', 'ATGGGGGGGGG', 'AAAAATTTGGG', 'AAACCCCCCGGG', 'CCCCC', 'CCCCG', 'AAAATCCCGGG', 'TTCC', 'AAAACCCCGGG', 'TTCCCGGGG', 'TTTTTCCCGGGG', 'TTGGGGGG', 'TTTTTGGG', 'TTTCCCCGGGG', 'ATTTTTGGGG', 'AATTTTCCCCGG', 'AATCCCCCCCCG', 'ATTTCGG', 'ATTTCGGGG', 'AATTCCCCCGG', 'AAACCG', 'AAACCC', 'CCCGGGGG', 'ATTTGG', 'AATTTTCCCGG', 'CGGGGGGG', 'TTTCGGGGGG', 'AAATCCCCCCG', 'AAATCCCCCCC', 'AATTCGG', 'TTTTTTCCCCCC', 'TTTTTTCCCCCG', 'ATTTTTTTTCCG', 'ATTTTTTTTCCC', 'AAAATTTTTCCC', 'AAAATTTTTCCG', 'AAATTTGGGG', 'ATTTTTTCCC', 'ATTTTTTCCG', 'AAATCGG', 'AATTTCCCCCC', 'AATTTCCCCCG', 'TTCGGGGGG', 'TTTTCCCCCCC', 'CGGGGGGGGGGG', 'TTTTCCCCCCG', 'AAAAAATTTTCG', 'AAAATTTGGG', 'AAAAAATTTTCC', 'AAAAAAAGGGGG', 'ATTTCCCGGGG', 'ATTCGG', 'AAAAAAATTTTG', 'ATTTTTTTTC', 'ATTTTTTTTG', 'AAAAAATTTTTG', 'ATTTTTTTTT', 'TTTTTTTTC', 'TTTTTTTTG', 'AATTTCCCGGG', 'ACGGGGGGGGG', 'ACGGGGGGGGGG', 'CCGGGGGGGGGG', 'TTTTTTTTT', 'AATTTTGGGGG', 'ATTCCCCCG', 'TTTCCGGGGG', 'AAATCCCGG', 'ATTCCCCCC', 'TTCCGGGGG', 'ATTTTCCCCCGG', 'AAAAAAAATTTC', 'AAAAAAAATTTG', 'AAAAAATC', 'AAAAATGGGG', 'AACCGGGGG', 'AAAAAAAATTTT', 'TTTTTTTCCCGG', 'AAAAAATT', 'AAAAAAATTTTC', 'ATTGGGGGGGG', 'AAATTCCGGGGG', 'ATTTTGGGGGGG', 'TTTCCCCCGGGG', 'AACGGGGG', 'AAAACGGGGGG', 'ATTTGGGGG', 'AAAAAAGGGG', 'ATTTCCCCCGG', 'AACCCCCCCGGG', 'TCCCCCGG', 'AAAATTCCCCCG', 'AAAATTCCCCCC', 'ATTCCGGGGGGG', 'ATTCCGGGG', 'GGGGGGGG', 'AAATTTTCCCCG', 'AAATTTTCCCCC', 'TTTTTCGG', 'AATTTCCCG', 'AATTTCCCC', 'AAAAAAACG', 'AAAAAAACC', 'AAATTTCCGG', 'AACCGGGGGGGG', 'TCCG', 'AATTTCCG', 'CGGGGGGGGG', 'TCCC', 'AATTTCCC', 'AAAAACCCCC', 'CCCCCCCGGG', 'AAAAACCCCG', 'AATTTTTTCCGG', 'AATTTTTCG', 'AAACGGGG', 'ATTCCCGGGG', 'AATTTTTCC', 'CCCCCGGGGGGG', 'CCCCCCCCGGG', 'AAAAAAAACCCG', 'AAAAAATCCC', 'AAAAAATTTTC', 'AAAAAATCCG', 'TTTTCCCGG', 'AAAAAAATTCCC', 'AAAAAAATTCCG', 'AAAAAATTTTT', 'TCCGGGGGGG', 'AAGGGGGGG', 'AAAAATTGGGGG', 'ATTTTTGGGGG', 'TTTTTTTTCC', 'ATTCCCCCCCCG', 'TTTTTTTTCG', 'AAAAAATTCCC', 'AAAAAATTCCG', 'AAAAGGGGGG', 'AATTTTTTTCG', 'AATTTTTTTCC', 'ATTCCCCCCCCC', 'ATTTTCCCCG', 'ATTTTCCCCC', 'TTTCGGGGG', 'TTTCCCCCCGG', 'AAAAATTCCG', 'AAAAATTCCC', 'TTTTTCCCCCGG', 'AAATTCCCCCGG', 'AAAAACCCCGGG', 'ATTTTGGGGGG', 'AATTTTCCGGGG', 'AAAACCCCCCCG', 'ATTTCCCGG', 'AAATCCCCGG', 'AATCCCGGG', 'ATCCGGGGGGG', 'AACGG', 'AAAAATTCCCGG', 'ATTGG', 'AAAAAATTTC', 'TTTTGGGG', 'AAAAAATTTG', 'ATTTTTTGG', 'CCGGGGGGGG', 'AAAAATTTCCG', 'TTGGGGGGGGG', 'AAAAATTTCCC', 'ATG', 'AAAATTCCGG', 'ATC', 'TCCGGGGGG', 'AAAAAAACCCG', 'ATT', 'TTTCCCGGGGG', 'AAAAAAACCCC', 'CGGGGGGGGGG', 'ATTTTTTTTTCG', 'ATTTTTTTTTCC', 'ATTTCCGGGG', 'AAAACCCCCGGG', 'TTTTTTTT', 'ATTTTTTGGGG', 'CCCCGGGGGG', 'AAATTTTTCCCC', 'AAATTTTTCCCG', 'TTTTTTTG', 'TTTTTTTC', 'TCCCCCCCGGG', 'ATCCGGGGGGGG', 'AATTTTTCCCG', 'AAAAAATTCGGG', 'AATTTTTCCCC', 'AAAAACCCC', 'AAAATCCGGG', 'AAAGGG', 'AAAAACCCG', 'AAAAACCGGG', 'AACCCCCCCC', 'ATCCCCCG', 'AACCCCCCCG', 'ATCCCCCC', 'ACGGGGGGG', 'ACCCCCCG', 'ACCCCCCC', 'AAAAAACCGGGG', 'AAAATGG', 'ATTTTCCCGGGG', 'TTTCCCGG', 'ACCG', 'ATTTTTTTCCC', 'ACCC', 'ATTTTTTTCCG', 'ATTTTTTTTCGG', 'ATTTCGGGGG', 'TGG', 'AATTTTC', 'AATTTTG', 'ATTTTTTTCCGG', 'AGGGGGGGGGG', 'AATTTTT', 'AATTCCCCGGGG', 'AATTCCCCCC', 'CCCCCCCC', 'CCCCCCCG', 'ATTTTTCCGGGG', 'TTTTTCCCGG', 'CCCCCGGGG', 'ATCGG', 'AAAATTTTTCC', 'AAAATTTTTCG', 'AAAAAACCCCGG', 'AATTTCCCGGGG', 'TTTTTCCCC', 'CCCCCGGG', 'TTTTTCCCG', 'AAATTCCC', 'AAACCCCCCCGG', 'AAATTCCG', 'AAATTC', 'AAATTG', 'TCCCCCCGGG', 'AAAATCCCCGG', 'AAATTT', 'AAAAATTCCGGG', 'AAAC', 'AAAACCCCCCCC', 'TTGGGGG', 'AACCCCCCCCCC', 'AACCCCCCCCCG', 'AAATGGGG', 'AAATTCC', 'AATTCCCCGGG', 'AAAATTGGGGGG', 'ATCCCCCCCCCC', 'TTTTTTCGGGGG', 'TTCGGG', 'AAAAATCG', 'TTCGGGGG', 'AAAAATCC', 'ATCCCCCGGGGG', 'AAAAAATTGGG', 'TTTTTTTCCC', 'TTTTTTTCCG', 'ATCCCCCCCCCG', 'AAATGGGGGG', 'ATTTCCCCGG', 'AAACCCCGGGG', 'AAATGGGGG', 'TTCCCCCCCCCG', 'TTGGGGGGG', 'TTCCCCCCCCCC', 'AAATGGG', 'TTGGGGGGGGGG', 'AAAAAAAAACC', 'AAAAAAAAACG', 'AAATTTTTT', 'TTTTTTTCCGGG', 'AATTTT', 'TTTTTCGGG', 'ATTTTTTTT', 'AAATTGGG', 'ATTGGG', 'AATTTC', 'TTTTCCGG', 'AATTTG', 'ATTTTTTTG', 'TTTTTTCGG', 'ATTTTTTTC', 'AACCCCGG', 'AATTTTTTTCGG', 'AAACCCCCCCG', 'AATTTGG', 'AAACCCCCCCC', 'ATTTTTTTTTTG', 'AATTCCGGGGG', 'ATTTCCCCCCCC', 'ATTTCCCCCCCG', 'AAACCCGG', 'AAAAAATCCCC', 'TTTCGGGGGGG', 'ATTTT', 'AAAAAATCCCG', 'AATCGGG', 'AAAACCCCCGG', 'AAAAAAAATTT', 'AAATTCCCCC', 'AAAATCGGGGG', 'ATTTC', 'AAATTCCCCG', 'ACCCCCGGGGGG', 'ATTTG', 'AAAAAAAATTC', 'AAAAAAAATTG', 'ATCCGG', 'TCCCCGGG', 'AATTCCGG', 'AAAACCCGG', 'AAAAGGG', 'ATTCCCCCCG', 'ATTCCCCCCC', 'CCCCCCCCC', 'TTTTTTTTCCC', 'TTCCCCCCCCC', 'TTCCCC', 'TTTCCCCGGG', 'TTCCCCCCCCG', 'TTCCCG', 'ATTCGGGGG', 'TTTCCCCCC', 'TTTCCCCCG', 'TTTTTTCCGG', 'ATTTGGGGGG', 'AAAAATTCGGGG', 'AAATTTCC', 'AAAAATTTTGG', 'AATTCCCCCCGG', 'AAATTTCG', 'AAAACCCC', 'AAAACCCG', 'TTTTTTGGGGG', 'ATCCCCCGG', 'TTCCCCCCC', 'AATTTCCCCCCG', 'TTCCCCCCG', 'AATTTCCCCCCC', 'AATTCCCCGG', 'AATTTCGGGGG', 'AATTTTTTTT', 'ATTTTTTTGGGG', 'AAAAAAAACCGG', 'ATTTTTTCCGG', 'AATTTTTTTG', 'ATTTTTTTGGG', 'AAAAAAAATGGG', 'AAAATTTTG', 'AAAAAAACGG', 'TCCCG', 'TCCCC', 'AAAAAAAAGG', 'AAAATTTTT', 'ATTTTTCCCGG', 'AA', 'TTTTTTTTTGGG', 'ATCCCGGGG', 'AATTGGGG', 'ATTCGGGGGGGG', 'TTTTTCCCCGGG', 'ATTTTCGGGGGG', 'AAAATCCGGGG', 'AAACCCGGGG', 'AAAAAAAAATTT', 'AAATCCGG', 'AAAATCG', 'AAATTTTCCC', 'AAATTTTCCG', 'AAAAAAAAATTG', 'AAAAAACCCCG', 'AAAAAAAAATTC', 'AAAAAACCCCC', 'AAATTTCCCGG', 'TCGGG', 'ACCCCCCCCGG', 'AAAAATCCGGGG', 'ATCG', 'ATCC', 'TTCCCCCGGGG', 'AAAAAACGG', 'ATTTCCGGGGGG', 'AATTG', 'ACCCGGGGGG', 'AAAAACCGGGGG', 'AAAGG', 'AATTTTTCGGGG', 'AATTT', 'TCCCCCCCCCCG', 'TCCCCCCCCCCC', 'TTTTTGGGGGG', 'AATTCCGGGG', 'AAATTTCGGG', 'AAATTTCGGGG', 'AACCCCGGGGGG', 'AAAAATCCG', 'AAAAATCCC', 'AAAATTCCCGG', 'ATTTTTTTTTG', 'CCCCCCCGGGGG', 'ATTTTTTTTTC', 'ATTTCCGGG', 'TCCCCCCCCGG', 'ATTTTTTTTTT', 'AAACCCCCGGGG', 'AAAATCCCGG', 'AAAAGG', 'AAAACGGG', 'AAAAAAAATGG', 'AAAAAGGGGG', 'AAAATTCCGGGG', 'TTTCCGGG', 'AAAATTCG', 'AAAATTCC', 'AATTCC', 'AATTCG', 'AATCCGGG', 'AAATTTTCGGGG', 'TTGG', 'AAAAAAAAATC', 'TCCCCCGGGGG', 'AAAACCGGGGG', 'TTTCC', 'ATTGGGGGG', 'TTTCG', 'ATTTTTTTGG', 'AAATTTTGGG', 'TTTGGGG', 'AAAAAACCCC', 'AAAAAACCCG', 'AAAACCCGGGG', 'AATGGGGGGGG', 'ATTTCCGGGGG', 'AAAAATTTTTCG', 'AAATTGGGG', 'AATCCCCCGGGG', 'TTTTCCCCCCGG', 'TTTGGGGG', 'AAAAACCCCCC', 'AAAATTTCC', 'AAAAACCCCCG', 'AAAATTTCG', 'TTTCCGGGGGGG', 'TCCCCCGGG', 'TCCCCCCCGG', 'AACCGGGG', 'AAAAATGGG', 'AAAAAGGGGGGG', 'AATGGGGG', 'ATTTTTCCGG', 'AAAAATTTCG', 'AAAAATTTCC', 'TTTTTCCGGGGG', 'TCCCCGGGGGG', 'TTCCCGGG', 'AAAAATCCCGGG', 'ATTGGGGGGGGG', 'AAAAAAAACCG', 'AAAAAAAACCC', 'AAAAATTTTTC', 'AAAAATTTTTG', 'ACCCCCGGG', 'AAAATCGG', 'TCCCCCCCG', 'TCCCCCCCC', 'AAAAATTTTTT', 'TTTTCCCGGGGG', 'TTTTTTTTTT', 'AAAAAAATCCG', 'TTTTTTTTTC', 'AAATTCCCC', 'TTTGGGGGG', 'AAATTCCCG', 'AAGGGGGGGG', 'AATTTTTTCG', 'AATTTTTTCC', 'TGGGGGGGGGGG', 'AATTTTCCCC', 'AAAATTTTTTTG', 'AAAATTTTTTTC', 'AAAAAAATTTTT', 'AACCCCCCCCG', 'AACCCCCCCCC', 'AAAATTTTTTTT', 'AAAAAATCCCCC', 'AAATCCGGG', 'TTTTTCCGGG', 'TTTTTTGGG', 'CCCGGGGGGGG', 'TTCCCCCCGGGG', 'ATTTTTTCGGGG', 'AACCCCGGGG', 'AACC', 'AAACGGGGGGGG', 'AAAACCCCCC', 'AAAACCCCCG', 'TTTCCG', 'TTTCCC', 'CCCGGGGGGG', 'ATTTGGGGGGGG', 'AATCCGGGG', 'AAAAACCGGGG', 'AAATCCCGGGG', 'AAAAAAAAAAT', 'CCCCGGG', 'TTTTTTG', 'TTTTTTC', 'AAACCGGG', 'AAAAGGGGGGGG', 'AATCCCCCCCGG', 'AAAAAAAAAAG', 'AAAAAAAAAAA', 'AAAAAAAAAAC', 'AATCCGG', 'TTTTTTT', 'AAACGG', 'TCCCCCCGGGG', 'AAAAATCGGGG', 'AAAAGGGGGGG', 'ATTTCG', 'ATTTCC', 'ATCGGG', 'AATTTTCCCCC', 'AATTTTCCCCG', 'AAAAAAAAAATG', 'AAACCCCCGG', 'AATTTTTCGGG', 'ATTCGGGG', 'AAAAAATTCCCG', 'ACGGGG', 'AATTTCCCCGG', 'AAAATTTTTCGG', 'AAAACCGGG', 'AAAAAATTTTGG', 'ATTTTTTCGG', 'TCGGGGGGGGG', 'TTGGG', 'ATCCCCCGGG', 'TTCCCCCG', 'CCCCCGGGGGG', 'AAAATTTTGGG', 'GGGGGGG', 'AATTCCCCCGGG', 'AATGGGG', 'TCCGGGGG', 'ACCCCCCCG', 'ACGGGGG', 'AATTCCC', 'AATTCCG', 'AATCCCCCCCCC', 'ATCGGGGG', 'ATTTTCCCCCCC', 'ATTTTCCCCCCG', 'AAATCCCCG', 'AAATCCCCC', 'AAAAAAAAAAAT', 'AAATTTTTTG', 'ATTTTTTCGGG', 'AAATTTTTTC', 'TCGGGGGGGGGG', 'AAAAAAAAAAAA', 'AAAAAAAAAAAC', 'TTTCGGGGGGGG', 'AAAAAAAAAAAG', 'ATCGGGGGGG', 'TGGGGGGGGG', 'AAATTTTTTT', 'AAAAAAAATCGG', 'AAAAAAAGG', 'TTTTTTTTTCGG', 'AAAAAATTTTTC', 'AAAATGGGGGGG', 'AATTTTGGGGGG', 'ATTTTTGG', 'AGGGGGGGG', 'AAAAAACGGGGG', 'AAATCGGG', 'ATTTCCCCCCG', 'TCCCCCCCGGGG', 'ATTTCCCCCCC', 'AATCCCGG', 'ACCCCCCCGGG', 'AAAATTCCCCGG', 'AAAATTTTTTT', 'AATCCCCGG', 'TTTTCCCCGGGG', 'AAAAAAGGG', 'AAAATTTTTTG', 'AAAATTTTTTC', 'AAATTTTCCCGG', 'AATCGGGGGG', 'TTTTCCC', 'TTTTCCG', 'AAACCCCCG', 'AAACCCCCC', 'AAATTTTTGGGG', 'AAAAACCCGG', 'AAAAAATCGG', 'TTTTCCCCG', 'TTTTCCCCC', 'AAAAAATGGGG', 'ATTTTCG', 'TTTTTTCCGGG', 'TTCGG', 'TTTTTCCGG', 'AAATTTCCCCGG', 'TTTCCCCCGGG', 'ATCCGGGG', 'AAAATTCCGGG', 'ATTTTTTTCG', 'AAAAATTGG', 'AAAAAATTCGG', 'AAAATTGGG', 'AAATTCGGG', 'AAAAT', 'TCGGGG', 'AAAAA', 'AAAAC', 'AAATCGGGGGG', 'AAAAG', 'AAATTTCCCGGG', 'TTTTTGG', 'AGGGGGG', 'TTTCCCCCCCG', 'TTCCGGG', 'TTTCCCCCCCC', 'AAATTTTCCCC', 'ATTCCCC', 'AAATTTTCCCG', 'TTTTTTTTCCG', 'ATTCCCG', 'AAATCCCCCG', 'TTTTGGGGGGGG', 'AAATCCCCCC', 'AAATTCGGGG', 'CCCCCCCCG', 'AATCGG', 'AAAAAATTTCCG', 'AAATCCGGGG', 'AAAAAAAAAACC', 'AAAAACGGGGGG', 'AACCC', 'AAAAAT', 'AACCG', 'AAAAAAAAAACG', 'AAATTTTTTGG', 'ATTTCCCCGGG', 'AAAAAA', 'AAAAAC', 'AAAAAG', 'ATTTTCCGGGGG', 'ATTTTTCGGG', 'TTTTTTTTTTT', 'ACCCGG', 'TTTTTTTTTTC', 'TTTTTTTTTTG', 'TTTTTTTGG', 'AATTTCCGGGG', 'TTTTTTTCCCG', 'AATGGGGGG', 'GGGGGGGGGGG', 'AACCCCCCC', 'AACCCCCCG', 'ACCCCCCCCCCG', 'AAATTCCCCGGG', 'ACCCCCCCCCCC', 'ATTTTTTCCCGG', 'ATTTGGGG', 'AATGGGGGGGGG', 'AAAAAAAATTGG', 'ATCCCCGG', 'AATTCGGGGGG', 'ATTCCCCCGGG', 'ATTGGGGG', 'ATTTTTTTCGG', 'AAAAATCCCCGG', 'ATTTTTTT', 'AAATTTTGGGG', 'TTCCCCGG', 'ATTTTTTC', 'TCGGGGGGG', 'ATTTTTTG', 'AGGGGG', 'ACCCCCCGG', 'AAAATGGG', 'AAAAAAAGGG', 'AAAATTTGGGG', 'AAATTTCCC', 'AAATTTCCG', 'TCG', 'TTTGGGGGGGG', 'TCC', 'ATCCCGGGGG', 'TTTTTTTTGG', 'TTTCCGGGG', 'ATTTTCC', 'AATCCGGGGG', 'AAGGGGGGGGGG', 'ATTTTTTGGGGG', 'AAAAAAATT', 'AAATTGGGGGG', 'AATTTTTTCGGG', 'CCCCCCGG', 'AAAAAAATG', 'AAAAAAATC', 'AAAATTTTTGG', 'ATTTGGGGGGG', 'AAATTCCCCCCC', 'AAATTCCCCCCG', 'AACCCGGGG', 'AAAAATCCCGG', 'AAAAAAAAATGG', 'AAATTCGG', 'AAACCCCCCCCC', 'AAACCCCCCCCG', 'AAAAAACCCCCC', 'AAATTTTTTTCG', 'AAAAAACCCCCG', 'TTTTCGGGG', 'AAATTTTTTTCC', 'ATCCGGGGG', 'AAACCGGGGG', 'AAATTTTTTCCG', 'AAATTTTTTCCC', 'TTTTTCCC', 'CCCGGGGGG', 'TTTTTCCG', 'AAAATCCCCCG', 'AAAATCCCCCC', 'CCCCCGG', 'TTTTTTTCGGG', 'AAAAAAAAGGGG', 'TCCCCCG', 'TCCCCCC', 'TCCCCG', 'TCCCCC', 'AAAAAAAAAGG', 'AAAACCCGGGGG', 'TTTTTTGG', 'ACCCCGGGGGG', 'GGGGGGGGGGGG', 'AAATTTTTTGGG', 'AATTTCGGGGGG', 'AAAAAAATTCG', 'AAAAAAATTCC', 'TTTCCCCGGGGG', 'TTTTTTTTGGGG', 'AAATTTGGGGG', 'ACCCGGGGG', 'ATCCCCGGGGG', 'AAATTTTTTTT', 'AAAATTTTTGGG', 'TTTTCGGG', 'AAATTTTTTTC', 'AACCCCCGGGG', 'AAATTTTTTTG', 'AAAAATTTC', 'AAAAATTTG', 'ATTTTTTTTGGG', 'TTCCCCCCCCGG', 'GGGGGGGGGG', 'AAAAATTTT', 'ATTTTTTGGG', 'TTTTTTTCGG', 'AAATTCCCGG', 'AATTTTTCCCGG', 'AAAAATTCGGG', 'AAAATTTTCGG', 'CCG', 'AACGGG', 'CCC', 'AAAAAAATTTGG', 'TTTTCCCG', 'AAAAAATCC', 'TTTTCCCC', 'AAAAAATCG', 'AAATTCGGGGG', 'TTTTTTCGGG', 'AATGGGGGGG', 'AATTTCC', 'ACCCGGGGGGGG', 'AATTTCG', 'AAAAACGGGG', 'TTTTC', 'AAATTTCGGGGG', 'AACCGGG', 'AATTTCCGGG', 'AACCCCGGGGG', 'AAAATTTTC', 'ATTTCCCC', 'AAAAAACCCGGG', 'ATTTCCCG', 'TTTTCCCGGG', 'AAAAAATCCGG', 'TTTTTTTTCGG', 'CCCCCCCGG', 'AATTTTTTTGGG', 'AATCCCCCCGGG', 'ATTCCCCCCCG', 'AAAAAACGGGG', 'AAAGGGGGGG', 'ATGGGGGGGGGG', 'ATTTTTCCCCCC', 'ATTTTTCCCCCG', 'TTTTGGGGGG', 'AACCCGGGGGG', 'AATTCCCG', 'AATTCCCC', 'AAAATTTCCGGG', 'AAAATTCCCGGG', 'TTCCCCCCCGG', 'AATCGGGG', 'AAAAAATCCCCG', 'ATCCCCGGG', 'ACC', 'TTTTTTCCCG', 'TTTCCCGGGGGG', 'ACG', 'TTTTTTCCCC', 'ATTTTCCCGGG', 'ATCCCCCCGG', 'AAAAATTTTCG', 'AAATTTGG', 'AAAAATTTTCC', 'TTTCCCCGG', 'CCCCGGGG', 'AAAAAAGGGGG', 'TTTTTGGGGG', 'ATTTTGG', 'AATCCCCCCCC', 'AATCCCCCCCG', 'AATTTCCCCCGG', 'AAAACCGG', 'TTCCGGGGGG', 'AAAAAAATTTCC', 'TTTTTTCCCGG', 'AAAAAAATTTCG', 'ACCCGGG', 'AAATTTTTC', 'TTTTTTTTTTTC', 'AAATTTTTG', 'TTTTTTTTTTTG', 'ATTCCCGG', 'TCCGG', 'TTTGGGGGGGGG', 'AAAATTCGG', 'AAAAAAACCG', 'AAATTTCCGGG', 'TTTTTTTTTTTT', 'AAAAAAACCC', 'AAACG', 'ATTTCCCCGGGG', 'AAACC', 'ATGGGGGGGG', 'AAAGGGGGGGGG', 'AAAAAGG', 'AAACGGGGGGG', 'TTGGGGGGGG', 'AAATTTTCGG', 'CCCGGGG', 'TTCCCGG', 'TT', 'AAAAATTT', 'AAAAAATTTCCC', 'AAAAATTG', 'TG', 'AAAAATCCGG', 'AAAAATTC', 'TC', 'AAAAAGGGGGG', 'AC', 'AG', 'ATCCCCCCG', 'ATCCCCCCC', 'AT', 'AAAATTTCCGG', 'TTCCGGGG', 'ACCCCGGGG', 'AAAATTTGGGGG', 'AAATGGGGGGGG', 'AACCCCCGGG', 'AATTTTTCGG', 'AAAAATCGGGGG', 'AGGGGGGGGG', 'ACCCG', 'ATCCCCG', 'ACCGGGGGGGGG', 'ATCCCCC', 'AAATCG', 'AAATCC', 'AAAAAACCCGG', 'AAATTTCCCCG', 'TTTTTTGGGGGG', 'AAATTTCCCCC', 'AAATGGGGGGG', 'AAATTTTGGGGG', 'TCCCCCCCCCG', 'TCCCCCCCCCC', 'TTTTTGGGG', 'ATTCCCCCCGG', 'AAAACC', 'AAAATCCCCG', 'AAAAAATTTTTT', 'AAAACG', 'AAAATCCCCC', 'AAACGGGGG', 'ATTGGGG', 'CCGGGGG', 'ATTTTTTTCC', 'AAAAAATG', 'AAAAAAAATCG', 'TTCCCCCCCC', 'AAAAAAAATCC', 'TTCCCCCCCG', 'AGGG', 'TTTTTTTCCCC', 'AATTCCGGG', 'ATCCCCCCCGG', 'TTTTTCGGGGGG', 'AAAATCCCCGGG', 'ATCCCCCGGGG', 'AAATTTTTCGGG', 'AATTTTTTGGG', 'AAATCCCCCGGG', 'AAACCCGGGGG', 'AATCCCGGGG', 'AAATTGG', 'AAAAATTTGG', 'AAAACCGGGG', 'AAAATTTTTC', 'ACCCCCCCCC', 'CCCGGG', 'AAAATTTTTG', 'ACCCCCCCCG', 'CCCCGGGGGGGG', 'GGG', 'AAAATTTTTT', 'AAAAAACCGG', 'AATTC', 'AAAAAAATCGGG', 'ATTTTTCCCCC', 'ATTTTTCCCCG', 'ACCCC', 'TTTTTTTTTTCG', 'AATTGGGGG', 'TTTTTTTTTTCC', 'ATTTTCCC', 'ATTTTCCG', 'AAAAACCCCGG', 'AAAATTTGG', 'AATTCCCGGGG', 'AAAAGGGGG', 'TCCCCCCCCG', 'TCCCCCCCCC', 'AACCCCCCCGG', 'ATCCCGGG', 'AAACCCCGGG', 'GGGG', 'AATCCCCCCC', 'AATCCCCCCG', 'AAATTTTTCCC', 'TTCCCGGGGGGG', 'AAATTTTTCCG', 'AAATTTTT', 'TGGGG', 'AAAAAAAACGG', 'AATTCGGGGG', 'AAATTTTG', 'AAATTTTC', 'AAACCCG', 'AAAAATTTTTGG', 'AAACCCC', 'TCCCGGGGG', 'TTTTTCCCCCG', 'AAATTCCGG', 'AATCC', 'AATCG', 'AATTCGGGG', 'AAAAAACC', 'AAAAAACG', 'TTCCCCCGGG', 'AAAATTTTCCCG', 'AAAATTTTCCCC', 'TTCCCCCCCGGG', 'AAACCGGGG', 'GGGGG', 'AATCCCC', 'AATTTTGGG', 'AATCCCG', 'AATTGGGGGGGG', 'TTTTCCCCGG', 'AAAAAATCGGG', 'AAATTCCGGG', 'ATTTCCCCCCGG', 'AACCGG', 'AAAAATG', 'AAAAATC', 'AAAACCCCGG', 'TTTTTTTTCCCC', 'AAAAATT', 'AATTTTTTTTG', 'AGGGGGGGGGGG', 'TCCGGGG', 'AAAAAATTGG', 'AAAAAAACCGGG', 'TGGGGGGGGGG', 'AACCCGG', 'AAAAGGGG', 'AATTTCCCGG', 'ACCCCCGGGGG', 'AAAATCGGGG', 'ACCCCCCGGG', 'AATTTGGGGGG', 'TTCCCCCCGGG', 'AATTTGGGGG', 'AATTTTTCCCCG', 'TTTTTTTTGGG', 'AAAAAAATGG', 'CCCCCCGGG', 'AAATTCCCCCG', 'AAAATCGGGGGG', 'AAATTCCCCCC', 'AAAAAATTTCC', 'AAAAAATTTCG', 'AATTTTTCCCCC', 'TTTTTCCCCCC', 'ATTCCCCGGGG', 'AAAATTTTCGGG', 'CCGG', 'AAAAAGGG', 'AACCCCCCGG', 'AAACCCCCCG', 'AAACCCCCCC', 'ATTTTTTTTTTC', 'AAAATTTCCCGG', 'TTTCCCCCCGGG', 'ATTTTCCCG', 'ATTTTCCCC', 'AAGG', 'AAAAAAAATCCG', 'AAAAAAAATCCC', 'AAATCCGGGGG', 'ATTTTCCCCGG', 'CCGGG', 'TTTTCGGGGG', 'TTTCCCGGG', 'AAAAATTTTTTC', 'AAAAATTTTTTG', 'ACGGGGGG', 'ATTCCCCCCGGG', 'ATTTTTTTTCC', 'ATTTTTTTTCG', 'ATCCCCCCCGGG', 'AAATTTT', 'AATT', 'AAAAATTTTT', 'AAAAAATTCC', 'TTTCCCCCGG', 'AAAAAATTCG', 'AATGGG', 'ACCCCGG', 'AATC', 'AAATTTG', 'TCCCCCGGGG', 'AAATTTC', 'TTCGGGGGGGG', 'AAAAATTTTG', 'AAAAATTTTC', 'AAG', 'AAA', 'ACGG', 'AAC', 'AAATTGGGGG', 'AAT', 'TTTTTTTTTCCC', 'TTTTTTCCCGGG', 'ATCCCCCCGGG', 'AACGGGGGG', 'TTTTTC', 'AATTTTTT', 'TTTTTG', 'CCGGGGGGG', 'AATTTTTG', 'AATTTTTC', 'TTTTTT', 'AAAATTTCCG', 'AAAATTTCCC', 'AATTTTTTGGGG', 'AAAATTTTTTGG', 'AATCCCCCC', 'AATCCCCC', 'AACCGGGGGGG', 'TTTCCGG', 'AATCCCCG', 'TTTTCCCCGGG', 'AAAGGGGGG', 'AATCCCCCG', 'ATCCCGGGGGGG', 'AAAAAAAAACCG', 'AAAAAAAAACCC', 'AATCCCCGGGGG', 'AAAAATTCCGG', 'ACCCCCCCGGGG', 'ATTTTTGGGGGG', 'TTTTCGG', 'ATTTTTTCCGGG', 'AAAAATTTTCCC', 'AGGGGGGG', 'AAACCCCGG', 'AAAATTTTGG', 'AAAAATTCG', 'ATTTCCG', 'AAAAATTCC', 'AAAAAACCGGG', 'AACCCGGGGG', 'TTTTTTTGGGGG', 'AAAAAATGGGGG', 'ATTTTTCGG', 'TTTCGGGG', 'TCCCGGGGGGGG', 'AAATTTTTCCGG', 'TTTTTCC', 'TTTTTCG', 'AACGGGG', 'AATTTCGGGG', 'AAAAATTTCCGG', 'AAATTTTCCGG', 'AATTTTTGGGGG', 'TTTTCCGGGG', 'AATTCCCGG', 'ATTCCGG', 'AAAATCCGG', 'ATTTTCGGGG', 'AATTTCGGG', 'ACCGGG', 'AATCCC', 'AATTTGGG', 'AATCCG', 'TTCCGGGGGGGG', 'TGGG', 'AAATCCCCCCGG', 'AAAATCCCCCGG', 'AATTTTTTCGG', 'ATTCCCCCGGGG', 'AAATTTTTTCC', 'AAATTTTTTCG', 'AAAAAATCCCGG', 'AAAATCCGGGGG', 'TCCCGGGGGG', 'ACCCCC', 'TTTTTTTCCGG', 'AAAAAATTTTG', 'ACCCCG', 'AATTTTTCCG', 'CCCCCCCCCCG', 'AATTTTTCCC', 'CCCCCCCCCCC', 'AAAAAAATTC', 'AACCCCCGG', 'AAAAAAATTG', 'TTTTTTTCG', 'TTTTTTTCC', 'CCCCGG', 'AACGGGGGGG', 'ACCCCCCCCCGG', 'AAAAAAATTT', 'CCCCCCCCCCGG', 'ATTCCCGGG', 'ATTCGGGGGGG', 'AAATTCGGGGGG', 'AAAAAAATCCGG', 'AAAAATTGGGG', 'TCGGGGG', 'AAGGGG', 'ATTTTTTCCCCC', 'ATTTTTTCCCCG', 'TCCGGGGGGGGG', 'AAAAACCCGGG', 'AATCCCCGGGG', 'AAAAATTGGG', 'ACCCGGGGGGG', 'ATTTCCCGGGGG', 'AACG', 'AAAAATCCCCCG', 'AAAAATCCCCCC', 'AAACGGGGGG', 'TTTTCG', 'AACCCCCCGGG', 'TTTTCC', 'AAAAACCCCCCC', 'ATTTTTCGGGG', 'AAAAAAAAGGG', 'AAAAAATTCCCC', 'TTTTCGGGGGG', 'TTCCCCCC', 'ACCCCCCCC', 'AAAGGGGGGGG', 'TTCCCCCGGGGG', 'AAAAAACGGG', 'AAATTTTGG', 'CCCCCCCGGGG', 'AAGGGGG', 'CCCCCCCCGGGG', 'TCCCGG', 'AAAAAAACGGG', 'AAAAATCCCCG', 'AAAAATCCCCC', 'AATTTTCGG', 'ATTCCCCGGGGG', 'AAAAAAAAATCG', 'AAAAAAAAATCC', 'CGGGGGG', 'AAATTTTTTTGG', 'TTTTTTTTCCGG', 'AAATTTCGG', 'AAAAACGGG', 'AAAAATTTTGGG', 'AATTTTCCCGGG', 'AAATTTTTTCGG', 'AAAAAAACCCGG', 'AAAACGGGGGGG', 'AAAAAAAA', 'AATCGGGGGGGG', 'AAAAAAAC', 'AAAAAAAG', 'TTCCCGGGGGG', 'AAATTTTTCC', 'ACCCCGGG', 'AAATTTTTCG', 'AAAAAAAT', 'AAAAATTTTCCG', 'CCCCCCG', 'TCCCCGG', 'CCCCCCC', 'AATTTTCCCG', 'ATCGGGG', 'ATTTTCCGGGG', 'AACCCCCCGGGG', 'AAAGGGG', 'AAAATTGGGG', 'AAAATGGGG', 'AATTTTCG', 'ATCGGGGGGGGG', 'AATTTTCC', 'ACGGGGGGGG', 'AAAAACGG', 'ATTTTGGGGG', 'ATTTTTTTCGGG', 'CCCCCCCCCC', 'TTTCCCCCCCGG', 'CCCCCCCCCG', 'AAAAACCCCCCG', 'ATCGGGGGG', 'AATTTTTTTTGG', 'TTTTTTTTTG', 'AAAATTGGGGG', 'AATTTTTTTTC', 'AAAATCCCGGGG', 'AATTTTTTTTT', 'TTTTTTTTTGG', 'AAAAAATGG', 'AAAATTTTCCC', 'AAAATTTTCCG', 'AATTTTTTG', 'AATTTTTTC', 'AAATCCCCGGGG', 'CGG', 'AGGGG', 'CCCGG', 'CCCCGGGGG', 'ATTCCGGG', 'AAAATTTTGGGG', 'AATTTTTTT', 'AAAAAAATTGG', 'AAAAAATTG', 'ATTTCCGG', 'ATTTCCC', 'AATTTTCCCCCG', 'AATTTTCCCCCC', 'AAATCGGGGG', 'ATTTCGGGGGG', 'ATTTCGGGGGGG', 'TTTTCCGGGGGG', 'ACCGGGGGG', 'AATCGGGGGGG', 'AATTCCCCCCC', 'CCCCCCGGGGG', 'AATTCCCCCCG', 'AAAAAAATGGGG', 'AAATTCCGGGG', 'TTTTTTTGGG', 'AAAATTTCGGG', 'TTTTTTCCCCGG', 'ATTTGGG', 'TTCGGGG', 'AAATCCCCCGG', 'AACCCGGGGGGG', 'ATTCGGG', 'AAATCCG', 'AAATCCC', 'ATTTTTCCCCGG', 'TTTTCCCCCGG', 'TTTTTTCG', 'ATTTTGGGG', 'AAAATTCCCCC', 'TTCGGGGGGGGG', 'AAACCCGGGGGG']
 
 #http://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
 class StreamToLogger(object):
-	"""
-	Fake file-like stream object that redirects writes to a logger instance.
-	"""
+"""
+Fake file-like stream object that redirects writes to a logger instance.
+"""
 	def __init__(self, logger, log_level=logging.INFO):
 		self.logger = logger
 		self.log_level = log_level
@@ -38,61 +39,71 @@ logging.basicConfig(
 )
 
 #reads the config file with all global entries
-def read_configfile():
+def read_configfile(config_filename):
 
-	standard_primer_settings_filename = ''
-	primer3_directory = ''
-	primer3_exe = ''
-	servername = ''
-	serverport = ''
-	gfServer = ''
-	gfPCR = ''
-	data_dir = ''
-	
-	config = ConfigParser.ConfigParser()
-	config.read('data/batchprimer.conf')
+	global standard_primer_settings_filename
+	global primer3_directory
+	global primer3_exe
+	global servername
+	global serverport
+	global gfServer
+	global gfPCR
+	global data_dir
+
+	config = ConfigParser.RawConfigParser()
+	config.read(config_filename)
 	for section in config.sections():
 		for option in config.options(section):
 			if option.upper() == 'PRIMER3_SETTINGS':
-				standard_primer_settings_filename = config.get(section, option)
+				standard_primer_settings_filename = str(config.get(section, option)).strip()
 			elif option.upper() == 'PRIMER3_DIRECTORY':
-				primer3_directory = config.get(section, option)
+				primer3_directory = str(config.get(section, option)).strip()
 			elif option.upper() == 'PRIMER3_EXE':
-				primer3_exe = config.get(section, option)
+				primer3_exe = str(config.get(section, option)).strip()
 			elif option.upper() == 'SERVERNAME':
-				servername = config.get(section, option)
+				servername = str(config.get(section, option)).strip()
 			elif option.upper() == 'SERVERPORT':
-				serverport = config.get(section, option)
+				serverport = int(config.get(section, option))
 			elif option.upper() == 'GFSERVER':
-				gfServer = config.get(section, option)
+				gfServer = str(config.get(section, option)).strip()
 			elif option.upper() == 'GFPCR':
-				gfPCR = config.get(section, option)
+				gfPCR = str(config.get(section, option)).strip()
 			elif option.upper() == 'DATADIR':
-				data_dir = config.get(section, option)
+				data_dir = str(config.get(section, option)).strip()
+			elif option.upper() == 'MAXTHREADS':
+				max_threads = int(config.get(section, option))
+			elif option.upper() == '-WAITINGPERIOD':
+				waiting_period = float(config.get(section, option))
+			elif option.upper() == '-TIMEOUT':
+				timeout = int(config.get(section, option))
 			else:
 				print ('getConfig: unknown conf entry: ' + option)
+
 	if standard_primer_settings_filename == '' or \
 		primer3_directory == '' or \
-		primer3_exe == '' or \
+		(primer3_exe == '' and remote_server == False) or \
 		servername == '' or \
 		serverport == '' or \
 		gfServer == '' or \
 		gfPCR == '' or \
 		data_dir == '':
 		print ('getConfig: Missing entry')
-		return ''
+		return False
 	else:
-		return {'PRIMER3_SETTINGS': standard_primer_settings_filename, \
-			'PRIMER3_DIRECTORY':primer3_directory, \
-			'PRIMER3_EXE':primer3_exe, \
-			'SERVERNAME':servername, \
-			'SERVERPORT':serverport, \
-			'GFSERVER':gfServer, \
-			'GFPCR':gfPCR, \
-			'DATADIR':data_dir}
+		#return {'PRIMER3_SETTINGS': standard_primer_settings_filename, \
+			#'PRIMER3_DIRECTORY':primer3_directory, \
+			#'PRIMER3_EXE':primer3_exe, \
+			#'SERVERNAME':servername, \
+			#'SERVERPORT':serverport, \
+			#'GFSERVER':gfServer, \
+			#'GFPCR':gfPCR, \
+			#'DATADIR':data_dir}
+		return True
 
-#prints help message
 def print_help():
+	"""
+	Prints a help message with all input parameters
+	"""
 	print 'Usage'
 	print '-FASTA %filename : Specifies filename of fasta for which repeats and appropriate primers will be searched, e.g. -FASTA BRCA_markers.fa'
 	print '-PRIMER3_SETTINGS %filename : Specifies filename which specifies the settings which are used for searching primers, e.g. -PRIMER3_SETTINGS BRCA_markers_primers.txt'
@@ -105,16 +116,21 @@ def print_help():
 	print '-GFSERVER filename : Specifies the location of the gfServer.exe'
 	print '-GFPCR filename : Specifies the location of the gfPCR.exe'
 	print '-MAX_SIMILARITY number : Specifies the maximal similarity for two primer pairs in order to be accepted, from 0 to 1, default = 0.5'
-	print '@filename : Specifies a file which list the above mentioned arguments, arguments used with -ARGUMENT will overwrite the arguments in the file, NOT IN USE YET'
+	print '-@ filename : Specifies a file which list the above mentioned arguments, arguments used with -ARGUMENT will overwrite the arguments in the file'
 	print '-NESTED : Specifies whether the program should search for nested primers if not enough pairs have been found (0), never search (-1) or always search for primers (1)'
 	print '-OUTPUT filename : Specifies the output filename where all the primers and target will be saved, default: batchprimer_output.txt'
 	print '-MAXTHREADS number : Specifies how many threads are started in parallel, should be less than your number of CPU cores'
 	print '-REMOVETEMPFILES boolean : Specifies whether temporary files (e.g. Primer3 input and output) will be deleted after the program finishes. Default is FALSE'
-	return True
+	print '-SHUTDOWN number : Shuts the isPCR server down after ### minutes, e.g. -SHUTDOWN 50, the server will be shutdown 50 minutes after the first job was started'
+	print '-REMOTESERVER boolean : Specifies whether primer3 and gfServer are running on a different server than the main python module. Default is FALSE'
+	print '-WAITINGPERIOD float : Specifies the time in seconds between server ping when a remote server is started, default = 0.25'
+	print '-TIMEOUT integer : Specifies the time in seconds until a remote server start is declared unsuccesful, default = 120'
+	print '-RUNNAME string : Specifies the name of the run, only used for identifying jobs on the remote server'
 
-#tests the gfServer and returns True if the server is working
 def test_server(gfServer, servername, serverport):
-
+"""
+tests the gfServer and returns True if the server is working
+"""
 	#old code, can be removed later
 	#process = Popen([gfServer,'status', servername, str(serverport)], stdout = subprocess.PIPE, stdin = subprocess.PIPE, stderr = subprocess.PIPE, shell = True)
 	#x = process.communicate()[0]
@@ -135,8 +151,10 @@ def test_server(gfServer, servername, serverport):
 	else:
 		return False
 
-#takes a list of isPCRoutputs and counts the numbers of amplicons for a primer pair
 def count_amplicons(isPCRoutput, primerF, primerR):
+"""
+Takes a list of isPCRoutputs and counts the numbers of amplicons for a primer pair
+"""
 	if (not primerF in isPCRoutput) and (not primerR in isPCRoutput) > -1:
 		return -1
 	else:
@@ -148,8 +166,10 @@ def count_amplicons(isPCRoutput, primerF, primerR):
 		else:
 			return isPCRfragment.count('>')
 
-#creates a list of sequences which should be excluded from primer binding sites
 def exclude_list(sequence):
+"""
+Creates a list of sequences which should be excluded from primer binding sites
+"""
 	to_exclude = []
 	sequence = sequence.upper()
 	for ssr in ssr_list:
@@ -162,8 +182,10 @@ def exclude_list(sequence):
 				to_exclude.append(ssr * max_length)
 	return to_exclude
 
-#imports parameters from commandline
 def import_parameters(*arguments):
+"""
+imports parameters from commandline
+"""
 	global fasta_filename
 	global standard_primer_settings_filename
 	global primer3_directory
@@ -180,6 +202,14 @@ def import_parameters(*arguments):
 	global remove_temp_files
 	global data_dir
 	global max_similarity
+	global shutdown
+	global remote_server
+
+	shutdown = -1
+	remote_server = False
+	waiting_period = 0.25
+	timeout = 120
+
 	data_dir = './'
 
 	if len(sys.argv) > 1 or len(arguments) == 0:
@@ -193,6 +223,12 @@ def import_parameters(*arguments):
 		for argument in arguments[0][0]:
 			input_args.append(argument)
 
+	#reads config file
+	for i in range(len(input_args)):
+		if str(input_args[i]).startswith('-@'):
+			read_configfile(input_args[i + 1])
+
+	#reads named arguments
 	for i in range(len(input_args)):
 		if str(input_args[i]).upper() == '-FASTA':
 			fasta_filename = input_args[i + 1]
@@ -228,9 +264,20 @@ def import_parameters(*arguments):
 			data_dir = input_args[i + 1]
 		elif str(input_args[i]).upper() == '-MAX_SIMILARITY':
 			max_similarity = float(input_args[i + 1])
-
-	print "fata"
-	print fasta_filename
+		elif str(input_args[i]).upper() == '-SHUTDOWN':
+			shutdown = int(input_args[i + 1])
+		elif str(input_args[i]).upper() == '-REMOTESERVER':
+			if 'TRUE' in str(input_args[i + 1]).upper()
+				remote_server = True
+			elif 'FALSE' in str(input_args[i + 1]).upper()
+				remote_server = False
+			else:
+				remote_server = bool(input_args[i + 1])
+		elif str(input_args[i]).upper() == '-WAITINGPERIOD':
+			waiting_period = float(input_args[i + 1])
+		elif str(input_args[i]).upper() == '-TIMEOUT':
+			timeout = int(input_args[i + 1])
+			
 	if (fasta_filename == '' or \
 		standard_primer_settings_filename == '' or \
 		primer3_directory == '' or \
@@ -241,24 +288,28 @@ def import_parameters(*arguments):
 		gfServer == '' or \
 		gfPCR == '' or \
 		abs(nested) > 1):
-		print fasta_filename
-		print standard_primer_settings_filename
-		print primer3_directory
-		print primer3_exe
-		print servername
-		print serverport
-		print gfServer
-		print gfPCR
-		print nested
-		print 'Missing arguments!'
+		print 'Input arguments'
+		print 'fasta_filename: ' + fasta_filename
+		print 'standard_primer_settings_filename: ' + standard_primer_settings_filename
+		print 'primer3_directory: ' + primer3_directory
+		print 'primer3_exe: ' + primer3_exe
+		print 'servername: ' + servername
+		print 'serverport: ' + str(serverport)
+		print 'max_repeats: ' + str(max_repeats)
+		print 'gfServer: ' + gfServer
+		print 'gfPCR: ' + gfPCR
+		print 'nested: ' + str(nested)
+		print 'Missing arguments!\n\n'
 		print_help()
 		exit()
 
 	return True
 
-#finds the longest repeat in a given sequence
-#max_length of repeat unit
 def find_repeats(sequence, max_length):
+"""
+finds the longest repeat in a given sequence
+max_length of repeat unit
+"""
 	longest_repeat = ''
 
 	for ssr in ssr_list:
@@ -269,11 +320,13 @@ def find_repeats(sequence, max_length):
 			i += -1
 			if len(ssr * i) > len(longest_repeat) and i > 1:
 				longest_repeat = ssr * i
-	
+
 	return longest_repeat
 
-#finds the length of dinucleotide repeats, i.e. ACTAGAGAGTCA would return 6
 def dinucleotide_repeat(sequence):
+"""
+finds the length of dinucleotide repeats, i.e. ACTAGAGAGTCA would return 6
+"""
 	nucleotides = 'ATGC'
 	max_repeat = 0
 	for i in range(4):
@@ -285,10 +338,11 @@ def dinucleotide_repeat(sequence):
 				max_repeat = n - 1
 	return max_repeat * 2
 
-#creates the input file for primer3
-#if primerF and primerR are given, primerR is kept fixed and primerF is excluded, useful for nested PCR
 def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
-
+"""
+creates the input file for primer3
+if primerF and primerR are given, primerR is kept fixed and primerF is excluded, useful for nested PCR
+"""
 	if len(target) >= len(sequence) or (not target in sequence):
 		return False
 	new_filename = 'primer3_' + makefilename(seq_name)
@@ -324,15 +378,19 @@ def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
 
 	return True
 
-#cleans a filename
 def makefilename(old_name):
+"""
+cleans a filename
+"""
 	old_name = old_name.replace(' ', '_')
 	old_name = old_name.translate(None, '+=!/\<>:"|?*\'')
 	return old_name
 
-#takes a primer pair, a input sequence for which the primers were designed and checks in the isPCRoutput if the target sequence is amplified or something else
-#also checks if the number of amplicons is exactly one
 def check_specificity(primerF, primerR, targetSequence, isPCRoutput):
+"""
+takes a primer pair, a input sequence for which the primers were designed and checks in the isPCRoutput if the target sequence is amplified or something else
+also checks if the number of amplicons is exactly one
+"""
 	found = False
 	isPCRamplicon = ''
 	temp_output = isPCRoutput.splitlines(True)
@@ -368,10 +426,11 @@ def check_specificity(primerF, primerR, targetSequence, isPCRoutput):
 		else:
 			return False
 
-#takes primer3output and returns the amplicon based on primerF and primerR bindingsites and input sequence
-#returns the amplicon without the primers
 def get_amplicon_from_primer3output(primerF, primerR, primer3output):
-
+"""
+takes primer3output and returns the amplicon based on primerF and primerR bindingsites and input sequence
+returns the amplicon without the primers
+"""
 	amplicon_start = 0
 	primerF_found = False
 	sequence = ''
@@ -413,9 +472,11 @@ def get_amplicon_from_primer3output(primerF, primerR, primer3output):
 
 	return sequence[amplicon_start - 1 + len(primerF):amplicon_end]
 
-#takes a primer pair and primer3output as input
-#returns GC-content, primer TM, product size, product TM
 def primer_stats(primerF, primerR, primer3output):
+"""
+takes a primer pair and primer3output as input
+returns GC-content, primer TM, product size, product TM
+"""
 	primerF = primerF.upper()
 	primerR = primerR.upper()
 	temp_output = primer3output.splitlines()
@@ -448,10 +509,12 @@ def primer_stats(primerF, primerR, primer3output):
 		print 'Error: Primer not found in output'
 		return '0', '0', '0', '0', '0'
 
-#takes isPCRoutput and searches for the name of the amplicon which is exactly primer,amplicon,primerR
-#primerR will be reversed
-#amplicon has to be in lower score, primers in upper score
 def amplicon_name(primerF, primerR, amplicon, isPCRoutput):
+"""
+takes isPCRoutput and searches for the name of the amplicon which is exactly primer,amplicon,primerR
+primerR will be reversed
+amplicon has to be in lower score, primers in upper score
+"""
 	primerR = primerR.upper()
 	primerRold = primerR
 	#reverses the reverse primer
@@ -474,9 +537,11 @@ def amplicon_name(primerF, primerR, amplicon, isPCRoutput):
 		i += 1
 	return ''
 
-#takes input fasta and returns the name of the amplicon which is exactly primer,amplicon,primerR
-#primerR will be reversed
 def name_from_fasta(primerF, primerR, amplicon, fasta):
+"""
+takes input fasta and returns the name of the amplicon which is exactly primer,amplicon,primerR
+primerR will be reversed
+"""
 	#reverses the reverse primer
 	primerR = primerR.upper().replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1]
 	temp_output = fasta.splitlines()
@@ -494,10 +559,12 @@ def name_from_fasta(primerF, primerR, amplicon, fasta):
 
 	return ''
 
-#determines the similarity between two oligos
-#searches for the longest overlap
-#X is used a placeholder, so it will match any character
 def similarity(oligo1, oligo2):
+"""
+determines the similarity between two oligos
+searches for the longest overlap
+X is used a placeholder, so it will match any character
+"""
 	if len(oligo2) > len(oligo1):
 		oligo1, oligo2 = oligo2 , oligo1
 	if len(oligo1) == 0 or len(oligo2) == 0:
@@ -514,9 +581,11 @@ def similarity(oligo1, oligo2):
 			best_score = score
 	return float(best_score) / float(len(oligo2))
 
-#takes primers, amplicon, isPCR output and primer3 output as input
-#generates output which can be written to log file
 def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
+"""
+takes primers, amplicon, isPCR output and primer3 output as input
+generates output which can be written to log file
+"""
 	output = 'Primer pair:, ' + primerF + ', ' + primerR + '\n'
 	output += (str('Amplicon: ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2]).replace(' ', ', ') + ', ' + amplicon_name(primerF, primerR, amplicon.lower(), isPCRoutput)).replace('\n', '')
 	output += primerF.upper() + amplicon.lower() + primerR.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1] + '\n'
@@ -526,13 +595,14 @@ def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
 
 	return output
 
-#checks if an input sequence looks like a proper single fasta sequence
-def check_fasta(sequence, fasta_type, strict):
 
-	#strict: boolean, enforces perfect format, i.e. no extra line breaks or spaces, etc.
-	#sequence: string the input sequence
-	#fasta_type: protein or nucleotide
-	
+def check_fasta(sequence, fasta_type, strict):
+"""
+checks if an input sequence looks like a proper single fasta sequence
+strict: boolean, enforces perfect format, i.e. no extra line breaks or spaces, etc.
+sequence: string the input sequence
+fasta_type: protein or nucleotide
+"""
 	passed = True
 	fasta_type = fasta_type.upper()
 
@@ -582,7 +652,7 @@ def check_fasta(sequence, fasta_type, strict):
 	return passed
 
 def get_primers(sequence):
-	
+
 	global max_primerpairs
 	global nested
 	#Step 3: creates primer3 input file for each sequence
@@ -611,10 +681,26 @@ def get_primers(sequence):
 	temp_file.close()
 	
 	stdoutput += 'Primer3 subprocess started\n'
-	sys.stdout = open(str(os.getpid()) + ".out", "w")
-	process = Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
-	process.stdin.write(primer3_input)
-	primer3_output += process.communicate()[0] + '\n'
+	if remote_server:
+		base_url = 'http://52.29.102.142:8003/'
+		#checks if CPUs are available
+		#response = urllib2.urlopen(url + 'cpuInfo').read()
+		local_timeout = 1200
+		#while response['CPU Utilization'] > 80 and local_timeout > 0:
+		#	response = urllib2.urlopen(url + 'cpuInfo').read()
+		#	time.wait(1)
+		#	local_timeout += -1
+		if local_timeout > 0:
+			params = urllib.urlencode({'Run_name': run_name + '_' + os.getpid(), 'Primer3 Input': primer3_input})
+			primer3_output = urllib2.urlopen(url + 'primer3', params).read()
+			primer3_output += '\n'
+		else:
+			print 'Something went wrong, the computer server seems to be overwhelmed with work'
+	else:
+		sys.stdout = open(str(os.getpid()) + ".out", "w")
+		process = Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
+		process.stdin.write(primer3_input)
+		primer3_output += process.communicate()[0] + '\n'
 	stdoutput += 'Primer3 finished\n'
 	primer3_list = []
 
@@ -830,6 +916,47 @@ def get_primers(sequence):
 	temp.close()
 	return output, stdoutput
 
+def start_remote_server():
+	"""
+	Starts a remote AWS instance where primer3 and gfServer run
+	Returns True if the server was started succesfully
+	"""
+	import boto3
+	import urllib2
+	import socket
+
+	global servername
+	global hostname
+	global compute_host
+
+	ec2 = boto3.resource('ec2')
+	instances = ec2.instances.all()
+	if len(list(instances)) < 2:
+		print 'No second AWS instance was found!'
+		return False
+
+	hostname = socket.gethostbyaddr(socket.gethostname())[0]
+	compute_host = ''
+	for instance in instances:
+		if instance.private_name_dns != hostname and compute_host == '':
+			compute_host = instance.id
+			instance.start()
+			#wait until the instance is up and running
+			local_timeout = timeout
+			while instance.state['Code'] != 16 and local_timeout > 0:
+				time.sleep(waiting_period)
+				local_timeout += -waiting_period
+			if timeout < 0:
+				print 'Server start was unsuccesful, the timeout period was exceeded'
+				return False
+			if not test_server(gfServer, servername, serverport):
+				servername = instance(compute_host).private_dns_name.split('.')[0] #get the base hostname
+				if not test_server(gfServer, servername, serverport):
+					print 'Server start was succesful, but gfServer does not respond'
+					return False
+				else:
+					return True
+
 def start_repeat_finder(started_via_commandline, *arguments):
 
 	global max_similarity
@@ -870,7 +997,11 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	max_threads = 1
 	global remove_temp_files
 	remove_temp_files = False
-
+	global hostname
+	hostname = ''
+	global compute_host
+	compute_host = ''
+	
 	#redirects output if not started via commandline
 	if started_via_commandline:
 		import_parameters()
@@ -891,8 +1022,8 @@ def start_repeat_finder(started_via_commandline, *arguments):
 		print 'Fasta file could not be found'
 		print fasta_filename
 	elif not os.path.isfile(standard_primer_settings_filename):
+		print os.path.isfile(standard_primer_settings_filename)
 		print 'Primer3 settings file could not be found'
-		print standard_primer_settings_filename
 	elif not os.path.isfile(primer3_exe):
 		print 'Primer3.exe file could not be found'
 		print primer3_exe
@@ -912,7 +1043,15 @@ def start_repeat_finder(started_via_commandline, *arguments):
 		print 'Please specific a legal numerical value for the maximum amount of threads'
 	#test if the in-silico PCR server is ready
 	elif not test_server(gfServer, servername, serverport):
-		print 'gfServer not ready, please start it'
+		if remote_server == False:
+			print 'gfServer not ready, please start it'
+		else:
+			print 'gfServer not ready, it is started now'
+			if start_remote_server():
+				print 'Remote server was successfully started'
+				parameters_legal = True
+			else:
+				print 'Remote server could not be started'
 	else:
 		parameters_legal = True
 
@@ -921,11 +1060,12 @@ def start_repeat_finder(started_via_commandline, *arguments):
 
 	#location of hg18.2bit
 	pcr_location = gfPCR[0:len(gfPCR) - len('gfPCR') ]
-	
+
 	#########################################
 	#passed all tests, now program can start#
 	#########################################
-	
+
+	start_time = time()
 	###multiprocess
 	print 'program started, please be patient'
 	p = Pool(processes = max_threads)
