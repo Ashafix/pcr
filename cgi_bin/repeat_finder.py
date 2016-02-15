@@ -682,20 +682,25 @@ def get_primers(sequence):
 	
 	stdoutput += 'Primer3 subprocess started\n'
 	if remote_server:
-		base_url = 'http://52.29.102.142:8003/'
-		#checks if CPUs are available
-		#response = urllib2.urlopen(url + 'cpuInfo').read()
-		local_timeout = 1200
-		#while response['CPU Utilization'] > 80 and local_timeout > 0:
-		#	response = urllib2.urlopen(url + 'cpuInfo').read()
-		#	time.wait(1)
-		#	local_timeout += -1
-		if local_timeout > 0:
-			params = urllib.urlencode({'Run_name': run_name + '_' + os.getpid(), 'Primer3 Input': primer3_input})
-			primer3_output = urllib2.urlopen(url + 'primer3', params).read()
-			primer3_output += '\n'
-		else:
-			print 'Something went wrong, the computer server seems to be overwhelmed with work'
+		run_name = sequence.split('\n', 1)[0][1:]
+		run_name += '_' + os.getpid()
+		base_url = 'localhost:8003/'
+		params = urllib.urlencode({'Run_name': run_name, 'Primer3_Input': primer3_input})
+		primer3_request = urllib2.Request(url, params)
+		primer3_response = urllib2.urlopen(req)
+		primer3_status = ''
+		while primer3_status != 'finished':
+			params = urllib.urlencode({'run_name': run_name})
+			req = urllib2.Request(baseurl + '/job_status', params)
+			response = urllib2.urlopen(req).read()
+			if 'status' in response.keys():
+				primer3_status = json.loads(response)['job_status']
+		req = urllib2.Request(baseurl + '/primer3_result', params)
+		response = urllib2.urlopen(req)
+		primer3_output += response.read()
+		primer3_output += '\n'
+		print (primer3_output)
+		
 	else:
 		sys.stdout = open(str(os.getpid()) + ".out", "w")
 		process = Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
@@ -1061,9 +1066,9 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	#location of hg18.2bit
 	pcr_location = gfPCR[0:len(gfPCR) - len('gfPCR') ]
 
-	#########################################
-	#passed all tests, now program can start#
-	#########################################
+	#############################################
+	###passed all tests, now program can start###
+	#############################################
 
 	start_time = time()
 	###multiprocess
