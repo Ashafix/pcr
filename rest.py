@@ -1,29 +1,80 @@
-from BaseHTTPServer import HTTPServer
-from BaseHTTPServer import BaseHTTPRequestHandler
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import json
 import psutil
-from cgi import parse_header
-import os
-from subprocess import Popen, PIPE
-import subprocess
-import urllib
-import sys
-import threading
-import Queue as queue #python2.7
+from cgi import parse_header, parse_qs
+from subprocess import Popen
+from time import sleep
+from multiprocessing import Queue
+from threading import Thread
+from shutil import move, copy
 
-threads = []
-job_queue = queue.Queue()
+primer3_exe = 'D:\\dropbox\\PCR\\primer3_core.exe'
+max_threads = 4
+primer3_dir = 'D:/Dropbox/PCR/'
+myQueue = Queue()
+
+#dictionaries for stdit/stdout filenames and file objects
+#primary key: worker_ID
+worker_stdin = {}
+worker_stdout = {}
+tmp_file_in = {}
+tmp_file_out = {}
+
+#dictionary storing all the running processes
+processes = {}
+proc_items = {}
+
+
+#dictionary storing all jobs
+jobs = {}
+
+def worker(worker_id):
+	global tmp_file
+	global jobs
+	global proc_items
+	global worked_stdin
+	global worked_stdout
+	global tmp_file_in
+	global tmp_file_out
+	worker_stdout[worker_id] = primer3_dir + 'worker_output_' + str(worker_id) + '.txt'
+	worker_stdin[worker_id] = primer3_dir + 'worker_input_' + str(worker_id) + '.txt'
+
+	while True:
+		if not myQueue.empty():
+			proc_items[worker_id] = myQueue.get()
+			jobs[proc_items[worker_id]['run_name'][0]] = {'status': 'started'}
+			tmp_file_in[worker_id] = open(worker_stdin[worker_id], 'w')
+			tmp_file_in[worker_id].write(proc_items[worker_id]['Primer3_Input'][0].strip())
+			tmp_file_in[worker_id].close()
+			copy(worker_stdin[worker_id], primer3_dir + 'in_' + proc_items[worker_id]['run_name'][0] + '.txt')
+			tmp_file_in[worker_id] = open(worker_stdin[worker_id], 'r')
+			tmp_file_out[worker_id] = open(worker_stdout[worker_id], 'w')
+			processes[worker_id] = Popen(primer3_exe, stdout = tmp_file_out[worker_id], stdin = tmp_file_in[worker_id])
+			processes[worker_id].wait()
+			primer3_output = processes[worker_id].communicate()[0]
+			tmp_file_out[worker_id].flush()
+			tmp_file_out[worker_id].close()
+			tmp_file_in[worker_id].close()
+			move(worker_stdout[worker_id], primer3_dir + 'out_' + proc_items[worker_id]['run_name'][0] + '.txt')
+			move(worker_stdin[worker_id], primer3_dir + 'in_' + proc_items[worker_id]['run_name'][0] + '.txt')
+			jobs[proc_items[worker_id]['run_name'][0]]['status'] = 'finished'
+		else:
+			sleep(0.5)
 
 class MyRequestHandler (BaseHTTPRequestHandler) :
 
 	def do_GET(self):
-
-		if self.path == '/runningProcesses' :
-			#send response code:
+		#checks if the server is alive
+		if self.path == '/test':
 			self.send_response(200)
-			#send headers:
 			self.send_header("Content-type:", "text/html")
-			# send a blank line to end headers:
+			self.wfile.write("\n")
+			self.wfile.write('passed')
+			self.wfile.write('server is responding')
+		#returns the running processes
+		if self.path == '/runningProcesses':
+			self.send_response(200)
+			self.send_header("Content-type:", "text/html")
 			self.wfile.write("\n")
 
 			#send response:
@@ -33,18 +84,20 @@ class MyRequestHandler (BaseHTTPRequestHandler) :
 				except psutil.NoSuchProcess:
 					pass
 				self.wfile.write(pinfo)
+		#returns the CPU utilization and number of cores
 		elif self.path == '/cpuInfo':
-			#send response code:
 			self.send_response(200)
-			#send headers:
 			self.send_header("Content-type:", "text/html")
-			# send a blank line to end headers:
 			self.wfile.write("\n")
 			cpuInfo = {}
 			cpuInfo['CPU Utilization'] = int(psutil.cpu_percent())
 			cpuInfo['CPU Cores'] = int(psutil.cpu_count(logical = False))
 			json.dump(cpuInfo, self.wfile)
+		#returns the number of running primer3 processes
 		elif self.path == '/primer3processes':
+			self.send_response(200)
+			self.send_header("Content-type:", "text/html")
+			self.wfile.write("\n")
 			running_primer3 = 0
 			output = {}
 			output['Primer3 Processes'] = []
@@ -54,10 +107,9 @@ class MyRequestHandler (BaseHTTPRequestHandler) :
 						running_primer3 += 1
 						output['Primer3 Processes'].append(proc.pid)
 				except psutil.NoSuchProcess:
-					pass
-
-			output['Running Primer3 processes'] = running_primer3
-			json.dump(output, self.wfile)
+					output['Running Primer3 processes'] = running_primer3
+					json.dump(output, self.wfile)
+		#shuts the server down
 		elif self.path == '/shutdown':
 			pass
 	def parse_POST(self):
@@ -72,46 +124,58 @@ class MyRequestHandler (BaseHTTPRequestHandler) :
 		return postvars
 
 	def do_POST(self):
+		ctype, pdict = parse_header(self.headers.getheader('content-type'))
+		if ctype == 'multipart/form-data':
+			postvars = parse_multipart(self.rfile, pdict)
+		elif ctype == 'application/x-www-form-urlencoded':
+			length = int(self.headers.getheader('content-length'))
+			postvars = parse_qs(self.rfile.read(length), keep_blank_values=1)
+		else:
+			postvars = {}
+		global job
 		if self.path == '/primer3':
-			input_length = int(self.headers['content-length'])
-			primer3_input = self.rfile.read(input_length)
-			url = urllib.unquote(primer3_input).decode('utf8')
-			url = url.strip()
-			print url
 			correct_format = True
-			if not url.startswith('=') or not url.endswith('='):
+			if not 'run_name' in postvars.keys() or not 'Primer3_Input' in postvars.keys():
+				print ('Missing keys')
+				print (postvars.keys())
 				correct_format = False
-			elif not 'SEQUENCE_ID=' in url or not 'SEQUENCE_TEMPLATE=' in url:
+			elif not 'SEQUENCE_ID=' in postvars['Primer3_Input'][0] or not 'SEQUENCE_TEMPLATE=' in postvars['Primer3_Input'][0]:
+				print ('SEQUENCE_ID=' in postvars['Primer3_Input'])
+				print ('SEQUENCE_TEMPLATE=' in postvars['Primer3_Input'])
+				print (postvars['Primer3_Input'])
 				correct_format = False
 			if correct_format == False:
-				print 'Primer3 input via POST had a weird format'
-				print url
+				print ('Primer3 input via POST had a weird format')
+				print (postvars)
 				self.send_response(400)
 			else:
-				primer3_input = url[url.find('SEQUENCE_ID=')]
-				run_name = url[0:url.find('SEQUENCE_ID=')]
-				#waits until at least one CPU is idle
-				#while psutil.cpu_percent() * psutil.cpu_count(logical = False) > 80:
-				#	time.wait(1)
-				#new_thread = threading.Thread(target = primer3_thread, args = primer3_input)
-				queue.put(threading.Thread(target = primer3_thread, args=(primer3_input, run_name)))
-				for thread in threads:
-					thread.daemon = True
-					thread.start()
-				primer3_thread(primer3_input)
-				
-				self.send_response(200)
+				jobs[postvars['run_name'][0]] = {'status': 'waiting'}
+				myQueue.put(postvars)
+				self.send_response(202) #accepted
+		#returns the status of a job as specified by its run_name
+		elif self.path == '/job_status':
+			self.send_response(200)
+			self.send_header("Content-type:", "text/html")
+			self.wfile.write("\n")
+			output = {}
+			if 'run_name' in postvars.keys():
+				run_name = postvars['run_name'][0]
+				job_found = False
+				if run_name in jobs.keys():
+					job_found = 'status' in jobs[run_name].keys():
+				if job_found:
+					output['job_status'] = jobs[run_name]['status']
+				else:
+					output['job_status'] = 'job not found'
+			json.dump(output, self.wfile)
 
-def primer3_thread(primer3_input):
-	sys.stdout = open(str(os.getpid()) + ".out", "w")
-	#waits until at least one CPU is idle
-	while psutil.cpu_percent() * psutil.cpu_count(logical = False) > 80:
-		time.wait(1)
-	primer3_exe = '/bin/x86_64/primer3_core'
-	process = Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
-	process.stdin.write(primer3_input)
-	primer3_output = process.communicate()[0] + '\n'
-	return primer3_output
-
-server = HTTPServer(('', 8003), MyRequestHandler)
-server.serve_forever()
+if __name__ == '__main__':
+	#starts worker threads
+	for i in range(max_threads):
+		t = Thread(target = worker, args = (i,))
+		t.daemon = True
+		t.start()
+		print ('worker started')
+	#starts server
+	server = HTTPServer(('', 8003), MyRequestHandler)
+	server.serve_forever()
