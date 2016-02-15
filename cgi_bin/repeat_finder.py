@@ -16,9 +16,9 @@ ssr_list = ['AAAATTC', 'ATCCCCCCCG', 'AAAATTG', 'ATCCCCCCCC', 'AAATCCCGGGGG', 'A
 
 #http://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
 class StreamToLogger(object):
-"""
-Fake file-like stream object that redirects writes to a logger instance.
-"""
+	"""
+	Fake file-like stream object that redirects writes to a logger instance.
+	"""
 	def __init__(self, logger, log_level=logging.INFO):
 		self.logger = logger
 		self.log_level = log_level
@@ -128,9 +128,9 @@ def print_help():
 	print '-RUNNAME string : Specifies the name of the run, only used for identifying jobs on the remote server'
 
 def test_server(gfServer, servername, serverport):
-"""
-tests the gfServer and returns True if the server is working
-"""
+	"""
+	tests the gfServer and returns True if the server is working
+	"""
 	#old code, can be removed later
 	#process = Popen([gfServer,'status', servername, str(serverport)], stdout = subprocess.PIPE, stdin = subprocess.PIPE, stderr = subprocess.PIPE, shell = True)
 	#x = process.communicate()[0]
@@ -152,9 +152,9 @@ tests the gfServer and returns True if the server is working
 		return False
 
 def count_amplicons(isPCRoutput, primerF, primerR):
-"""
-Takes a list of isPCRoutputs and counts the numbers of amplicons for a primer pair
-"""
+	"""
+	Takes a list of isPCRoutputs and counts the numbers of amplicons for a primer pair
+	"""
 	if (not primerF in isPCRoutput) and (not primerR in isPCRoutput) > -1:
 		return -1
 	else:
@@ -167,9 +167,9 @@ Takes a list of isPCRoutputs and counts the numbers of amplicons for a primer pa
 			return isPCRfragment.count('>')
 
 def exclude_list(sequence):
-"""
-Creates a list of sequences which should be excluded from primer binding sites
-"""
+	"""
+	Creates a list of sequences which should be excluded from primer binding sites
+	"""
 	to_exclude = []
 	sequence = sequence.upper()
 	for ssr in ssr_list:
@@ -183,9 +183,9 @@ Creates a list of sequences which should be excluded from primer binding sites
 	return to_exclude
 
 def import_parameters(*arguments):
-"""
-imports parameters from commandline
-"""
+	"""
+	imports parameters from commandline
+	"""
 	global fasta_filename
 	global standard_primer_settings_filename
 	global primer3_directory
@@ -306,10 +306,10 @@ imports parameters from commandline
 	return True
 
 def find_repeats(sequence, max_length):
-"""
-finds the longest repeat in a given sequence
-max_length of repeat unit
-"""
+	"""
+	finds the longest repeat in a given sequence
+	max_length of repeat unit
+	"""
 	longest_repeat = ''
 
 	for ssr in ssr_list:
@@ -324,9 +324,9 @@ max_length of repeat unit
 	return longest_repeat
 
 def dinucleotide_repeat(sequence):
-"""
-finds the length of dinucleotide repeats, i.e. ACTAGAGAGTCA would return 6
-"""
+	"""
+	finds the length of dinucleotide repeats, i.e. ACTAGAGAGTCA would return 6
+	"""
 	nucleotides = 'ATGC'
 	max_repeat = 0
 	for i in range(4):
@@ -339,10 +339,10 @@ finds the length of dinucleotide repeats, i.e. ACTAGAGAGTCA would return 6
 	return max_repeat * 2
 
 def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
-"""
-creates the input file for primer3
-if primerF and primerR are given, primerR is kept fixed and primerF is excluded, useful for nested PCR
-"""
+	"""
+	creates the input file for primer3
+	if primerF and primerR are given, primerR is kept fixed and primerF is excluded, useful for nested PCR
+	"""
 	if len(target) >= len(sequence) or (not target in sequence):
 		return False
 	new_filename = 'primer3_' + makefilename(seq_name)
@@ -379,18 +379,18 @@ if primerF and primerR are given, primerR is kept fixed and primerF is excluded,
 	return True
 
 def makefilename(old_name):
-"""
-cleans a filename
-"""
+	"""
+	cleans a filename
+	"""
 	old_name = old_name.replace(' ', '_')
 	old_name = old_name.translate(None, '+=!/\<>:"|?*\'')
 	return old_name
 
 def check_specificity(primerF, primerR, targetSequence, isPCRoutput):
-"""
-takes a primer pair, a input sequence for which the primers were designed and checks in the isPCRoutput if the target sequence is amplified or something else
-also checks if the number of amplicons is exactly one
-"""
+	"""
+	takes a primer pair, a input sequence for which the primers were designed and checks in the isPCRoutput if the target sequence is amplified or something else
+	also checks if the number of amplicons is exactly one
+	"""
 	found = False
 	isPCRamplicon = ''
 	temp_output = isPCRoutput.splitlines(True)
@@ -427,10 +427,10 @@ also checks if the number of amplicons is exactly one
 			return False
 
 def get_amplicon_from_primer3output(primerF, primerR, primer3output):
-"""
-takes primer3output and returns the amplicon based on primerF and primerR bindingsites and input sequence
-returns the amplicon without the primers
-"""
+	"""
+	takes primer3output and returns the amplicon based on primerF and primerR bindingsites and input sequence
+	returns the amplicon without the primers
+	"""
 	amplicon_start = 0
 	primerF_found = False
 	sequence = ''
@@ -473,10 +473,10 @@ returns the amplicon without the primers
 	return sequence[amplicon_start - 1 + len(primerF):amplicon_end]
 
 def primer_stats(primerF, primerR, primer3output):
-"""
-takes a primer pair and primer3output as input
-returns GC-content, primer TM, product size, product TM
-"""
+	"""
+	takes a primer pair and primer3output as input
+	returns GC-content, primer TM, product size, product TM
+	"""
 	primerF = primerF.upper()
 	primerR = primerR.upper()
 	temp_output = primer3output.splitlines()
@@ -510,11 +510,11 @@ returns GC-content, primer TM, product size, product TM
 		return '0', '0', '0', '0', '0'
 
 def amplicon_name(primerF, primerR, amplicon, isPCRoutput):
-"""
-takes isPCRoutput and searches for the name of the amplicon which is exactly primer,amplicon,primerR
-primerR will be reversed
-amplicon has to be in lower score, primers in upper score
-"""
+	"""
+	takes isPCRoutput and searches for the name of the amplicon which is exactly primer,amplicon,primerR
+	primerR will be reversed
+	amplicon has to be in lower score, primers in upper score
+	"""
 	primerR = primerR.upper()
 	primerRold = primerR
 	#reverses the reverse primer
@@ -538,10 +538,10 @@ amplicon has to be in lower score, primers in upper score
 	return ''
 
 def name_from_fasta(primerF, primerR, amplicon, fasta):
-"""
-takes input fasta and returns the name of the amplicon which is exactly primer,amplicon,primerR
-primerR will be reversed
-"""
+	"""
+	takes input fasta and returns the name of the amplicon which is exactly primer,amplicon,primerR
+	primerR will be reversed
+	"""
 	#reverses the reverse primer
 	primerR = primerR.upper().replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1]
 	temp_output = fasta.splitlines()
@@ -560,11 +560,11 @@ primerR will be reversed
 	return ''
 
 def similarity(oligo1, oligo2):
-"""
-determines the similarity between two oligos
-searches for the longest overlap
-X is used a placeholder, so it will match any character
-"""
+	"""
+	determines the similarity between two oligos
+	searches for the longest overlap
+	X is used a placeholder, so it will match any character
+	"""
 	if len(oligo2) > len(oligo1):
 		oligo1, oligo2 = oligo2 , oligo1
 	if len(oligo1) == 0 or len(oligo2) == 0:
@@ -582,10 +582,10 @@ X is used a placeholder, so it will match any character
 	return float(best_score) / float(len(oligo2))
 
 def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
-"""
-takes primers, amplicon, isPCR output and primer3 output as input
-generates output which can be written to log file
-"""
+	"""
+	takes primers, amplicon, isPCR output and primer3 output as input
+	generates output which can be written to log file
+	"""
 	output = 'Primer pair:, ' + primerF + ', ' + primerR + '\n'
 	output += (str('Amplicon: ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2]).replace(' ', ', ') + ', ' + amplicon_name(primerF, primerR, amplicon.lower(), isPCRoutput)).replace('\n', '')
 	output += primerF.upper() + amplicon.lower() + primerR.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1] + '\n'
@@ -597,12 +597,12 @@ generates output which can be written to log file
 
 
 def check_fasta(sequence, fasta_type, strict):
-"""
-checks if an input sequence looks like a proper single fasta sequence
-strict: boolean, enforces perfect format, i.e. no extra line breaks or spaces, etc.
-sequence: string the input sequence
-fasta_type: protein or nucleotide
-"""
+	"""
+	checks if an input sequence looks like a proper single fasta sequence
+	strict: boolean, enforces perfect format, i.e. no extra line breaks or spaces, etc.
+	sequence: string the input sequence
+	fasta_type: protein or nucleotide
+	"""
 	passed = True
 	fasta_type = fasta_type.upper()
 

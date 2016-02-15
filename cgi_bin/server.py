@@ -2,9 +2,7 @@
 
 #to do
 #read file, pass as sequence
-#name runs, list results
-#check if server is busy
-#
+#list results
 
 import cgi, os
 from repeat_finder import *
