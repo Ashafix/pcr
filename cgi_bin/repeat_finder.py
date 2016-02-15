@@ -6,6 +6,7 @@ from multiprocessing import Pool
 import logging
 import ConfigParser
 from time import time
+import urllib, urllib2
 
 #Python2/3 comptability
 if sys.version_info < (3, 0):
@@ -90,14 +91,14 @@ def read_configfile(config_filename):
 		print ('getConfig: Missing entry')
 		return False
 	else:
-		#return {'PRIMER3_SETTINGS': standard_primer_settings_filename, \
-			#'PRIMER3_DIRECTORY':primer3_directory, \
-			#'PRIMER3_EXE':primer3_exe, \
-			#'SERVERNAME':servername, \
-			#'SERVERPORT':serverport, \
-			#'GFSERVER':gfServer, \
-			#'GFPCR':gfPCR, \
-			#'DATADIR':data_dir}
+		return {'PRIMER3_SETTINGS': standard_primer_settings_filename, \
+			'PRIMER3_DIRECTORY':primer3_directory, \
+			'PRIMER3_EXE':primer3_exe, \
+			'SERVERNAME':servername, \
+			'SERVERPORT':serverport, \
+			'GFSERVER':gfServer, \
+			'GFPCR':gfPCR, \
+			'DATADIR':data_dir}
 		return True
 
 def print_help():
@@ -267,9 +268,9 @@ def import_parameters(*arguments):
 		elif str(input_args[i]).upper() == '-SHUTDOWN':
 			shutdown = int(input_args[i + 1])
 		elif str(input_args[i]).upper() == '-REMOTESERVER':
-			if 'TRUE' in str(input_args[i + 1]).upper()
+			if 'TRUE' in str(input_args[i + 1]).upper():
 				remote_server = True
-			elif 'FALSE' in str(input_args[i + 1]).upper()
+			elif 'FALSE' in str(input_args[i + 1]).upper():
 				remote_server = False
 			else:
 				remote_server = bool(input_args[i + 1])
@@ -683,15 +684,16 @@ def get_primers(sequence):
 	stdoutput += 'Primer3 subprocess started\n'
 	if remote_server:
 		run_name = sequence.split('\n', 1)[0][1:]
-		run_name += '_' + os.getpid()
+		run_name += '_' + str(os.getpid())
 		base_url = 'localhost:8003/'
 		params = urllib.urlencode({'Run_name': run_name, 'Primer3_Input': primer3_input})
-		primer3_request = urllib2.Request(url, params)
-		primer3_response = urllib2.urlopen(req)
+		baseurl = 'http://localhost:8003/'
+		primer3_request = urllib2.Request(baseurl + 'primer3', params)
+		primer3_response = urllib2.urlopen(primer3_request)
 		primer3_status = ''
 		while primer3_status != 'finished':
 			params = urllib.urlencode({'run_name': run_name})
-			req = urllib2.Request(baseurl + '/job_status', params)
+			req = urllib2.Request(baseurl + 'job_status', params)
 			response = urllib2.urlopen(req).read()
 			if 'status' in response.keys():
 				primer3_status = json.loads(response)['job_status']
@@ -700,7 +702,6 @@ def get_primers(sequence):
 		primer3_output += response.read()
 		primer3_output += '\n'
 		print (primer3_output)
-		
 	else:
 		sys.stdout = open(str(os.getpid()) + ".out", "w")
 		process = Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
@@ -1084,7 +1085,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
 			sequences.append(line)
 		else:
 			sequences[-1] += line
-
+	#print sequences
 	results = p.map(get_primers, sequences)
 	#results = get_primers(sequences[0])
 	output = []
