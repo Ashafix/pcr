@@ -15,7 +15,7 @@ global run_name
 
 html = ''
 sequence_filename = ''
-
+config_filename = 'batchprimer.conf'
 #writes a sequence or sequence file to the data directory
 def write_sequence(sequence):
 
@@ -72,7 +72,7 @@ def correct_fasta (sequence):
 			if not all(nuc in ('ATGC\n\r') for c in fasta_line):
 				return False
 	return True
-config_args = read_configfile()
+config_args = read_configfile(config_filename)
 data_dir = config_args['DATADIR']
 
 form = cgi.FieldStorage()
@@ -149,7 +149,14 @@ batchprimer_file.close()
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
 	not 'Error: ' in html:
-
+	#####################################
+	#####################################
+	#####################################
+	#Check if rest server is runing######
+	#####################################
+	##XXXXXXXXXX#########################
+	#####################################
+	
 	input_args.append('-REMOTESERVER')
 	input_args.append('TRUE')
 	input_args.append('-RUNNAME')

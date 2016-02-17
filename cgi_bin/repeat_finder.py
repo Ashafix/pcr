@@ -7,6 +7,7 @@ import logging
 import ConfigParser
 from time import time
 import urllib, urllib2
+import json
 
 #Python2/3 comptability
 if sys.version_info < (3, 0):
@@ -683,11 +684,11 @@ def get_primers(sequence):
 	
 	stdoutput += 'Primer3 subprocess started\n'
 	if remote_server:
+		baseurl = 'http://localhost:8003/'
 		run_name = sequence.split('\n', 1)[0][1:]
 		run_name += '_' + str(os.getpid())
-		base_url = 'localhost:8003/'
 		params = urllib.urlencode({'Run_name': run_name, 'Primer3_Input': primer3_input})
-		baseurl = 'http://localhost:8003/'
+		
 		primer3_request = urllib2.Request(baseurl + 'primer3', params)
 		primer3_response = urllib2.urlopen(primer3_request)
 		primer3_status = ''
@@ -695,7 +696,7 @@ def get_primers(sequence):
 			params = urllib.urlencode({'run_name': run_name})
 			req = urllib2.Request(baseurl + 'job_status', params)
 			response = urllib2.urlopen(req).read()
-			if 'status' in response.keys():
+			if 'status' in response:
 				primer3_status = json.loads(response)['job_status']
 		req = urllib2.Request(baseurl + '/primer3_result', params)
 		response = urllib2.urlopen(req)
