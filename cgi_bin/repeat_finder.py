@@ -926,18 +926,22 @@ def get_primers(sequence):
 	temp.close()
 	return output, stdoutput
 
-def start_remote_server():
+def start_remote_server(*arguments):
 	"""
 	Starts a remote AWS instance where primer3 and gfServer run
 	Returns True if the server was started succesfully
 	"""
 	import boto3
-	import urllib2
 	import socket
-
-	global servername
-	global hostname
-	global compute_host
+	if arguments:
+		if len(arguments) > 2:
+			gfServer = arguments[0]
+			servername = arguments[1]
+			serverport = arguments[2]
+	else:
+		global servername
+		global hostname
+		global compute_host
 
 	ec2 = boto3.resource('ec2')
 	instances = ec2.instances.all()
@@ -1059,7 +1063,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
 			print run_name + ' gfServer not ready, please start it'
 		else:
 			print run_name + ' gfServer not ready, it is started now'
-			if start_remote_server():
+			if start_remote_server(servername):
 				print run_name + ' Remote server was successfully started'
 				parameters_legal = True
 			else:

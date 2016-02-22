@@ -146,17 +146,16 @@ for input_arg in input_args:
 	batchprimer_file.write(str(input_arg) + '\n')
 batchprimer_file.close()
 
+if not 'Error: ' in html:
+	if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
+		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
+			html += "Error: Compute server could not be started.<br>"
+
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
 	not 'Error: ' in html:
-	#####################################
-	#####################################
-	#####################################
-	#Check if rest server is runing######
-	#####################################
-	##XXXXXXXXXX#########################
-	#####################################
-	
+		
+
 	input_args.append('-REMOTESERVER')
 	input_args.append('TRUE')
 	input_args.append('-RUNNAME')
