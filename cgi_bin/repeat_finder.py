@@ -943,7 +943,7 @@ def start_remote_server(*arguments):
 		global servername
 		global hostname
 		global compute_host
-
+	global timeout
 	aws = read_aws_conf()
 	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'], 
 		aws_secret_access_key = aws['aws_secret_access_key'], 
@@ -992,7 +992,7 @@ def read_aws_conf():
 				for line in credentials.readlines():
 					if '=' in line:
 						cells = line.split('=')
-						aws[cells[0]] = cells[1]
+						aws[cells[0].strip()] = cells[1].strip()
 				credentials.close()
 				return aws
 			except:
