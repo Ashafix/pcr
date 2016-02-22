@@ -945,7 +945,9 @@ def start_remote_server(*arguments):
 		global compute_host
 
 	aws = read_aws_conf()
-	session = boto3.session.Session(aws_access_key_id=aws['key_id'], aws_secret_access_key=aws['key'], aws['region'])
+	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'], 
+		aws_secret_access_key = aws['aws_secret_access_key'], 
+		region_name = aws['region_name'])
 	ec2 = session.resource('ec2')
 
 	instances = ec2.instances.all()
@@ -975,11 +977,10 @@ def start_remote_server(*arguments):
 				else:
 					return True
 
-def read_aws_conf()
+def read_aws_conf():
 	"""
 	reads the AWS credentials
-	returns a dict with 
-	'key_id', 'key', 'region'
+	returns a dict with the values from the credentials file
 	"""
 	aws = {}
 	locations = ['/var/www/data/', '/home/ubuntu/.aws/']
@@ -987,7 +988,7 @@ def read_aws_conf()
 		if os.path.isfile(location + 'credentials'):
 			try:
 				credentials = open(location + 'credentials', 'r')
-				aws['region'] = 'eu-central-1'
+				aws['region_name'] = 'eu-central-1'
 				for line in credentials.readlines():
 					if '=' in line:
 						cells = line.split('=')
