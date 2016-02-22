@@ -133,17 +133,14 @@ def print_help():
 def test_server(gfServer, servername, serverport):
 	"""
 	tests the gfServer and returns True if the server is working
-	"""
-	#old code, can be removed later
-	#process = Popen([gfServer,'status', servername, str(serverport)], stdout = subprocess.PIPE, stdin = subprocess.PIPE, stderr = subprocess.PIPE, shell = True)
-	#x = process.communicate()[0]
-	
+	"""	
+
 	command_line = gfServer + ' status ' + servername + ' ' + str(serverport)
 	try:
 		gfServer_response = subprocess.check_output([command_line], shell = True, stderr = subprocess.STDOUT)
 	except:
 		return False
-	
+
 	if gfServer_response.startswith('Couldn'):
 		return False
 	elif 'version' in gfServer_response and \
@@ -208,7 +205,8 @@ def import_parameters(*arguments):
 	global shutdown
 	global remote_server
 	global run_name
-
+	global timeout
+	
 	shutdown = -1
 	remote_server = ''
 	waiting_period = 0.25
@@ -935,15 +933,18 @@ def start_remote_server(*arguments):
 	import socket
 	import botocore.session
 	if arguments:
-		if len(arguments) > 2:
+		if len(arguments) > 3:
 			gfServer = arguments[0]
 			servername = arguments[1]
 			serverport = arguments[2]
+			timeout = arguments[3]
+			run_name = arguments[4]
 	else:
 		global servername
 		global hostname
 		global compute_host
 	global timeout
+
 	aws = read_aws_conf()
 	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'], 
 		aws_secret_access_key = aws['aws_secret_access_key'], 
@@ -952,7 +953,7 @@ def start_remote_server(*arguments):
 
 	instances = ec2.instances.all()
 	if len(list(instances)) < 2:
-		print run_name + ' No second AWS instance was found!'
+		print 'No second AWS instance was found!'
 		return False
 
 	hostname = socket.gethostbyaddr(socket.gethostname())[0]
@@ -967,12 +968,12 @@ def start_remote_server(*arguments):
 				sleep(waiting_period)
 				local_timeout += -waiting_period
 			if timeout < 0:
-				print run_name + ' Server start was unsuccesful, the timeout period was exceeded'
+				print 'Server start was unsuccesful, the timeout period was exceeded'
 				return False
 			if not test_server(gfServer, servername, serverport):
-				servername = instance(compute_host).private_dns_name.split('.')[0] #get the base hostname
+				servername = ec2.Instance(compute_host).private_dns_name.split('.')[0] #get the base hostname
 				if not test_server(gfServer, servername, serverport):
-					print run_name + ' Server start was succesful, but gfServer does not respond'
+					print 'Server start was succesful, but gfServer does not respond'
 					return False
 				else:
 					return True
@@ -1046,6 +1047,8 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	compute_host = ''
 	global run_name
 	run_name = ''
+	global timeout
+	timeout = 120
 	#redirects output if not started via commandline
 	if started_via_commandline:
 		import_parameters()

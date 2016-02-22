@@ -154,7 +154,6 @@ if not 'Error: ' in html:
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
 	not 'Error: ' in html:
-		
 
 	input_args.append('-REMOTESERVER')
 	input_args.append('TRUE')
