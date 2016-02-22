@@ -933,6 +933,7 @@ def start_remote_server(*arguments):
 	"""
 	import boto3
 	import socket
+	import botocore.session
 	if arguments:
 		if len(arguments) > 2:
 			gfServer = arguments[0]
@@ -943,7 +944,10 @@ def start_remote_server(*arguments):
 		global hostname
 		global compute_host
 
-	ec2 = boto3.resource('ec2')
+	aws = read_aws_conf()
+	session = boto3.session.Session(aws_access_key_id=aws['key_id'], aws_secret_access_key=aws['key'], aws['region'])
+	ec2 = session.resource('ec2')
+
 	instances = ec2.instances.all()
 	if len(list(instances)) < 2:
 		print run_name + ' No second AWS instance was found!'
@@ -970,6 +974,29 @@ def start_remote_server(*arguments):
 					return False
 				else:
 					return True
+
+def read_aws_conf()
+	"""
+	reads the AWS credentials
+	returns a dict with 
+	'key_id', 'key', 'region'
+	"""
+	aws = {}
+	locations = ['/var/www/data/', '/home/ubuntu/.aws/']
+	for location in locations:
+		if os.path.isfile(location + 'credentials'):
+			try:
+				credentials = open(location + 'credentials', 'r')
+				aws['region'] = 'eu-central-1'
+				for line in credentials.readlines():
+					if '=' in line:
+						cells = line.split('=')
+						aws[cells[0]] = cells[1]
+				credentials.close()
+				return aws
+			except:
+				pass
+	return aws
 
 def start_repeat_finder(started_via_commandline, *arguments):
 
