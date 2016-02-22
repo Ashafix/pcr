@@ -952,7 +952,7 @@ def start_remote_server(*arguments):
 	hostname = socket.gethostbyaddr(socket.gethostname())[0]
 	compute_host = ''
 	for instance in instances:
-		if instance.private_name_dns != hostname and compute_host == '':
+		if instance.private_dns_name != hostname and compute_host == '':
 			compute_host = instance.id
 			instance.start()
 			#wait until the instance is up and running
