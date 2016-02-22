@@ -7,10 +7,15 @@ from time import sleep
 from multiprocessing import Queue
 from threading import Thread
 from shutil import move, copy
+import urlparse
+import os
 
-primer3_exe = 'D:\\dropbox\\PCR\\primer3_core.exe'
+#primer3_exe = 'D:\\dropbox\\PCR\\primer3_core.exe'
+primer3_exe = '/home/ashafix/Desktop/pcr/primer3_core'
+
 max_threads = 4
-primer3_dir = 'D:/Dropbox/PCR/'
+#primer3_dir = 'D:/Dropbox/PCR/'
+primer3_dir = '/var/www/'
 myQueue = Queue()
 
 #dictionaries for stdit/stdout filenames and file objects
@@ -44,7 +49,7 @@ def worker(worker_id):
 			proc_items[worker_id] = myQueue.get()
 			jobs[proc_items[worker_id]['run_name'][0]] = {'status': 'started'}
 			tmp_file_in[worker_id] = open(worker_stdin[worker_id], 'w')
-			tmp_file_in[worker_id].write(proc_items[worker_id]['Primer3_Input'][0].strip())
+			tmp_file_in[worker_id].write(proc_items[worker_id]['primer3_input'][0].strip())
 			tmp_file_in[worker_id].close()
 			copy(worker_stdin[worker_id], primer3_dir + 'in_' + proc_items[worker_id]['run_name'][0] + '.txt')
 			tmp_file_in[worker_id] = open(worker_stdin[worker_id], 'r')
@@ -109,6 +114,45 @@ class MyRequestHandler (BaseHTTPRequestHandler) :
 				except psutil.NoSuchProcess:
 					output['Running Primer3 processes'] = running_primer3
 					json.dump(output, self.wfile)
+		#returns the status of a primer3 job as specified by its run_name
+		elif '/job_status' in self.path:
+			self.send_response(200)
+			self.send_header("Content-type:", "text/html")
+			self.wfile.write("\n")
+			output = {}
+			parsed = urlparse.urlparse(self.path)
+			parameters = urlparse.parse_qs(parsed.query)
+			if 'run_name' in parameters.keys():
+				run_name = parameters['run_name'][0]
+				job_found = False
+				if run_name in jobs.keys():
+					job_found = 'status' in jobs[run_name].keys()
+				if job_found:
+					output['job_status'] = {run_name: jobs[run_name]['status']}
+				else:
+					output['job_status'] = {run_name: 'job not found'}
+			json.dump(output, self.wfile)
+		#returns the results of a primer3 job as specified by its run_name
+		elif '/job_results' in self.path:
+			self.send_response(200)
+			self.send_header("Content-type:", "text/html")
+			self.wfile.write("\n")
+			output = {}
+			parsed = urlparse.urlparse(self.path)
+			parameters = urlparse.parse_qs(parsed.query)
+			
+			if 'run_name' in parameters.keys():
+				run_name = parameters['run_name'][0]
+				
+				print run_name
+				primer3_file = primer3_dir + 'out_'
+				primer3_file += run_name + '.txt'
+				print primer3_file
+				print os.path.isfile(primer3_file)
+				if os.path.isfile(primer3_file):
+					with open(primer3_file) as primer3_result:
+						output = primer3_result.read()
+			json.dump(output, self.wfile)
 		#shuts the server down
 		elif self.path == '/shutdown':
 			pass
@@ -134,41 +178,26 @@ class MyRequestHandler (BaseHTTPRequestHandler) :
 			postvars = {}
 		global job
 		if self.path == '/primer3':
+			print 'Primer3 job request received'
+			print postvars
 			correct_format = True
-			if not 'run_name' in postvars.keys() or not 'Primer3_Input' in postvars.keys():
+			if not 'run_name' in postvars.keys() or not 'primer3_input' in postvars.keys():
 				print ('Missing keys')
 				print (postvars.keys())
 				correct_format = False
-			elif not 'SEQUENCE_ID=' in postvars['Primer3_Input'][0] or not 'SEQUENCE_TEMPLATE=' in postvars['Primer3_Input'][0]:
-				print ('SEQUENCE_ID=' in postvars['Primer3_Input'])
-				print ('SEQUENCE_TEMPLATE=' in postvars['Primer3_Input'])
-				print (postvars['Primer3_Input'])
+			elif not 'SEQUENCE_ID=' in postvars['primer3_input'][0] or not 'SEQUENCE_TEMPLATE=' in postvars['primer3_input'][0]:
+				print ('SEQUENCE_ID=' in postvars['primer3_input'])
+				print ('SEQUENCE_TEMPLATE=' in postvars['primer3_input'])
+				print (postvars['primer3_input'])
 				correct_format = False
 			if correct_format == False:
 				print ('Primer3 input via POST had a weird format')
-				print (postvars)
+				#print (postvars)
 				self.send_response(400)
 			else:
 				jobs[postvars['run_name'][0]] = {'status': 'waiting'}
 				myQueue.put(postvars)
 				self.send_response(202) #accepted
-		#returns the status of a job as specified by its run_name
-		elif self.path == '/job_status':
-			self.send_response(200)
-			self.send_header("Content-type:", "text/html")
-			self.wfile.write("\n")
-			output = {}
-			if 'run_name' in postvars.keys():
-				run_name = postvars['run_name'][0]
-				job_found = False
-				if run_name in jobs.keys():
-					job_found = 'status' in jobs[run_name].keys():
-				if job_found:
-					output['job_status'] = jobs[run_name]['status']
-				else:
-					output['job_status'] = 'job not found'
-			json.dump(output, self.wfile)
-
 if __name__ == '__main__':
 	#starts worker threads
 	for i in range(max_threads):
