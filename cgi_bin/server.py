@@ -175,7 +175,6 @@ if remoteserver_url != '':
 		reply = str(response.read())
 	except:
 		pass
-	html += reply + '<br>'
 	if not 'CPU' in reply:
 		html += 'Error: Rest server is not responding'
 

@@ -684,7 +684,7 @@ def get_primers(sequence):
 	if remote_server != '':
 		local_run_name = run_name
 		local_run_name += '_' + str(os.getpid())
-		baseurl = remote_server
+		baseurl = remote_server + ':8003'
 
 		params = urllib.urlencode({'run_name': local_run_name, 'primer3_input': primer3_input})
 		primer3_request = urllib2.Request(baseurl + '/primer3', params)

@@ -6,7 +6,9 @@ import zipfile
 from string import ascii_uppercase, digits
 from os import path, listdir
 from repeat_finder import read_configfile
-conf_arguments = read_configfile()
+
+config_filename = 'batchprimer.conf'
+conf_arguments = read_configfile(config_filename)
 
 html = ''
 

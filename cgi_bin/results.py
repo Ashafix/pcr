@@ -6,7 +6,8 @@ from os import path, listdir
 from repeat_finder import read_configfile
 from time import ctime
 
-conf_arguments = read_configfile()
+config_filename = 'batchprimer.conf'
+conf_arguments = read_configfile(config_filename)
 
 message = ''
 if conf_arguments == '':
