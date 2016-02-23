@@ -112,10 +112,7 @@ input_args.append('-PRIMER3_DIRECTORY')
 input_args.append(config_args['PRIMER3_DIRECTORY'])
 input_args.append('-PRIMER3_EXE')
 input_args.append(config_args['PRIMER3_EXE'])
-input_args.append('-SERVERNAME')
-input_args.append(config_args['SERVERNAME'])
-input_args.append('-SERVERPORT')
-input_args.append(config_args['SERVERPORT'])
+
 if int(form.getvalue('maxrepeats')) > 1 and int(form.getvalue('maxrepeats')) < 7:
 	input_args.append('-MAXREPEATS')
 	input_args.append(form.getvalue('maxrepeats'))
@@ -161,12 +158,18 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 			compute_host = instance.id
 			#get the base hostname
 			config_args['SERVERNAME'] = instance.private_dns_name.split('.')[0] 
+			remoteserver_url = instance.private_dns_name
 			if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 				html += '<br>Server start was succesful, but gfServer does not respond<br>'
 
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
 	not 'Error: ' in html:
+
+	input_args.append('-SERVERNAME')
+	input_args.append(config_args['SERVERNAME'])
+	input_args.append('-SERVERPORT')
+	input_args.append(config_args['SERVERPORT'])
 
 	input_args.append('-GFSERVER')
 	input_args.append(config_args['GFSERVER'])
@@ -175,7 +178,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append('-DATADIR')
 	input_args.append(config_args['DATADIR'])
 	input_args.append('-REMOTESERVER')
-	input_args.append('TRUE')
+	input_args.append(remoteserver_url)
 	input_args.append('-RUNNAME')
 	input_args.append(run_name)
 
