@@ -127,13 +127,6 @@ if int(form.getvalue('primerpairs')) > 0 and int(form.getvalue('primerpairs')) <
 else:
 	html += 'Error: Please provide a value between 1 and 100 for the number of primer pairs<br>'
 
-input_args.append('-GFSERVER')
-input_args.append(config_args['GFSERVER'])
-input_args.append('-GFPCR')
-input_args.append(config_args['GFPCR'])
-input_args.append('-DATADIR')
-input_args.append(config_args['DATADIR'])
-
 #write all input files
 #batchrun name
 if form.getvalue('batchname') != '':
@@ -166,16 +159,21 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 	for instance in instances:
 		if instance.private_dns_name != hostname and compute_host == '':
 			compute_host = instance.id
-			if not test_server(gfServer, servername, serverport):
-				#get the base hostname
-				config_args['SERVERNAME'] = ec2.Instance(compute_host).private_dns_name.split('.')[0] 
-				if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
-					html += '<br>Server start was succesful, but gfServer does not respond<br>'
+			#get the base hostname
+			config_args['SERVERNAME'] = instance.private_dns_name.split('.')[0] 
+			if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
+				html += '<br>Server start was succesful, but gfServer does not respond<br>'
 
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
 	not 'Error: ' in html:
 
+	input_args.append('-GFSERVER')
+	input_args.append(config_args['GFSERVER'])
+	input_args.append('-GFPCR')
+	input_args.append(config_args['GFPCR'])
+	input_args.append('-DATADIR')
+	input_args.append(config_args['DATADIR'])
 	input_args.append('-REMOTESERVER')
 	input_args.append('TRUE')
 	input_args.append('-RUNNAME')
