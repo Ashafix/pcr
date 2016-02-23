@@ -9,6 +9,8 @@ from repeat_finder import *
 from random import SystemRandom
 from string import ascii_uppercase, ascii_lowercase, digits
 from shutil import copyfile
+import boto3
+import socket
 
 global data_dir
 global run_name
@@ -148,8 +150,27 @@ batchprimer_file.close()
 
 if not 'Error: ' in html:
 	if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
-		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
+		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120):
 			html += "Error: Compute server could not be started.<br>"
+
+if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
+	#check for new DNS of AWS instance and replace old name
+	aws = read_aws_conf()
+	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'], 
+		aws_secret_access_key = aws['aws_secret_access_key'], 
+		region_name = aws['region_name'])
+	ec2 = session.resource('ec2')
+	instances = ec2.instances.all()
+	hostname = socket.gethostbyaddr(socket.gethostname())[0]
+	compute_host = ''
+	for instance in instances:
+		if instance.private_dns_name != hostname and compute_host == '':
+			compute_host = instance.id
+			if not test_server(gfServer, servername, serverport):
+				#get the base hostname
+				config_args['SERVERNAME'] = ec2.Instance(compute_host).private_dns_name.split('.')[0] 
+				if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
+					html += '<br>Server start was succesful, but gfServer does not respond<br>'
 
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \

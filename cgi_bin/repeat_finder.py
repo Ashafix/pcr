@@ -931,19 +931,18 @@ def start_remote_server(*arguments):
 	"""
 	import boto3
 	import socket
-	import botocore.session
 	if arguments:
 		if len(arguments) > 3:
 			gfServer = arguments[0]
 			servername = arguments[1]
 			serverport = arguments[2]
 			timeout = arguments[3]
-			run_name = arguments[4]
+		waiting_period = 0.25
 	else:
 		global servername
 		global hostname
 		global compute_host
-	global timeout
+		global timeout
 
 	aws = read_aws_conf()
 	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'], 
@@ -977,6 +976,7 @@ def start_remote_server(*arguments):
 					return False
 				else:
 					return True
+	return False
 
 def read_aws_conf():
 	"""
