@@ -11,6 +11,7 @@ from string import ascii_uppercase, ascii_lowercase, digits
 from shutil import copyfile
 import boto3
 import socket
+import urllib2
 
 global data_dir
 global run_name
@@ -143,6 +144,8 @@ if not 'Error: ' in html:
 		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120):
 			html += "Error: Compute server could not be started.<br>"
 
+remoteserver_url = ''
+
 if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 	#check for new DNS of AWS instance and replace old name
 	aws = read_aws_conf()
@@ -161,6 +164,15 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 			remoteserver_url = instance.private_dns_name
 			if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 				html += '<br>Server start was succesful, but gfServer does not respond<br>'
+
+if remoteserver_url != '':
+	#checks if the REST server is responding
+	url = remoteserver_url + ':8003/cpuInfo'
+	req = urllib2.Request(url, )
+	response = urllib2.urlopen(req)
+	reply = str(response.read())
+	if not 'CPU' in reply:
+		html += 'Error: Rest server is not responding'
 
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
