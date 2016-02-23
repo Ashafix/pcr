@@ -161,16 +161,21 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 			compute_host = instance.id
 			#get the base hostname
 			config_args['SERVERNAME'] = instance.private_dns_name.split('.')[0] 
-			remoteserver_url = instance.private_dns_name
+			remoteserver_url = 'http://' + instance.public_dns_name
 			if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 				html += '<br>Server start was succesful, but gfServer does not respond<br>'
 
 if remoteserver_url != '':
 	#checks if the REST server is responding
 	url = remoteserver_url + ':8003/cpuInfo'
-	req = urllib2.Request(url, )
-	response = urllib2.urlopen(req)
-	reply = str(response.read())
+	reply = ''
+	try:
+		req = urllib2.Request(url, )
+		response = urllib2.urlopen(req)
+		reply = str(response.read())
+	except:
+		pass
+	html += reply + '<br>'
 	if not 'CPU' in reply:
 		html += 'Error: Rest server is not responding'
 

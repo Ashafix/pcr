@@ -9,13 +9,14 @@ from threading import Thread
 from shutil import move, copy
 import urlparse
 import os
+import sys
 
 #primer3_exe = 'D:\\dropbox\\PCR\\primer3_core.exe'
-primer3_exe = '/home/ashafix/Desktop/pcr/primer3_core'
+primer3_exe = sys.argv[1]
 
 max_threads = 4
 #primer3_dir = 'D:/Dropbox/PCR/'
-primer3_dir = '/var/www/'
+primer3_dir = sys.argv[2]
 myQueue = Queue()
 
 #dictionaries for stdit/stdout filenames and file objects

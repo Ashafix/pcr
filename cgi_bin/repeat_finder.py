@@ -24,7 +24,7 @@ class StreamToLogger(object):
 		self.logger = logger
 		self.log_level = log_level
 		self.linebuf = ''
- 
+
 	def write(self, buf):
 		for line in buf.rstrip().splitlines():
 			self.logger.log(self.log_level, line.rstrip())
@@ -81,7 +81,7 @@ def read_configfile(config_filename):
 				run_name = config.get(section, option)
 			else:
 				print ('getConfig: unknown conf entry: ' + option)
-			
+
 	if standard_primer_settings_filename == '' or \
 		primer3_directory == '' or \
 		(primer3_exe == '' and remote_server == '') or \
@@ -133,7 +133,7 @@ def print_help():
 def test_server(gfServer, servername, serverport):
 	"""
 	tests the gfServer and returns True if the server is working
-	"""	
+	"""
 
 	command_line = gfServer + ' status ' + servername + ' ' + str(serverport)
 	try:
@@ -206,13 +206,13 @@ def import_parameters(*arguments):
 	global remote_server
 	global run_name
 	global timeout
-	
+
 	shutdown = -1
 	remote_server = ''
 	waiting_period = 0.25
 	timeout = 120
 	max_similarity = 0.5
-	
+
 	data_dir = './'
 
 	if len(sys.argv) > 1 or len(arguments) == 0:
@@ -662,7 +662,7 @@ def get_primers(sequence):
 
 	sequences.append(sequence.split('\n', 1)[0][1:])
 	sequences.append(''.join(sequence.split('\n', 1)[1:]).replace('\n', ''))
-	
+
 	if not check_fasta('>' + '\n'.join(sequences), 'NUCLEOTIDE', False):
 		stdoutput += 'Sequence did not match FASTA format, no primers were designed\n'
 		output = stdoutput
@@ -675,32 +675,36 @@ def get_primers(sequence):
 	primer3_output = ''
 	filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
 	primer3_input = ''
-	
+
 	with open(primer3_directory + filename, 'ru') as temp_file:
 		primer3_input += ''.join(temp_file.readlines())
 	temp_file.close()
-	
+
 	stdoutput += 'Primer3 subprocess started\n'
 	if remote_server != '':
 		local_run_name = run_name
 		local_run_name += '_' + str(os.getpid())
 		baseurl = remote_server
-		
+
 		params = urllib.urlencode({'run_name': local_run_name, 'primer3_input': primer3_input})
-		primer3_request = urllib2.Request(baseurl + 'primer3', params)
+		primer3_request = urllib2.Request(baseurl + '/primer3', params)
 		primer3_response = urllib2.urlopen(primer3_request)
 		primer3_status = ''
-		while primer3_status != 'finished':
-			sleep(0.25)
+
+		max_time = 1200
+		waiting_period = 0.25
+		while primer3_status != 'finished' and max_time > 0:
+			sleep(waiting_period)
+			max_time -= waiting_period
 			params = urllib.urlencode({'run_name': local_run_name})
-			primer3_url = urllib2.urlopen(baseurl + 'job_status' + '?' + params)
+			primer3_url = urllib2.urlopen(baseurl + '/job_status' + '?' + params)
 			primer3_response = primer3_url.read()
 			if 'job_status' in primer3_response:
 				try:
 					primer3_status = json.loads(primer3_response)['job_status'][local_run_name]
 				except:
 					primer3_status = ''
-		primer3_url = urllib2.urlopen(baseurl + 'job_results' + '?' + params)	
+		primer3_url = urllib2.urlopen(baseurl + '/job_results' + '?' + params)
 		primer3_output = primer3_url.read()
 		while '\\n' in primer3_output:
 			primer3_output = primer3_output.replace('\\n', '\n')
@@ -720,10 +724,10 @@ def get_primers(sequence):
 			if lines.startswith('PRIMER_LEFT') or lines.startswith('PRIMER_RIGHT'):
 				primer3_list.append(lines[lines.find('=') + 1:len(lines)])
 	print run_name + " ##################"
-	
+
 	isPCRoutput = ''
 	i = 0
-	
+
 	#list of primers which only amplify one amplicon
 	accepted_primers = []
 
@@ -736,7 +740,7 @@ def get_primers(sequence):
 
 	#Step 4: checks all created primers
 	sequence = primer3_list[0]
-	output += '==========' + '\n' 
+	output += '==========' + '\n'
 	output += 'Target:, ' + primer3_list[0][primer3_list[0].find('=') + 1:] + '\n\n'
 	primerF_1st = ''
 	primerR_1st = ''
@@ -945,8 +949,8 @@ def start_remote_server(*arguments):
 		global timeout
 
 	aws = read_aws_conf()
-	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'], 
-		aws_secret_access_key = aws['aws_secret_access_key'], 
+	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'],
+		aws_secret_access_key = aws['aws_secret_access_key'],
 		region_name = aws['region_name'])
 	ec2 = session.resource('ec2')
 
@@ -1056,7 +1060,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
 		stdout_logger = logging.getLogger('STDOUT')
 		sl = StreamToLogger(stdout_logger, logging.INFO)
 		sys.stdout = sl
- 
+
 		stderr_logger = logging.getLogger('STDERR')
 		sl = StreamToLogger(stderr_logger, logging.ERROR)
 		sys.stderr = sl
@@ -1117,7 +1121,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	p = Pool(processes = max_threads)
 
 	sequences = []
-	
+
 	fasta_file = open(fasta_filename, 'ru')
 	for line in open(fasta_filename, 'ru'):
 		if line.startswith('>'):
@@ -1136,9 +1140,9 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	final_output = open(data_dir + output_filename, 'w')
 	final_output.write(''.join(output))
 	final_output.close()
-	
+
 	print ''.join(stdoutput)
-	
+
 	print run_name + ' done'
 	sys.stdout = sys.__stdout__
 	return ''.join(output)
