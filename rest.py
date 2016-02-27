@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import json
 import psutil
