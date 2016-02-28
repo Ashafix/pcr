@@ -167,13 +167,19 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 	hostname = socket.gethostbyaddr(socket.gethostname())[0]
 	compute_host = ''
 	for instance in instances:
-		if instance.private_dns_name != hostname and compute_host == '':
+		instance_name = ''
+		for tag in instance.tags
+			if 'Value' in tag:
+				if 'Key' in tag.keys() and 'Value' in tag.keys():
+					if tag['Key'] == 'Name':
+						instance_name = tag['value']
+		if instance_name == config_args['SERVERNAME'] and compute_host == '':
 			compute_host = instance.id
 			#get the base hostname
 			config_args['SERVERNAME'] = instance.private_dns_name.split('.')[0] 
 			remoteserver_url = 'http://' + instance.public_dns_name
 			if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
-				print ('<br>Server start was succesful, but gfServer does not respond<br>')
+				print ('<br>Server start was successful, but gfServer does not respond<br>')
 
 if remoteserver_url != '':
 	#checks if the REST server is responding
@@ -187,6 +193,8 @@ if remoteserver_url != '':
 		pass
 	if not 'CPU' in reply:
 		print ('Error: Rest server is not responding')
+else:
+	print ('<br>Error: Remote server has no URL')
 
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \

@@ -53,6 +53,7 @@ def read_configfile(config_filename):
 	global gfPCR
 	global data_dir
 	global run_name
+	global max_threads
 	config = ConfigParser.RawConfigParser()
 	config.read(config_filename)
 	for section in config.sections():
@@ -91,7 +92,8 @@ def read_configfile(config_filename):
 		serverport == '' or \
 		gfServer == '' or \
 		gfPCR == '' or \
-		data_dir == '':
+		data_dir == '' or \
+		max_threads = 0:
 		print ('getConfig: Missing entry')
 		return False
 	else:
@@ -102,8 +104,9 @@ def read_configfile(config_filename):
 			'SERVERPORT':serverport, \
 			'GFSERVER':gfServer, \
 			'GFPCR':gfPCR, \
-			'DATADIR':data_dir}
-		return True
+			'DATADIR':data_dir, \
+			'MAXTHREADS': max_threads}
+		#return True
 
 def print_help():
 	"""
@@ -949,11 +952,11 @@ def start_remote_server(*arguments):
 		global hostname
 		global compute_host
 		global timeout
-	print ('Start remote server')
-	print (servername)
-	print (gfServer)
-	print (serverport)
-	print (timeout)
+	print ('Start remote server<br>')
+	print ('Server name: ' + servername)
+	print ('<br>gfServer: ' + gfServer)
+	print ('<br>Server port: ' + serverport)
+	print ('<br>Time out: ' + timeout)
 
 	aws = read_aws_conf()
 	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'],
