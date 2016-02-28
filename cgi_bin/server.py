@@ -192,7 +192,8 @@ if remoteserver_url != '':
 	except:
 		pass
 	if not 'CPU' in reply:
-		print ('Error: Rest server is not responding')
+		print ('<br>Rest server URL: ' + remoteserver_url)
+		print ('<br>Error: Rest server is not responding')
 else:
 	print ('<br>Error: Remote server has no URL')
 

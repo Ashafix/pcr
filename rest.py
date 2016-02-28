@@ -148,10 +148,9 @@ class MyRequestHandler (BaseHTTPRequestHandler) :
 			output = {}
 			parsed = urlparse.urlparse(self.path)
 			parameters = urlparse.parse_qs(parsed.query)
-			
+
 			if 'run_name' in parameters.keys():
 				run_name = parameters['run_name'][0]
-				
 				print run_name
 				primer3_file = primer3_dir + 'out_'
 				primer3_file += run_name + '.txt'

@@ -981,6 +981,7 @@ def start_remote_server(*arguments):
 						if tag['Key'] == 'Name':
 							instance_name = tag['Value']
 			if instance_name == servername:
+				servername = instance.private_dns_name
 				print ('<br>' + 'Servername: ' + servername + '<br>')
 				compute_host = instance.id
 				instance.start()
@@ -993,7 +994,7 @@ def start_remote_server(*arguments):
 					print ('Server start was unsuccesful, the timeout period was exceeded')
 					return False
 				if not test_server(gfServer, servername, serverport):
-					print ('Server start was succesful, but gfServer does not respond')
+					print ('Server start was successful, but gfServer does not respond')
 					return False
 				else:
 					return True
