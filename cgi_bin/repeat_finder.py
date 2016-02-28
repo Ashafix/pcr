@@ -93,7 +93,7 @@ def read_configfile(config_filename):
 		gfServer == '' or \
 		gfPCR == '' or \
 		data_dir == '' or \
-		max_threads = 0:
+		max_threads == 0:
 		print ('getConfig: Missing entry')
 		return False
 	else:
@@ -972,9 +972,15 @@ def start_remote_server(*arguments):
 	hostname = socket.gethostbyaddr(socket.gethostname())[0]
 	compute_host = ''
 	for instance in instances:
+		instance_name = ''
 		if instance.private_dns_name != hostname and compute_host == '':
 			#get the base hostname
-			if servername == instance.private_dns_name.split('.')[0]:
+			for tag in instance.tags:
+				if 'Value' in tag:
+					if 'Key' in tag.keys() and 'Value' in tag.keys():
+						if tag['Key'] == 'Name':
+							instance_name = tag['value']
+			if instance_name == servername:
 				print ('<br>' + 'Servername: ' + servername + '<br>')
 				compute_host = instance.id
 				instance.start()
@@ -990,7 +996,7 @@ def start_remote_server(*arguments):
 					print ('Server start was succesful, but gfServer does not respond')
 					return False
 				else:
-						return True
+					return True
 	return False
 
 def read_aws_conf():

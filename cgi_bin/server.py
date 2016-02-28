@@ -168,7 +168,7 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 	compute_host = ''
 	for instance in instances:
 		instance_name = ''
-		for tag in instance.tags
+		for tag in instance.tags:
 			if 'Value' in tag:
 				if 'Key' in tag.keys() and 'Value' in tag.keys():
 					if tag['Key'] == 'Name':
