@@ -79,7 +79,11 @@ config_args = read_configfile(config_filename)
 data_dir = config_args['DATADIR']
 
 form = cgi.FieldStorage()
-fileitem = form['fastafile']
+try:
+	fileitem = form['fastafile']
+except:
+	print ('Not started via a proper CGI form')
+	sys.exit()
 
 #checks if the sequence is OK
 

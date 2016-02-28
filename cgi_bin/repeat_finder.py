@@ -949,6 +949,11 @@ def start_remote_server(*arguments):
 		global hostname
 		global compute_host
 		global timeout
+	print ('Start remote server')
+	print (servername)
+	print (gfServer)
+	print (serverport)
+	print (timeout)
 
 	aws = read_aws_conf()
 	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'],
