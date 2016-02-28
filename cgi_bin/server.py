@@ -4,6 +4,12 @@
 #read file, pass as sequence
 #list results
 
+print ("""\
+Content-Type: text/html\n
+<html><body>
+<p>
+""")
+
 import cgi, os
 from repeat_finder import *
 from random import SystemRandom
@@ -106,7 +112,7 @@ if fileitem.filename:
 elif form.getvalue('fastasequence') != '':
 	sequence_filename = write_sequence(form.getvalue('fastasequence'))
 else:
-	html += 'No valid FASTA sequence was provided :(<br>'
+	print ('No valid FASTA sequence was provided :(<br>')
 
 input_args = []
 input_args.append('-FASTA')
@@ -122,12 +128,12 @@ if int(form.getvalue('maxrepeats')) > 1 and int(form.getvalue('maxrepeats')) < 7
 	input_args.append('-MAXREPEATS')
 	input_args.append(form.getvalue('maxrepeats'))
 else:
-	html += 'Error: Please provide a value between 2 and 6 for the repeat length<br>'
+	print ('Error: Please provide a value between 2 and 6 for the repeat length<br>')
 if int(form.getvalue('primerpairs')) > 0 and int(form.getvalue('primerpairs')) < 101:
 	input_args.append('-PRIMERPAIRS')
 	input_args.append(form.getvalue('primerpairs'))
 else:
-	html += 'Error: Please provide a value between 1 and 100 for the number of primer pairs<br>'
+	print ('Error: Please provide a value between 1 and 100 for the number of primer pairs<br>')
 
 #write all input files
 #batchrun name
@@ -167,7 +173,7 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 			config_args['SERVERNAME'] = instance.private_dns_name.split('.')[0] 
 			remoteserver_url = 'http://' + instance.public_dns_name
 			if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
-				html += '<br>Server start was succesful, but gfServer does not respond<br>'
+				print ('<br>Server start was succesful, but gfServer does not respond<br>')
 
 if remoteserver_url != '':
 	#checks if the REST server is responding
@@ -180,7 +186,7 @@ if remoteserver_url != '':
 	except:
 		pass
 	if not 'CPU' in reply:
-		html += 'Error: Rest server is not responding'
+		print ('Error: Rest server is not responding')
 
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
@@ -208,20 +214,18 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		result_file.write(batchprimer_result)
 	else:
 		result_file.write('FAILED')
-	#html += '<meta http-equiv="refresh" content="1;url=results.py">\n'
-	html += '<script type="text/javascript">\n'
-	#html += 'window.location.href = "results.py"\n'
-	html += '</script><title>Page Redirection</title></head><body>'
-	html += 'You should be redirected automatically, if not go to the <a href="results.py">results</a>'
-	html += '</body></html>'
+	#print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
+	print ('<script type="text/javascript">\n')
+	#print ('window.location.href = "results.py"\n'
+	print ('</script><title>Page Redirection</title></head><body>')
+	print ('You should be redirected automatically, if not go to the <a href="results.py">results</a>')
+	print ('</body></html>')
 
 	result_file.close()
 elif sequence_filename:
-	html += 'Server is not ready, please try again later.<br>'
+	print ('Server is not ready, please try again later.<br>')
 
 print """\
-Content-Type: text/html\n
-<html><body>
-<p>%s</p>
+</p>
 </body></html>
-""" % (html,)
+"""
