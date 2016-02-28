@@ -91,10 +91,10 @@ except:
 	print ('Not started via a proper CGI form')
 	sys.exit()
 
-nested = 0
+nested = -1
 try:
 	if form.getvalue('nested'):
-		nested = 1
+		nested = 0
 except:
 	print ('Not started via a proper CGI form - Nested checkbox is missing')
 #checks if the sequence is OK
