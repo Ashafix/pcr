@@ -965,23 +965,25 @@ def start_remote_server(*arguments):
 	compute_host = ''
 	for instance in instances:
 		if instance.private_dns_name != hostname and compute_host == '':
-			compute_host = instance.id
-			instance.start()
-			#wait until the instance is up and running
-			local_timeout = timeout
-			while instance.state['Code'] != 16 and local_timeout > 0:
-				sleep(waiting_period)
-				local_timeout += -waiting_period
-			if timeout < 0:
-				print 'Server start was unsuccesful, the timeout period was exceeded'
-				return False
-			if not test_server(gfServer, servername, serverport):
-				servername = ec2.Instance(compute_host).private_dns_name.split('.')[0] #get the base hostname
-				if not test_server(gfServer, servername, serverport):
-					print 'Server start was succesful, but gfServer does not respond'
+			#get the base hostname
+			if servername == ec2.Instance(compute_host).private_dns_name.split('.')[0]:
+				compute_host = instance.id
+				instance.start()
+				#wait until the instance is up and running
+				local_timeout = timeout
+				while instance.state['Code'] != 16 and local_timeout > 0:
+					sleep(waiting_period)
+					local_timeout += -waiting_period
+				if timeout < 0:
+					print 'Server start was unsuccesful, the timeout period was exceeded'
 					return False
-				else:
-					return True
+				if not test_server(gfServer, servername, serverport):
+					
+					if not test_server(gfServer, servername, serverport):
+						print 'Server start was succesful, but gfServer does not respond'
+						return False
+					else:
+						return True
 	return False
 
 def read_aws_conf():
