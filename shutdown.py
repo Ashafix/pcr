@@ -31,8 +31,8 @@ if compute_host == '':
 
 while True:
 	sleep(60)
-	file_list = [(os.path.getmtime(data_dir + fn), os.path.basename(data_dir + fn)) 
-               for fn in os.listdir(data_dir)]
+	file_list = [(os.path.getmtime(data_dir + fn), os.path.basename(data_dir + fn))
+		for fn in os.listdir(data_dir)]
 	file_list.sort()
 	newest = file_list[len(files) - 1][0]
 	print(newest)
@@ -40,6 +40,7 @@ while True:
 	
 	#shuts the compute host down 50 min after the last job
 	if ((time.time() - newest) / 60) > 50:
+		print ('Compute server will be shutdown now')
 		response = compute_host.stop(DryRun = False, Force = False)
 	#otherwise cleans up the file system, marks every file which is older than 60 days
 	else:
