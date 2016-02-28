@@ -939,6 +939,14 @@ def start_remote_server(*arguments):
 	Starts a remote AWS instance where primer3 and gfServer run
 	Returns True if the server was started succesfully
 	"""
+	stdout_logger = logging.getLogger('STDOUT')
+	sl = StreamToLogger(stdout_logger, logging.INFO)
+	sys.stdout = sl
+
+	stderr_logger = logging.getLogger('STDERR')
+	sl = StreamToLogger(stderr_logger, logging.ERROR)
+	sys.stderr = sl
+
 	import boto3
 	import socket
 	if arguments:
@@ -1027,7 +1035,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
 
 	###########################
 	###########################
-	#program starts here#######
+	###program starts here#####
 	###########################
 	###########################
 

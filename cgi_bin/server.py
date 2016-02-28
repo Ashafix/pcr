@@ -88,7 +88,7 @@ form = cgi.FieldStorage()
 try:
 	fileitem = form['fastafile']
 except:
-	print ('Not started via a proper CGI form')
+	html += 'Error: Not started via a proper CGI form'
 	sys.exit()
 
 nested = -1
@@ -96,7 +96,7 @@ try:
 	if form.getvalue('nested'):
 		nested = 0
 except:
-	print ('Not started via a proper CGI form - Nested checkbox is missing')
+	html += 'Not started via a proper CGI form - Nested checkbox is missing'
 #checks if the sequence is OK
 
 
@@ -117,7 +117,7 @@ if fileitem.filename:
 elif form.getvalue('fastasequence') != '':
 	sequence_filename = write_sequence(form.getvalue('fastasequence'))
 else:
-	print ('No valid FASTA sequence was provided :(<br>')
+	html += 'Error: No valid FASTA sequence was provided<br>'
 
 input_args = []
 input_args.append('-FASTA')
@@ -135,12 +135,12 @@ if int(form.getvalue('maxrepeats')) > 1 and int(form.getvalue('maxrepeats')) < 7
 	input_args.append('-MAXREPEATS')
 	input_args.append(form.getvalue('maxrepeats'))
 else:
-	print ('Error: Please provide a value between 2 and 6 for the repeat length<br>')
+	html += 'Error: Please provide a value between 2 and 6 for the repeat length<br>'
 if int(form.getvalue('primerpairs')) > 0 and int(form.getvalue('primerpairs')) < 101:
 	input_args.append('-PRIMERPAIRS')
 	input_args.append(form.getvalue('primerpairs'))
 else:
-	print ('Error: Please provide a value between 1 and 100 for the number of primer pairs<br>')
+	html += 'Error: Please provide a value between 1 and 100 for the number of primer pairs<br>'
 
 #write all input files
 #batchrun name
@@ -186,7 +186,7 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 			config_args['SERVERNAME'] = instance.private_dns_name.split('.')[0] 
 			remoteserver_url = 'http://' + instance.public_dns_name
 			if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
-				print ('<br>Server start was successful, but gfServer does not respond<br>')
+				html += '<br>Server start was successful, but gfServer does not respond<br>'
 
 if remoteserver_url != '':
 	#checks if the REST server is responding
@@ -199,10 +199,10 @@ if remoteserver_url != '':
 	except:
 		pass
 	if not 'CPU' in reply:
-		print ('<br>Rest server URL: ' + remoteserver_url)
-		print ('<br>Error: Rest server is not responding')
+		html += '<br>Rest server URL: ' + remoteserver_url
+		html += '<br>Error: Rest server is not responding'
 else:
-	print ('<br>Error: Remote server has no URL')
+	html += '<br>Error: Remote server has no URL'
 
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
@@ -231,15 +231,15 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	else:
 		result_file.write('FAILED')
 	#print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
-	print ('<script type="text/javascript">\n')
+	html += '<script type="text/javascript">\n'
 	#print ('window.location.href = "results.py"\n'
-	print ('</script><title>Page Redirection</title></head><body>')
-	print ('You should be redirected automatically, if not go to the <a href="results.py">results</a>')
-	print ('</body></html>')
+	html += '</script><title>Page Redirection</title></head><body>'
+	html += 'You should be redirected automatically, if not go to the <a href="results.py">results</a>'
+	html += '</body></html>'
 
 	result_file.close()
 elif sequence_filename:
-	print ('Server is not ready, please try again later.<br>')
+	html += 'Server is not ready, please try again later.<br>'
 
 print """\
 </p>

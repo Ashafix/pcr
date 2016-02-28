@@ -4,8 +4,10 @@ import os
 import boto3
 import sys
 from time import sleep
+from repeat_finder import read_aws_conf
+import socket
 
-if len(sys.argv) < 1:
+if len(sys.argv) < 2:
 	print ('No data directory specified')
 	sys.exit(0)
 else:
