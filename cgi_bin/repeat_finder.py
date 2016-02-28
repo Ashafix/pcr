@@ -791,7 +791,8 @@ def get_primers(sequence):
 						accepted_nested_templates.append(primerF + ',' + primerR)
 			else:
 				stdoutput += primerF + ' ' + primerR + ' rejected, not exactly one amplicon\n'
-			#checks if not enough suitable primer pairs have been found, then tries to design primers for nested PCR
+			#checks if not enough suitable primer pairs have been found
+			#then tries to design primers for nested PCR
 			#if yes, tries to redesign primers with identical reverse primer but different forward primer
 
 			make_nested_primers = False

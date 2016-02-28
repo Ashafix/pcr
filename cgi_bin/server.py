@@ -91,6 +91,12 @@ except:
 	print ('Not started via a proper CGI form')
 	sys.exit()
 
+nested = 0
+try:
+	if form.getvalue('nested'):
+		nested = 1
+except:
+	print ('Not started via a proper CGI form - Nested checkbox is missing')
 #checks if the sequence is OK
 
 
@@ -99,7 +105,6 @@ except:
 
 #creates a random name for each run
 run_name = ''
-
 while os.path.isfile(run_name) or run_name == '':
 	run_name = ''.join(SystemRandom().choice(ascii_uppercase + digits) for _ in range(6))
 
