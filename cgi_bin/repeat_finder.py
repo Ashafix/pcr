@@ -966,7 +966,7 @@ def start_remote_server(*arguments):
 	for instance in instances:
 		if instance.private_dns_name != hostname and compute_host == '':
 			#get the base hostname
-			if servername == ec2.Instance(compute_host).private_dns_name.split('.')[0]:
+			if servername == ec2.Instance(instance.id).private_dns_name.split('.')[0]:
 				compute_host = instance.id
 				instance.start()
 				#wait until the instance is up and running
