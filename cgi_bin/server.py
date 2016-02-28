@@ -172,7 +172,7 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 			if 'Value' in tag:
 				if 'Key' in tag.keys() and 'Value' in tag.keys():
 					if tag['Key'] == 'Name':
-						instance_name = tag['value']
+						instance_name = tag['Value']
 		if instance_name == config_args['SERVERNAME'] and compute_host == '':
 			compute_host = instance.id
 			#get the base hostname

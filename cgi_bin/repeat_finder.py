@@ -979,7 +979,7 @@ def start_remote_server(*arguments):
 				if 'Value' in tag:
 					if 'Key' in tag.keys() and 'Value' in tag.keys():
 						if tag['Key'] == 'Name':
-							instance_name = tag['value']
+							instance_name = tag['Value']
 			if instance_name == servername:
 				print ('<br>' + 'Servername: ' + servername + '<br>')
 				compute_host = instance.id
