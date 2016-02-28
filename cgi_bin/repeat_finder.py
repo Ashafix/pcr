@@ -955,8 +955,8 @@ def start_remote_server(*arguments):
 	print ('Start remote server<br>')
 	print ('Server name: ' + servername)
 	print ('<br>gfServer: ' + gfServer)
-	print ('<br>Server port: ' + serverport)
-	print ('<br>Time out: ' + timeout)
+	print ('<br>Server port: ' + str(serverport))
+	print ('<br>Time out: ' + str(timeout))
 
 	aws = read_aws_conf()
 	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'],
