@@ -966,7 +966,7 @@ def start_remote_server(*arguments):
 	for instance in instances:
 		if instance.private_dns_name != hostname and compute_host == '':
 			#get the base hostname
-			if servername == ec2.Instance(instance.id).private_dns_name.split('.')[0]:
+			if servername == instance.private_dns_name.split('.')[0]:
 				compute_host = instance.id
 				instance.start()
 				#wait until the instance is up and running
@@ -974,7 +974,7 @@ def start_remote_server(*arguments):
 				while instance.state['Code'] != 16 and local_timeout > 0:
 					sleep(waiting_period)
 					local_timeout += -waiting_period
-				if timeout < 0:
+				if local_timeout < 0:
 					print 'Server start was unsuccesful, the timeout period was exceeded'
 					return False
 				if not test_server(gfServer, servername, serverport):
