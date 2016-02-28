@@ -963,7 +963,7 @@ def start_remote_server(*arguments):
 
 	instances = ec2.instances.all()
 	if len(list(instances)) < 2:
-		print 'No second AWS instance was found!'
+		print ('No second AWS instance was found!')
 		return False
 
 	hostname = socket.gethostbyaddr(socket.gethostname())[0]
@@ -972,6 +972,7 @@ def start_remote_server(*arguments):
 		if instance.private_dns_name != hostname and compute_host == '':
 			#get the base hostname
 			if servername == instance.private_dns_name.split('.')[0]:
+				print ('<br>' + 'Servername: ' + servername + '<br>')
 				compute_host = instance.id
 				instance.start()
 				#wait until the instance is up and running
@@ -980,14 +981,12 @@ def start_remote_server(*arguments):
 					sleep(waiting_period)
 					local_timeout += -waiting_period
 				if local_timeout < 0:
-					print 'Server start was unsuccesful, the timeout period was exceeded'
+					print ('Server start was unsuccesful, the timeout period was exceeded')
 					return False
 				if not test_server(gfServer, servername, serverport):
-					
-					if not test_server(gfServer, servername, serverport):
-						print 'Server start was succesful, but gfServer does not respond'
-						return False
-					else:
+					print ('Server start was succesful, but gfServer does not respond')
+					return False
+				else:
 						return True
 	return False
 
