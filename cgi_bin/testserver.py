@@ -45,23 +45,24 @@ if conf_arguments != '':
 		message += 'is up and running<br>'
 	else:
 		#check if it is possible to find an AWS server with the same name
+		aws = read_aws_conf()
 		session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'], 
 			aws_secret_access_key = aws['aws_secret_access_key'], 
 			region_name = aws['region_name'])
 		ec2 = session.resource('ec2')
 		instances = ec2.instances.all()
 		for instance in instances:
-		instance_name = ''
-		for tag in instance.tags:
-			if 'Value' in tag and 'Key' in tag and instance_name == '':
-				if 'Key' in tag.keys() and 'Value' in tag.keys():
-					if tag['Key'] == 'Name': 
-						if tag['Value'] == config_args['SERVERNAME']:
-							if test_server(config_args['GFSERVER'], instance.private_dns_name.split('.')[0] , config_args['SERVERPORT']):
-								message += 'is up and running<br>'
-								config_args['SERVERNAME'] = instance.private_dns_name.split('.')[0]
-								instance_name = tag['Value']
-								remoteserver_url = 'http://' + instance.public_dns_name
+			instance_name = ''
+			for tag in instance.tags:
+				if 'Value' in tag and 'Key' in tag and instance_name == '':
+					if 'Key' in tag.keys() and 'Value' in tag.keys():
+						if tag['Key'] == 'Name': 
+							if tag['Value'] == conf_arguments['SERVERNAME']:
+								if test_server(conf_arguments['GFSERVER'], instance.private_dns_name.split('.')[0] , conf_arguments['SERVERPORT']):
+									message += 'is up and running<br>'
+									conf_arguments['SERVERNAME'] = instance.private_dns_name.split('.')[0]
+									instance_name = tag['Value']
+									remoteserver_url = 'http://' + instance.public_dns_name
 		if instance_name == '':
 			message += 'IS NOT running<br>'
 
