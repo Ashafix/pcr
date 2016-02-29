@@ -3,7 +3,7 @@
 import os
 import boto3
 import sys
-from time import sleep
+from time import sleep, time
 from repeat_finder import read_aws_conf
 import socket
 
@@ -36,19 +36,19 @@ while True:
 	file_list = [(os.path.getmtime(data_dir + fn), os.path.basename(data_dir + fn))
 		for fn in os.listdir(data_dir)]
 	file_list.sort()
-	newest = file_list[len(files) - 1][0]
+	newest = file_list[len(file_list) - 1][0]
 	print(newest)
 
 	
 	#shuts the compute host down 50 min after the last job
-	if ((time.time() - newest) / 60) > 50:
+	if ((time() - newest) / 60) > 50:
 		print ('Compute server will be shutdown now')
 		response = compute_host.stop(DryRun = False, Force = False)
 	#otherwise cleans up the file system, marks every file which is older than 60 days
 	else:
 		i = 0
 		while i < len(file_list):
-			if ((time.time() - file_list[i][0]) / 60 / 60 / 24) > 30:
+			if ((time() - file_list[i][0]) / 60 / 60 / 24) > 30:
 				print ('old file' + file_list[i][1])
 				i += 1
 			else:
