@@ -14,15 +14,8 @@ import os
 import sys
 from repeat_finder import read_configfile
 
-#primer3_exe = 'D:\\dropbox\\PCR\\primer3_core.exe'
+
 primer3_exe = sys.argv[1]
-
-config_filename = 'batchprimer.conf'
-config_args = read_configfile(config_filename)
-
-max_threads
-
-#primer3_dir = 'D:/Dropbox/PCR/'
 primer3_dir = sys.argv[2]
 myQueue = Queue()
 
