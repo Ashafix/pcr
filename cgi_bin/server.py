@@ -41,7 +41,7 @@ def html_output(new_line):
 	html_code += new_line
 	html_output = header + html_code + end
 	sys.__stdout__.write(new_line + '\n')
-	sys.stdout.flush()
+	sys.__stdout__.flush()
 
 #writes a sequence or sequence file to the data directory
 def write_sequence(sequence):
@@ -255,8 +255,9 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append('-RUNNAME')
 	input_args.append(run_name)
 	html_output('Hemi-NeSTR was just started. It will take about two minutes per sequence.<br>')
-	html_output('<a href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
+	html_output('<a target="_blank" href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
 	batchprimer_result = start_repeat_finder(False, input_args)
+	html_output('Your job is finished and the link above should work now.<br>')
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	if batchprimer_result != '':
 		result_file.write(batchprimer_result)
