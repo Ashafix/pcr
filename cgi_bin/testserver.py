@@ -73,8 +73,8 @@ if conf_arguments != '':
 	else:
 		message += ' IS NOT found<br>'
 
-	message += 'REST server '
 	if remoteserver_url != '':
+		message += '<br>REST server '
 		#checks if the REST server is responding
 		url = remoteserver_url + ':8003/cpuInfo'
 		reply = ''
@@ -85,10 +85,10 @@ if conf_arguments != '':
 		except:
 			pass
 		if not 'CPU' in reply:
-			message += '<br>Rest server URL: ' + remoteserver_url
+			message += ' URL: ' + remoteserver_url
 			message += '<br>Error: Rest server is not responding'
 		else:
-			message += '<br>Rest server is responding correctly'
+			message += ' is responding correctly'
 	else:
 		message += '<br>Error: Remote server has no URL'
 
