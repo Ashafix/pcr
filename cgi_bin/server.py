@@ -25,6 +25,26 @@ global run_name
 html = ''
 sequence_filename = ''
 config_filename = 'batchprimer.conf'
+
+header = """\
+Content-Type: text/html\n
+<html><body>
+<p>
+"""
+end = """\
+</p>
+</body></html>
+"""
+html_code = ''
+
+#generates dynamic html output
+def html_output(new_line):
+	global html_code
+	html_code += new_line
+	html_output = header + html_code + end
+	print (html_output)
+	sys.stdout.flush()
+
 #writes a sequence or sequence file to the data directory
 def write_sequence(sequence):
 
@@ -89,6 +109,7 @@ try:
 	fileitem = form['fastafile']
 except:
 	html += 'Error: Not started via a proper CGI form'
+	html_output('Error: Not started via a proper CGI form')
 	sys.exit()
 
 nested = -1
@@ -97,6 +118,7 @@ try:
 		nested = 0
 except:
 	html += 'Not started via a proper CGI form - Nested checkbox is missing'
+	html_output('Not started via a proper CGI form - Nested checkbox is missing')
 #checks if the sequence is OK
 
 
@@ -118,6 +140,7 @@ elif form.getvalue('fastasequence') != '':
 	sequence_filename = write_sequence(form.getvalue('fastasequence'))
 else:
 	html += 'Error: No valid FASTA sequence was provided<br>'
+	html_output('Error: No valid FASTA sequence was provided<br>')
 
 input_args = []
 input_args.append('-FASTA')
@@ -136,11 +159,13 @@ if int(form.getvalue('maxrepeats')) > 1 and int(form.getvalue('maxrepeats')) < 7
 	input_args.append(form.getvalue('maxrepeats'))
 else:
 	html += 'Error: Please provide a value between 2 and 6 for the repeat length<br>'
+	html_output('Error: Please provide a value between 2 and 6 for the repeat length<br>')
 if int(form.getvalue('primerpairs')) > 0 and int(form.getvalue('primerpairs')) < 101:
 	input_args.append('-PRIMERPAIRS')
 	input_args.append(form.getvalue('primerpairs'))
 else:
 	html += 'Error: Please provide a value between 1 and 100 for the number of primer pairs<br>'
+	html_output('Error: Please provide a value between 1 and 100 for the number of primer pairs<br>')
 
 #write all input files
 #batchrun name
@@ -159,7 +184,8 @@ batchprimer_file.close()
 if not 'Error: ' in html:
 	if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120):
-			html += "Error: Compute server could not be started.<br>"
+			html += 'Error: Compute server could not be started.<br>'
+			html_output('Error: Compute server could not be started.<br>')
 
 remoteserver_url = ''
 
@@ -187,6 +213,7 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
 			remoteserver_url = 'http://' + instance.public_dns_name
 			if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 				html += '<br>Server start was successful, but gfServer does not respond<br>'
+				html_output('<br>Server start was successful, but gfServer does not respond<br>')
 
 if remoteserver_url != '':
 	#checks if the REST server is responding
@@ -200,9 +227,12 @@ if remoteserver_url != '':
 		pass
 	if not 'CPU' in reply:
 		html += '<br>Rest server URL: ' + remoteserver_url
+		html_output('<br>Rest server URL: ' + remoteserver_url)
 		html += '<br>Error: Rest server is not responding'
+		html_output('<br>Error: Rest server is not responding')
 else:
 	html += '<br>Error: Remote server has no URL'
+	html_output('<br>Error: Remote server has no URL')
 
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
@@ -232,14 +262,19 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		result_file.write('FAILED')
 	#print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
 	html += '<script type="text/javascript">\n'
+	html_output('<script type="text/javascript">\n')
 	#print ('window.location.href = "results.py"\n'
 	html += '</script><title>Page Redirection</title></head><body>'
+	html_output('</script><title>Page Redirection</title></head><body>')
 	html += 'You should be redirected automatically, if not go to the <a href="results.py">results</a>'
+	html_output('You should be redirected automatically, if not go to the <a href="results.py">results</a>')
 	html += '</body></html>'
+	html_output('</body></html>')
 
 	result_file.close()
 elif sequence_filename:
 	html += 'Server is not ready, please try again later.<br>'
+	html_output('Server is not ready, please try again later.<br>')
 
 print """\
 </p>
