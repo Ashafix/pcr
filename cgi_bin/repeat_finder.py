@@ -41,9 +41,11 @@ logging.basicConfig(
 	filemode = 'a'
 )
 
-#reads the config file with all global entries
-def read_configfile(config_filename):
 
+def read_configfile(config_filename):
+	"""
+	reads the config file with all global entries
+	"""
 	global standard_primer_settings_filename
 	global primer3_directory
 	global primer3_exe
