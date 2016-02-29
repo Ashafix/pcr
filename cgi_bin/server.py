@@ -4,12 +4,6 @@
 #read file, pass as sequence
 #list results
 
-print ("""\
-Content-Type: text/html\n
-<html><body>
-<p>
-""")
-
 import cgi, os
 from repeat_finder import *
 from random import SystemRandom
@@ -37,12 +31,16 @@ end = """\
 """
 html_code = ''
 
+print (header)
+print ('Your job was submitted. Please be patient....\n')
+sys.stdout.flush()
+
 #generates dynamic html output
 def html_output(new_line):
 	global html_code
 	html_code += new_line
 	html_output = header + html_code + end
-	print (html_output)
+	print (new_line + '\n')
 	sys.stdout.flush()
 
 #writes a sequence or sequence file to the data directory
@@ -183,9 +181,12 @@ batchprimer_file.close()
 
 if not 'Error: ' in html:
 	if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
+		html_output('Remote server will be started now. This will take a minute or two.<br>')
 		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120):
 			html += 'Error: Compute server could not be started.<br>'
 			html_output('Error: Compute server could not be started.<br>')
+		else:
+			html_output('Remote server is running now.<br>')
 
 remoteserver_url = ''
 
@@ -253,7 +254,8 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append(remoteserver_url)
 	input_args.append('-RUNNAME')
 	input_args.append(run_name)
-
+	html_output('Hemi-NeSTR was started now. It will take about two minutes per sequence.<br>'
+	html_output('<a href="/data/' + run_name + '">Your results will be here</a><br>')
 	batchprimer_result = start_repeat_finder(False, input_args)
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	if batchprimer_result != '':
@@ -276,7 +278,4 @@ elif sequence_filename:
 	html += 'Server is not ready, please try again later.<br>'
 	html_output('Server is not ready, please try again later.<br>')
 
-print """\
-</p>
-</body></html>
-"""
+print end
