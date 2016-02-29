@@ -5,6 +5,7 @@ from subprocess import check_output, STDOUT
 from os import path
 from repeat_finder import read_configfile, read_aws_conf
 import boto3
+import urllib2
 
 def test_server(gfServer, servername, serverport):
 
@@ -51,8 +52,8 @@ if conf_arguments != '':
 			region_name = aws['region_name'])
 		ec2 = session.resource('ec2')
 		instances = ec2.instances.all()
+		instance_name = ''
 		for instance in instances:
-			instance_name = ''
 			for tag in instance.tags:
 				if 'Value' in tag and 'Key' in tag and instance_name == '':
 					if 'Key' in tag.keys() and 'Value' in tag.keys():
@@ -71,7 +72,7 @@ if conf_arguments != '':
 		message += ' is found<br>'
 	else:
 		message += ' IS NOT found<br>'
-	
+
 	message += 'REST server '
 	if remoteserver_url != '':
 		#checks if the REST server is responding
@@ -91,8 +92,7 @@ if conf_arguments != '':
 	else:
 		message += '<br>Error: Remote server has no URL'
 
-
-message += '<form action="../primer.html">    <input type="submit" value="Go back to start page"></form>'
+message += '<form action="../primer.html"><input type="submit" value="Go back to start page"></form>'
 
 
 print """\
