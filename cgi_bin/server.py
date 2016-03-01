@@ -139,7 +139,8 @@ if fileitem.filename:
 		sequence += line
 	sequence_filename = write_sequence(sequence)
 elif form.getvalue('fastasequence') != '':
-	sequence_filename = write_sequence(form.getvalue('fastasequence'))
+	sequence = form.getvalue('fastasequence')
+	sequence_filename = write_sequence(sequence)
 else:
 	html += 'Error: No valid FASTA sequence was provided<br>'
 	html_output('Error: No valid FASTA sequence was provided<br>')
@@ -258,8 +259,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append(run_name)
 	html_output('Hemi-NeSTR was just started. It will take about two minutes per sequence.<br>')
 	html_output('<a target="_blank" href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
-	
-	
+
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	result_file.close()
 	finished = False
@@ -270,9 +270,9 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 
 	while offset != -1:
 		offset += 1
-		offset = seq.find('>', offset)
+		offset = sequence.find('>', offset)
 		if offset != -1:
-			sub_seqs.append(seq[offset:seq.find('>', offset + 1)])
+			sub_seqs.append(sequence[offset:sequence.find('>', offset + 1)])
 	input_args.append('-FASTA')
 	base_args = input_args
 	
