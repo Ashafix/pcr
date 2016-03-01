@@ -44,9 +44,13 @@ def html_output(new_line):
 	sys.__stdout__.flush()
 
 #writes a sequence or sequence file to the data directory
-def write_sequence(sequence):
+def write_sequence(sequence, index = ''):
 
-	fasta_filename = data_dir + run_name + '_sequence.fasta'
+	if index != '':
+		fasta_filename = data_dir + run_name + '_' + str(index)
+		fasta_filename += '_sequence.fasta' 
+	else:
+		fasta_filename = data_dir + run_name + '_sequence.fasta' 
 	if sequence != '':
 		fasta_file = open(fasta_filename, 'w')
 		sequence = clean_sequence(sequence)
@@ -141,8 +145,6 @@ else:
 	html_output('Error: No valid FASTA sequence was provided<br>')
 
 input_args = []
-input_args.append('-FASTA')
-input_args.append(sequence_filename)
 input_args.append('-PRIMER3_SETTINGS')
 input_args.append(config_args['PRIMER3_SETTINGS'])
 input_args.append('-PRIMER3_DIRECTORY')
@@ -256,13 +258,40 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append(run_name)
 	html_output('Hemi-NeSTR was just started. It will take about two minutes per sequence.<br>')
 	html_output('<a target="_blank" href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
-	batchprimer_result = start_repeat_finder(False, input_args)
-	html_output('Your job is finished and the link above should work now.<br>')
+	
+	
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
-	if batchprimer_result != '':
-		result_file.write(batchprimer_result)
-	else:
-		result_file.write('FAILED')
+	result_file.close()
+	finished = False
+	result_file = open(data_dir + run_name + '_results.txt', 'a')
+	
+	sub_seqs = []
+	offset = 0
+
+	while offset != -1:
+		offset += 1
+		offset = seq.find('>', offset)
+		if offset != -1:
+			sub_seqs.append(seq[offset:seq.find('>', offset + 1)])
+	input_args.append('-FASTA')
+	base_args = input_args
+	
+	for i in range(0, len(sub_seqs), int(config_args['MAXTHREADS'])):
+		input_args = base_args
+		sequence = ''
+		for j in range(0, int(config_args['MAXTHREADS'])):
+			sequence += sub_seqs[i + j]
+		sequence_filename = write_sequence(sequence, str(i))
+		input_args.append(sequence_filename)
+		html_output('a batch of jobs was started<br>')
+		batchprimer_result = start_repeat_finder(False, input_args)
+		html_output('a batch of jobs just finished<br>')
+		if batchprimer_result != '':
+			result_file.write(batchprimer_result)
+		else:
+			result_file.write('FAILED')
+	result_file.close()
+	html_output('Your job is finished and the link above should work now.<br>')
 	#print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
 	html += '<script type="text/javascript">\n'
 	html_output('<script type="text/javascript">\n')
@@ -279,4 +308,4 @@ elif sequence_filename:
 	html += 'Server is not ready, please try again later.<br>'
 	html_output('Server is not ready, please try again later.<br>')
 
-print end
+print (end)
