@@ -6,6 +6,7 @@ import sys
 from time import sleep, time
 from repeat_finder import read_aws_conf
 import socket
+import psutil
 
 if len(sys.argv) < 2:
 	print ('No data directory specified')
@@ -42,8 +43,10 @@ while True:
 	
 	#shuts the compute host down 50 min after the last job
 	if ((time() - newest) / 60) > 50:
-		print ('Compute server will be shutdown now')
-		response = compute_host.stop(DryRun = False, Force = False)
+		#checks if the instance is idle
+		if int(psutil.cpu_percent()) < 10:
+			print ('Compute server will be shutdown now')
+			response = compute_host.stop(DryRun = False, Force = False)
 	#otherwise cleans up the file system, marks every file which is older than 60 days
 	else:
 		i = 0
