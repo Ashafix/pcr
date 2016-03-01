@@ -32,8 +32,9 @@ if compute_host == '':
 	print ('Could not resolve own instance ID')
 	sys.exit()
 
+#sleeps for 30 min to prevent immediate shutdown
+sleep(1800)
 while True:
-	sleep(60)
 	file_list = [(os.path.getmtime(data_dir + fn), os.path.basename(data_dir + fn))
 		for fn in os.listdir(data_dir)]
 	file_list.sort()
@@ -56,3 +57,4 @@ while True:
 				i += 1
 			else:
 				i = len(file_list)
+	sleep(60)
