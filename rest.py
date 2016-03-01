@@ -18,7 +18,7 @@ from repeat_finder import read_configfile
 primer3_exe = sys.argv[1]
 primer3_dir = sys.argv[2]
 myQueue = Queue()
-
+max_threads = 2
 #dictionaries for stdit/stdout filenames and file objects
 #primary key: worker_ID
 worker_stdin = {}
@@ -38,8 +38,6 @@ def worker(worker_id):
 	global tmp_file
 	global jobs
 	global proc_items
-	global worked_stdin
-	global worked_stdout
 	global tmp_file_in
 	global tmp_file_out
 	worker_stdout[worker_id] = primer3_dir + 'worker_output_' + str(worker_id) + '.txt'
