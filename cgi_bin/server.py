@@ -264,23 +264,30 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	result_file.close()
 	finished = False
 	result_file = open(data_dir + run_name + '_results.txt', 'a')
-	
+
 	sub_seqs = []
 	offset = 0
 
+	#needed to deal with different sequence formats (single or multiple)
+	sequence = ' ' + sequence
+
+	#splits multiple sequences into a list of sequences
 	while offset != -1:
-		offset += 1
-		offset = sequence.find('>', offset)
+		offset = sequence.find('>', offset + 1)
 		if offset != -1:
-			sub_seqs.append(sequence[offset:sequence.find('>', offset + 1)])
+			sub_seqs.append(sequence[offset:sequence.find('>', offset + 1)].strip())
+
+
 	input_args.append('-FASTA')
 	base_args = input_args
-	
 	for i in range(0, len(sub_seqs), int(config_args['MAXTHREADS'])):
 		input_args = base_args
 		sequence = ''
 		for j in range(0, int(config_args['MAXTHREADS'])):
-			sequence += sub_seqs[i + j]
+			if i + j < len(sub_seqs):
+				if sub_seqs[i + j] != '':
+					sequence += sub_seqs[i + j]
+
 		sequence_filename = write_sequence(sequence, str(i))
 		input_args.append(sequence_filename)
 		html_output('a batch of jobs was started<br>')
