@@ -263,7 +263,6 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	result_file.close()
 	finished = False
-	result_file = open(data_dir + run_name + '_results.txt', 'a')
 
 	sub_seqs = []
 	offset = 0
@@ -286,18 +285,20 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		for j in range(0, int(config_args['MAXTHREADS'])):
 			if i + j < len(sub_seqs):
 				if sub_seqs[i + j] != '':
-					sequence += sub_seqs[i + j]
+					sequence += sub_seqs[i + j] + '\n'
 
 		sequence_filename = write_sequence(sequence, str(i))
 		input_args.append(sequence_filename)
-		html_output('a batch of jobs was started<br>')
+		html_output('<br>a batch of jobs was started<br>')
 		batchprimer_result = start_repeat_finder(False, input_args)
 		html_output('a batch of jobs just finished<br>')
+		result_file = open(data_dir + run_name + '_results.txt', 'a')
 		if batchprimer_result != '':
 			result_file.write(batchprimer_result)
 		else:
 			result_file.write('FAILED')
-	result_file.close()
+		result_file.close()
+
 	html_output('Your job is finished and the link above should work now.<br>')
 	#print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
 	html += '<script type="text/javascript">\n'
@@ -305,8 +306,8 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	#print ('window.location.href = "results.py"\n'
 	html += '</script><title>Page Redirection</title></head><body>'
 	html_output('</script><title>Page Redirection</title></head><body>')
-	html += 'You should be redirected automatically, if not go to the <a href="results.py">results</a>'
-	html_output('You should be redirected automatically, if not go to the <a href="results.py">results</a>')
+	#html += 'You should be redirected automatically, if not go to the <a href="results.py">results</a>'
+	#html_output('You should be redirected automatically, if not go to the <a href="results.py">results</a>')
 	html += '</body></html>'
 	html_output('</body></html>')
 
