@@ -330,9 +330,14 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		if offset != -1:
 			sub_seqs.append(sequence[offset:sequence.find('>', offset + 1)].strip())
 
-
 	input_args.append('-FASTA')
 	base_args = input_args[:]
+	
+	#starts the background thread for printing dots
+	print_dots = False
+	thread = dots(dot)
+	thread.start()
+
 	for i in range(0, len(sub_seqs), int(config_args['MAXTHREADS'])):
 		input_args = base_args[:]
 		sequence = ''
@@ -343,8 +348,6 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 
 		sequence_filename = write_sequence(sequence, str(i))
 		input_args.append(sequence_filename)
-		thread = dots(dot)
-		thread.start()
 		print_dots = True
 		html_output('<br>a batch of jobs was started<br>')
 		batchprimer_result = start_repeat_finder(False, input_args)
