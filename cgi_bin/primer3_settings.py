@@ -11,7 +11,7 @@ if len(sys.argv) == 1:
 else:
 	primer3_settings_filename = sys.argv[1]
 
-print ('Content-Type: text/html')
+print ('Content-Type: text/html\n')
 print ('<html><body>')
 
 for line in primer3_settings.split('\n'):
@@ -33,10 +33,10 @@ for line in primer3_settings.split('\n'):
 	elif len(line.strip()) > 1:
 		print (line)
 		print ('<br>')
-
+	print ('\n')
 print ('<hr>')
 
-print ('<input type="submit" value="Save Primer3 parameters to file" name="SaveSettings" formaction="cgi-bin/save_primer3settings.py" />')
-print ('<input type="submit" value="Load Primer3 parameters from file" name="SaveSettings" formaction="cgi-bin/load_primer3settings.py" />')
+print ('<input type="submit" value="Save Primer3 parameters to file" name="SaveSettings" formaction="../cgi-bin/save_primer3settings.py" />')
+print ('<input type="submit" value="Load Primer3 parameters from file" name="SaveSettings" formaction="../cgi-bin/load_primer3settings.py" />')
 print ('</body>')
 print ('</html>')
