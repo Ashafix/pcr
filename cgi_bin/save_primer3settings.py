@@ -14,6 +14,5 @@ for key in form.keys()  :
 	html += str(key)
 	html += '='
 	html += str(form[key].value)
-	
 
 print (html)
