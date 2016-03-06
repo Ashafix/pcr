@@ -129,17 +129,22 @@ elif len(sys.argv) > len(cgi_args):
 	formdata = ''
 	
 	for i in range(0, len(cgi_args)):
-		formdata +='---123\nContent-Disposition: form-data; name="'
+		formdata += '---123\nContent-Disposition: form-data; name="'
 		formdata += cgi_args[i] + '"\n\n'
 		formdata += sys.argv[1 + i] + '\n'
-
+	formdata += formdata += 
+	"""
+		---123
+		Content-Disposition: form-data; name="fastafile"; filename=""
+		Content-Type: text/plain
+	"""
 	formdata_environ = {
 		'CONTENT_LENGTH': str(len(formdata)),
 		'CONTENT_TYPE': 'multipart/form-data; boundary=-123',
 		'QUERY_STRING': '',
 		'REQUEST_METHOD': 'POST',
 	}
-	form = cgi_result(formdata, formdata_environ)
+	form = cgi_result(formdata, formdata_environ)	
 
 try:
 	fileitem = form['fastafile']
