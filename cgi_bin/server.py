@@ -20,6 +20,8 @@ html = ''
 sequence_filename = ''
 config_filename = 'batchprimer.conf'
 
+cgi_args = ['maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
+
 header = """\
 Content-Type: text/html\n
 <html><body>
@@ -42,13 +44,8 @@ def cgi_result(data, environ):
 	"""
 	fake_stdin = StringIO(data)
 	fake_stdin.seek(0)
-	fake_form = cgi.FieldStorage(fp = fake_stdin, environ = environ)
-	
-	result = {}
-	for k, v in dict(fake_form).items():
-		result[k] = type(v) is list and fake_form.getlist(k) or v.value
-	
-	return result
+	fake_form = cgi.FieldStorage(fp = fake_stdin, environ = environ)	
+	return fake_form
 
 def html_output(new_line):
 	"""
@@ -127,22 +124,22 @@ data_dir = config_args['DATADIR']
 if len(sys.argv) == 1:
 	form = cgi.FieldStorage()
 #for debugging and unit testing
-elif len(sys.argv) > 4:
+elif len(sys.argv) > len(cgi_args):
 	from StringIO import StringIO
-	cgi_args = ['maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
 	formdata = ''
 	
-	for i in range(0, len(cgi_args)):
+	for i in range(0, len(cgi_args - 1)):
 		formdata +='---123\nContent-Disposition: form-data; name="'
-		formdata += cgi_args[i] + '"\n'
-		formdata += sys.argv[1 + i]
+		formdata += cgi_args[i] + '"\n\n'
+		formdata += sys.argv[1 + i] + '\n'
+
 	formdata_environ = {
-		'CONTENT_LENGTH':   str(len(formdata)),
-		'CONTENT_TYPE':     'multipart/form-data; boundary=-123',
-		'QUERY_STRING':     'key1=value1&key2=value2x',
-		'REQUEST_METHOD':   'POST',
+		'CONTENT_LENGTH': str(len(formdata)),
+		'CONTENT_TYPE': 'multipart/form-data; boundary=-123',
+		'QUERY_STRING': '',
+		'REQUEST_METHOD': 'POST',
 	}
-	form = cgi_result(formdata_data, formdata_environ)
+	form = cgi_result(formdata, formdata_environ)
 	print (form)
 	sys.exit(0)
 try:
