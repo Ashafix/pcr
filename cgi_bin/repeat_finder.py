@@ -213,7 +213,7 @@ def import_parameters(*arguments):
 	global remote_server
 	global run_name
 	global timeout
-
+	global started_via_commandline
 	shutdown = -1
 	remote_server = ''
 	waiting_period = 0.25
