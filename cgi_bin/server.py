@@ -177,7 +177,7 @@ else:
 	html += 'Error: No valid FASTA sequence was provided<br>'
 	html_output('Error: No valid FASTA sequence was provided<br>')
 
-sequence = sequence.strip()	
+sequence = sequence.strip()
 sequence_filename = write_sequence(sequence)
 input_args = []
 input_args.append('-PRIMER3_SETTINGS')
