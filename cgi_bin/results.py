@@ -24,7 +24,8 @@ else:
 	#sorts files by date, not pretty but it works
 	x = 0
 	while  x < len(filelist):
-		if not filelist[x].endswith('_sequence.fasta'):
+		search_str = '_sequence.fasta'
+		if not filelist[x].find(search_str) == 6:
 			del filelist[x]
 		else:
 			x += 1
