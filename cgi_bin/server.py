@@ -128,7 +128,7 @@ elif len(sys.argv) > len(cgi_args):
 	from StringIO import StringIO
 	formdata = ''
 	
-	for i in range(0, len(cgi_args) - 1):
+	for i in range(0, len(cgi_args)):
 		formdata +='---123\nContent-Disposition: form-data; name="'
 		formdata += cgi_args[i] + '"\n\n'
 		formdata += sys.argv[1 + i] + '\n'
