@@ -140,8 +140,7 @@ elif len(sys.argv) > len(cgi_args):
 		'REQUEST_METHOD': 'POST',
 	}
 	form = cgi_result(formdata, formdata_environ)
-	print (form)
-	sys.exit(0)
+
 try:
 	fileitem = form['fastafile']
 except:
