@@ -189,7 +189,7 @@ input_args.append(config_args['PRIMER3_EXE'])
 input_args.append('-NESTED')
 input_args.append(nested)
 input_args.append('-MAXTHREADS')
-input_args.append(config_args['-MAXTHREADS'])
+input_args.append(config_args['MAXTHREADS'])
 
 if int(form.getvalue('maxrepeats')) > 1 and int(form.getvalue('maxrepeats')) < 7:
 	input_args.append('-MAXREPEATS')
