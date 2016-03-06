@@ -13,7 +13,7 @@ import boto3
 import socket
 import urllib2
 import threading
-import time
+from time import sleep
 
 global data_dir
 global run_name
@@ -51,8 +51,8 @@ class dots(threading.Thread):
 def dot():
 	global print_dots
 	while print_dots:
-		html_output('...')
-		time.sleep(0.5)
+		html_output('.')
+		sleep(0.5)
 
 
 def cgi_result(data, environ):
@@ -348,7 +348,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		print_dots = True
 		html_output('<br>a batch of jobs was started<br>')
 		batchprimer_result = start_repeat_finder(False, input_args)
-		html_output('a batch of jobs just finished<br>')
+		html_output('<br>a batch of jobs just finished<br>')
 		print_dots = False
 		result_file = open(data_dir + run_name + '_results.txt', 'a')
 		if batchprimer_result != '':
