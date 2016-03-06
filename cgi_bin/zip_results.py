@@ -60,7 +60,6 @@ else:
 		html = 'Content-Type:application/octet-stream\n'
 		html += 'Content-Disposition: attachment; filename="'
 		html += run_name + '.zip" ' + '\n\n'
-		#html = ''
 		zip_file = open(zip_filename, 'rb')
 		while True:
 			buffer = zip_file.read(4096)
