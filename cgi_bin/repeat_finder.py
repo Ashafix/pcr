@@ -225,7 +225,7 @@ def import_parameters(*arguments):
 	if len(sys.argv) > 1 or len(arguments) == 0:
 		if '-help' in str(sys.argv) > -1:
 			print_help()
-			exit()
+			sys.exit()
 		else:
 			input_args = sys.argv
 	else:
