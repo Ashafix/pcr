@@ -12,6 +12,7 @@ from shutil import copyfile
 import boto3
 import socket
 import urllib2
+import threading
 
 global data_dir
 global run_name
@@ -36,6 +37,22 @@ html_code = ''
 print (header)
 print ('Your job was submitted. Please be patient....<br><br>\n')
 sys.stdout.flush()
+
+class dots(threading.Thread):
+	def __init__(self, dot):
+		threading.Thread.__init__(self)
+		self.runnable = dot
+		self.daemon = True
+	
+	def run(self):
+		self.runnable()
+
+def dot():
+	global print_dots
+	while print_dots:
+		print ('...')
+		time.sleep(0.25)
+
 
 def cgi_result(data, environ):
 	"""fakes a cgi result
@@ -325,9 +342,13 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 
 		sequence_filename = write_sequence(sequence, str(i))
 		input_args.append(sequence_filename)
+		thread = dots(dot)
+		thread.start()
+		print_dots = True
 		html_output('<br>a batch of jobs was started<br>')
 		batchprimer_result = start_repeat_finder(False, input_args)
 		html_output('a batch of jobs just finished<br>')
+		print_dots = False
 		result_file = open(data_dir + run_name + '_results.txt', 'a')
 		if batchprimer_result != '':
 			result_file.write(batchprimer_result)
