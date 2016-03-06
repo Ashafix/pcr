@@ -13,6 +13,7 @@ import boto3
 import socket
 import urllib2
 import threading
+import time
 
 global data_dir
 global run_name
@@ -50,8 +51,8 @@ class dots(threading.Thread):
 def dot():
 	global print_dots
 	while print_dots:
-		print ('...')
-		time.sleep(0.25)
+		html_output('...')
+		time.sleep(0.5)
 
 
 def cgi_result(data, environ):
