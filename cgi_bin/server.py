@@ -169,7 +169,7 @@ except:
 nested = -1
 try:
 	if form.getvalue('nested'):
-		nested = 0
+		nested = form.getvalue('nested')
 except:
 	html += 'Not started via a proper CGI form - Nested checkbox is missing'
 	html_output('Not started via a proper CGI form - Nested checkbox is missing')
