@@ -34,7 +34,7 @@ end = """\
 html_code = ''
 
 print (header)
-print ('Your job was submitted. Please be patient....<br>\n')
+print ('Your job was submitted. Please be patient....<br><br>\n')
 sys.stdout.flush()
 
 def cgi_result(data, environ):
@@ -188,6 +188,8 @@ input_args.append('-PRIMER3_EXE')
 input_args.append(config_args['PRIMER3_EXE'])
 input_args.append('-NESTED')
 input_args.append(nested)
+input_args.append('-MAXTHREADS')
+input_args.append(max_threads)
 
 if int(form.getvalue('maxrepeats')) > 1 and int(form.getvalue('maxrepeats')) < 7:
 	input_args.append('-MAXREPEATS')
@@ -220,10 +222,10 @@ if not 'Error: ' in html:
 	if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 		html_output('Remote server will be started now. This might take a minute or two.<br>')
 		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120):
-			html += 'Error: Compute server could not be started.<br>'
-			html_output('Error: Compute server could not be started.<br>')
+			html += 'Error: Compute server could not be started.<br><br>'
+			html_output('Error: Compute server could not be started.<br><br>')
 		else:
-			html_output('Remote server is running now.<br>')
+			html_output('Remote server is running now.<br><br>')
 
 remoteserver_url = ''
 
@@ -333,13 +335,13 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 			result_file.write('FAILED\n')
 		result_file.close()
 
-	html_output('Your job is finished and the link above should work now.<br>')
+	html_output('<br>Your job is finished and the link above should work now.<br>')
 	#print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
-	html += '<script type="text/javascript">\n'
-	html_output('<script type="text/javascript">\n')
+	#html += '<script type="text/javascript">\n'
+	#html_output('<script type="text/javascript">\n')
 	#print ('window.location.href = "results.py"\n'
-	html += '</script><title>Page Redirection</title></head><body>'
-	html_output('</script><title>Page Redirection</title></head><body>')
+	#html += '</script><title>Page Redirection</title></head><body>'
+	#html_output('</script><title>Page Redirection</title></head><body>')
 	#html += 'You should be redirected automatically, if not go to the <a href="results.py">results</a>'
 	#html_output('You should be redirected automatically, if not go to the <a href="results.py">results</a>')
 	html += '</body></html>'
