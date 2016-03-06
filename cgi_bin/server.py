@@ -20,7 +20,7 @@ html = ''
 sequence_filename = ''
 config_filename = 'batchprimer.conf'
 
-cgi_args = ['maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
+cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
 
 header = """\
 Content-Type: text/html\n
@@ -132,12 +132,7 @@ elif len(sys.argv) > len(cgi_args):
 		formdata += '---123\nContent-Disposition: form-data; name="'
 		formdata += cgi_args[i] + '"\n\n'
 		formdata += sys.argv[1 + i] + '\n'
-	formdata += formdata += 
-	"""
-		---123
-		Content-Disposition: form-data; name="fastafile"; filename=""
-		Content-Type: text/plain
-	"""
+	formdata += '---123\nContent-Disposition: form-data; name="fastafile"; filename=""\nContent-Type: text/plain\n'
 	formdata_environ = {
 		'CONTENT_LENGTH': str(len(formdata)),
 		'CONTENT_TYPE': 'multipart/form-data; boundary=-123',
