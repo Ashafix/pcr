@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 
 
 #create an HTML input form for primer3 files
@@ -7,7 +7,7 @@
 primer3_settings = open('primer3_v1_1_4_default_settings.txt', 'r')
 
 
-print '<html><body>'
+print ('<html><body>')
 
 for line in primer3_settings.readlines():
 	if '=' in line and line.startswith('PRIMER_'):
@@ -24,11 +24,11 @@ for line in primer3_settings.readlines():
 		html += '"'
 		html += '>'
 		html += '</li>'
-		print html
+		print (html)
 	elif len(line.strip()) > 1:
-		print line
-		print '<br>'
+		print (line)
+		print ('<br>')
 primer3_settings.close()
 
-print '</body>'
-print '</html>'
+print ('</body>')
+print ('</html>')

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-print """\
+print ("""\
 Content-Type: text/html\n
 <html><body>
 <p> </p>
@@ -150,4 +150,4 @@ PRIMER_MISPRIMING_LIBRARY=
 <p> <input type="number" name="PRIMER_INTERNAL_WT_GC_PERCENT_LT" value=0.0</p>
 <p> <input type="number" name="PRIMER_INTERNAL_WT_TM_LT" value=1.0></p>
 =
-"""
+""")
