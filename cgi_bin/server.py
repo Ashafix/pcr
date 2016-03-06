@@ -35,8 +35,25 @@ print (header)
 print ('Your job was submitted. Please be patient....<br>\n')
 sys.stdout.flush()
 
-#generates dynamic html output
+def cgi_result(data, environ):
+	"""fakes a cgi result
+	data: input data
+	environ: environment variables
+	"""
+	fake_stdin = StringIO(data)
+	fake_stdin.seek(0)
+	fake_form = cgi.FieldStorage(fp = fake_stdin, environ = environ)
+	
+	result = {}
+	for k, v in dict(fake_form).items():
+		result[k] = type(v) is list and fake_form.getlist(k) or v.value
+	
+	return result
+
 def html_output(new_line):
+	"""
+	generates dynamic html output
+	"""
 	global html_code
 	html_code += new_line
 	html_output = header + html_code + end
@@ -106,7 +123,28 @@ def correct_fasta (sequence):
 config_args = read_configfile(config_filename)
 data_dir = config_args['DATADIR']
 
-form = cgi.FieldStorage()
+#standard use via web
+if len(sys.argv) == 1:
+	form = cgi.FieldStorage()
+#for debugging and unit testing
+elif len(sys.argv) > 4:
+	from StringIO import StringIO
+	cgi_args = ['maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
+	formdata = ''
+	
+	for i in range(0, len(cgi_args)):
+		formdata +='---123\nContent-Disposition: form-data; name="'
+		formdata += cgi_args[i] + '"\n'
+		formdata += sys.argv[1 + i]
+	formdata_environ = {
+		'CONTENT_LENGTH':   str(len(formdata)),
+		'CONTENT_TYPE':     'multipart/form-data; boundary=-123',
+		'QUERY_STRING':     'key1=value1&key2=value2x',
+		'REQUEST_METHOD':   'POST',
+	}
+	form = cgi_result(formdata_data, formdata_environ)
+	print (form)
+	sys.exit(0)
 try:
 	fileitem = form['fastafile']
 except:
@@ -133,18 +171,18 @@ while os.path.isfile(run_name) or run_name == '':
 	run_name = ''.join(SystemRandom().choice(ascii_uppercase + digits) for _ in range(6))
 
 # Test if a sequence file was uploaded
+sequence = ''
 if fileitem.filename:
-	sequence = ''
 	for line in fileitem.file.readlines():
 		sequence += line
-	sequence_filename = write_sequence(sequence)
 elif form.getvalue('fastasequence') != '':
 	sequence = form.getvalue('fastasequence')
-	sequence_filename = write_sequence(sequence)
 else:
 	html += 'Error: No valid FASTA sequence was provided<br>'
 	html_output('Error: No valid FASTA sequence was provided<br>')
 
+sequence = sequence.strip()	
+sequence_filename = write_sequence(sequence)
 input_args = []
 input_args.append('-PRIMER3_SETTINGS')
 input_args.append(config_args['PRIMER3_SETTINGS'])
@@ -258,7 +296,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append('-RUNNAME')
 	input_args.append(run_name)
 	html_output('Hemi-NeSTR was just started. It will take about two minutes per sequence.<br>')
-	html_output('<a target="_blank" href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
+	html_output('<br><a target="_blank" href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
 
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	result_file.close()
@@ -278,9 +316,9 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 
 
 	input_args.append('-FASTA')
-	base_args = input_args
+	base_args = input_args[:]
 	for i in range(0, len(sub_seqs), int(config_args['MAXTHREADS'])):
-		input_args = base_args
+		input_args = base_args[:]
 		sequence = ''
 		for j in range(0, int(config_args['MAXTHREADS'])):
 			if i + j < len(sub_seqs):
@@ -296,7 +334,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		if batchprimer_result != '':
 			result_file.write(batchprimer_result)
 		else:
-			result_file.write('FAILED')
+			result_file.write('FAILED\n')
 		result_file.close()
 
 	html_output('Your job is finished and the link above should work now.<br>')
