@@ -221,15 +221,14 @@ def import_parameters(*arguments):
 	max_similarity = 0.5
 
 	data_dir = './'
-
+	input_args = []
 	if len(sys.argv) > 1 or len(arguments) == 0:
 		if '-help' in str(sys.argv) > -1:
 			print_help()
 			sys.exit()
 		else:
 			input_args = sys.argv
-	else:
-		input_args = []
+	if started_via_commandline and len(arguments) > 0:
 		for argument in arguments[0][0]:
 			input_args.append(argument)
 
