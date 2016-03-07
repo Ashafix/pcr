@@ -25,7 +25,7 @@ config_filename = 'batchprimer.conf'
 cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
 
 #dictionary with 'number of CPUs':extension
-server_exentions = {2:'c4.large', 8:'c4.2xlarge'}
+server_extentions = {2:'c4.large', 8:'c4.2xlarge'}
 
 header = """\
 Content-Type: text/html\n
@@ -205,7 +205,7 @@ if sequence.count('>') > 100:
 else:
 	#finds the suitable AWS instance type depending on the number of jobs
 	server_extention = ''
-	for key in sorted(server_exentions.iterkeys()):
+	for key in sorted(server_extentions.iterkeys()):
 		if (sequence.count('>') / int(key)) > 5:
 			server_extention = server_extentions[key]
 	if server_extention == '':
