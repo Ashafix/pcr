@@ -994,8 +994,8 @@ def start_remote_server(*arguments):
 						if tag['Key'] == 'Name':
 							#checks if the right instance type was selected
 							if server_extension in tag['Value']:
-								instance_name = tag['Value']
-			if instance_name == servername:
+								instance_name = tag['Value'] + server_extension
+			if instance_name == servername + server_extension:
 				servername = instance.private_dns_name
 				print ('<br>' + 'Servername: ' + servername + '<br>')
 				compute_host = instance.id
