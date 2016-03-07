@@ -940,7 +940,8 @@ def get_primers(sequence):
 def start_remote_server(*arguments):
 	"""
 	Starts a remote AWS instance where primer3 and gfServer run
-	Returns True if the server was started succesfully
+	Returns the remote server URL if the server was started succesfully
+	Returns '' if the start failed
 	"""
 	stdout_logger = logging.getLogger('STDOUT')
 	sl = StreamToLogger(stdout_logger, logging.INFO)
@@ -980,7 +981,7 @@ def start_remote_server(*arguments):
 	instances = ec2.instances.all()
 	if len(list(instances)) < 2:
 		print ('No second AWS instance was found!')
-		return False
+		return ''
 
 	hostname = socket.gethostbyaddr(socket.gethostname())[0]
 	compute_host = ''
@@ -994,7 +995,7 @@ def start_remote_server(*arguments):
 						if tag['Key'] == 'Name':
 							#checks if the right instance type was selected
 							if server_extension in tag['Value']:
-								instance_name = tag['Value'] + server_extension
+								instance_name = tag['Value']
 			if instance_name == servername + server_extension:
 				servername = instance.private_dns_name
 				print ('<br>' + 'Servername: ' + servername + '<br>')
@@ -1007,13 +1008,13 @@ def start_remote_server(*arguments):
 					local_timeout += -waiting_period
 				if local_timeout < 0:
 					print ('Server start was unsuccesful, the timeout period was exceeded')
-					return False
+					return ''
 				if not test_server(gfServer, servername, serverport):
 					print ('Server start was successful, but gfServer does not respond')
-					return False
+					return ''
 				else:
-					return True
-	return False
+					return instance_name
+	return ''
 
 def read_aws_conf():
 	"""
@@ -1131,7 +1132,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
 			print (run_name + ' gfServer not ready, please start it')
 		else:
 			print (run_name + ' gfServer not ready, it is started now')
-			if start_remote_server(servername):
+			if start_remote_server(servername) != '':
 				print (run_name + ' Remote server was successfully started')
 				parameters_legal = True
 			else:

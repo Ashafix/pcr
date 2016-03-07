@@ -255,10 +255,12 @@ batchprimer_file.close()
 if not 'Error: ' in html:
 	if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 		html_output('Remote server will be started now. This might take a minute or two.<br>')
-		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120, server_extention):
+		new_servername = start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120, server_extention)
+		if  new_servername!= '':
 			html += 'Error: Compute server could not be started.<br><br>'
 			html_output('Error: Compute server could not be started.<br><br>')
 		else:
+			config_args['SERVERNAME'] = new_servername
 			html_output('Remote server is running now.<br><br>')
 
 remoteserver_url = ''
