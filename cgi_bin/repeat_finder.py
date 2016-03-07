@@ -953,11 +953,12 @@ def start_remote_server(*arguments):
 	import boto3
 	import socket
 	if arguments:
-		if len(arguments) > 3:
+		if len(arguments) > 4:
 			gfServer = arguments[0]
 			servername = arguments[1]
 			serverport = arguments[2]
 			timeout = arguments[3]
+			server_extension = arguments[4]
 		waiting_period = 0.25
 	else:
 		global servername
@@ -991,7 +992,9 @@ def start_remote_server(*arguments):
 				if 'Value' in tag:
 					if 'Key' in tag.keys() and 'Value' in tag.keys():
 						if tag['Key'] == 'Name':
-							instance_name = tag['Value']
+							#checks if the right instance type was selected
+							if server_extension in tag['Value']:
+								instance_name = tag['Value']
 			if instance_name == servername:
 				servername = instance.private_dns_name
 				print ('<br>' + 'Servername: ' + servername + '<br>')
