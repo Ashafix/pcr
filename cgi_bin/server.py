@@ -25,7 +25,7 @@ config_filename = 'batchprimer.conf'
 cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
 
 #dictionary with 'number of CPUs':extension
-server_extentions = {2:'c4.large', 8:'c4.2xlarge'}
+server_extensions = {2:'c4.large', 8:'c4.2xlarge'}
 
 header = """\
 Content-Type: text/html\n
@@ -204,12 +204,13 @@ if sequence.count('>') > 100:
 	html_output(msg)
 else:
 	#finds the suitable AWS instance type depending on the number of jobs
-	server_extention = ''
-	for key in sorted(server_extentions.iterkeys()):
+	server_extension = ''
+	for key in sorted(server_extensions.iterkeys()):
 		if (sequence.count('>') / int(key)) > 5:
-			server_extention = server_extentions[key]
-	if server_extention == '':
-		server_extention = server_extentions[2]
+			server_extension = server_extensions[key]
+			config_args['MAXTHREADS'] = key
+	if server_extension == '':
+		server_extension = server_extensions[2]
 
 sequence = sequence.strip()
 sequence_filename = write_sequence(sequence)
@@ -255,8 +256,8 @@ batchprimer_file.close()
 if not 'Error: ' in html:
 	if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 		html_output('Remote server will be started now. This might take a minute or two.<br>')
-		new_servername = start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120, server_extention)
-		if  new_servername!= '':
+		new_servername = start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120, server_extension)
+		if  new_servername == '':
 			html += 'Error: Compute server could not be started.<br><br>'
 			html_output('Error: Compute server could not be started.<br><br>')
 		else:
@@ -307,8 +308,8 @@ if remoteserver_url != '':
 		html += '<br>Error: Rest server is not responding'
 		html_output('<br>Error: Rest server is not responding')
 else:
-	html += '<br>Error: Remote server has no URL'
-	html_output('<br>Error: Remote server has no URL')
+	html += '<br>Error: Remote server has no URL<br>'
+	html_output('<br>Error: Remote server has no URL<br>')
 
 if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
 	sequence_filename and \
@@ -329,7 +330,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append(remoteserver_url)
 	input_args.append('-RUNNAME')
 	input_args.append(run_name)
-	html_output('Hemi-NeSTR was just started. It will take about two minutes per sequence.<br>')
+	html_output('Hemi-NeSTR was just started. It will take about two minutes per sequence batch.<br>')
 	html_output('<br><a target="_blank" href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
 
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
