@@ -55,7 +55,7 @@ def dot():
 	global print_dots
 	while print_dots:
 		html_output('.')
-		sleep(0.5)
+		sleep(1)
 
 
 def cgi_result(data, environ):
@@ -183,8 +183,16 @@ except:
 
 #creates a random name for each run
 run_name = ''
-while os.path.isfile(run_name) or run_name == '':
-	run_name = ''.join(SystemRandom().choice(ascii_uppercase + digits) for _ in range(6))
+if form.getvalue('private'):
+	#create a long runname which is not shown in results
+	msg = '<br>Your result will not be public and can only be accessed via the direct link. If you lose this link, you cannot access your results.<br>'
+	html += msg
+	html_output(msg)
+	while os.path.isfile(run_name) or run_name == '':
+		run_name = ''.join(SystemRandom().choice(ascii_uppercase + digits) for _ in range(24))
+else:
+	while os.path.isfile(run_name) or run_name == '':
+		run_name = ''.join(SystemRandom().choice(ascii_uppercase + digits) for _ in range(6))
 
 # Test if a sequence file was uploaded
 sequence = ''
@@ -198,8 +206,8 @@ else:
 	html += msg
 	html_output(msg)
 
-if sequence.count('>') > 100:
-	msg = "Error: Please don't submit more than 100 sequences at once. Feel free to contact us at maximili.peters@mail.huji.ac.il to discuss further options.<br>"
+if sequence.count('>') > 48:
+	msg = "Error: Please don't submit more than 48 sequences at once. Feel free to contact us at maximili.peters@mail.huji.ac.il to discuss further options.<br>"
 	html += msg
 	html_output(msg)
 else:
