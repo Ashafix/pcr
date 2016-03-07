@@ -24,6 +24,9 @@ config_filename = 'batchprimer.conf'
 
 cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
 
+#dictionary with 'number of CPUs':extension
+server_exentions = {2:'c4.large', 8:'c4.2xlarge'}
+
 header = """\
 Content-Type: text/html\n
 <html><body>
@@ -145,7 +148,6 @@ if len(sys.argv) == 1:
 elif len(sys.argv) > len(cgi_args):
 	from StringIO import StringIO
 	formdata = ''
-	
 	for i in range(0, len(cgi_args)):
 		formdata += '---123\nContent-Disposition: form-data; name="'
 		formdata += cgi_args[i] + '"\n\n'
@@ -192,8 +194,22 @@ if fileitem.filename:
 elif form.getvalue('fastasequence') != '':
 	sequence = form.getvalue('fastasequence')
 else:
-	html += 'Error: No valid FASTA sequence was provided<br>'
-	html_output('Error: No valid FASTA sequence was provided<br>')
+	msg = 'Error: No valid FASTA sequence was provided<br>'
+	html += msg
+	html_output(msg)
+
+if sequence.count('>') > 100:
+	msg = "Error: Please don't submit more than 100 sequences at once. Feel free to contact us at maximili.peters@mail.huji.ac.il to discuss further options.<br>"
+	html += msg
+	html_output(msg)
+else:
+	#finds the suitable AWS instance type depending on the number of jobs
+	server_extention = ''
+	for key in sorted(server_exentions.iterkeys()):
+		if (sequence.count('>') / int(key)) > 5:
+			server_extention = server_extentions[key]
+	if server_extention == '':
+		server_extention = server_extentions[2]
 
 sequence = sequence.strip()
 sequence_filename = write_sequence(sequence)
@@ -239,7 +255,7 @@ batchprimer_file.close()
 if not 'Error: ' in html:
 	if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
 		html_output('Remote server will be started now. This might take a minute or two.<br>')
-		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120):
+		if not start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT'], 120, server_extension):
 			html += 'Error: Compute server could not be started.<br><br>'
 			html_output('Error: Compute server could not be started.<br><br>')
 		else:
