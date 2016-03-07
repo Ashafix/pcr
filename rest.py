@@ -18,7 +18,7 @@ from repeat_finder import read_configfile
 primer3_exe = sys.argv[1]
 primer3_dir = sys.argv[2]
 myQueue = Queue()
-max_threads = 2
+max_threads = psutil.cpu_count()
 #dictionaries for stdit/stdout filenames and file objects
 #primary key: worker_ID
 worker_stdin = {}
