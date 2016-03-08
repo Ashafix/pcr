@@ -10,7 +10,7 @@ html += 'Content-Disposition: attachment; '
 html += 'filename="primer3settings.ini"\n\n'
 
 if len(sys.argv) == 1:
-	primer3_settings_filename = 'primer3_v1_1_4_default_settings.txt'
+	primer3_settings_filename = 'primer3_settingsDavid.txt'
 else:
 	primer3_settings_filename = sys.argv[1]
 with open(primer3_settings_filename, 'r') as primer3_settings_file:
@@ -24,11 +24,11 @@ html += 'P3_FILE_TYPE=settings\n'
 for line in primer3_settings.split('\n'):
 	if '=' in line and (line.startswith('PRIMER_') or line.startswith('P3_FILE_ID')):
 		cells = line.split('=')
-		if len(cells) == 3:
-			if cells[0] in form.keys:
-				html += str(key)
+		if len(cells) == 2:
+			if cells[0] in form.keys():
+				html += cells[0]
 				html += '='
-				html += str(form[key].value)
+				html += str(form[cells[0]].value)
 				html += '\n'
 html += '=\n'
 

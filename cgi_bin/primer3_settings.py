@@ -5,7 +5,7 @@
 import sys
 
 if len(sys.argv) == 1:
-	primer3_settings_filename = 'primer3_v1_1_4_default_settings.txt'
+	primer3_settings_filename = 'primer3_settingsDavid.txt'
 else:
 	primer3_settings_filename = sys.argv[1]
 
@@ -34,7 +34,7 @@ for line in primer3_settings.split('\n'):
 
 html += '<hr>'
 
-html += '<input type="submit" value="Change Primer3 parameters" name="Primer3settings" formaction="../cgi-bin/save_primer3settings.py" />'
+html += '<input type="submit" value="Download Primer3 parameters" name="Primer3settings" formaction="../cgi-bin/save_primer3settings.py" />'
 html += '</form>'
 html += '<a href="../cgi-bin/load_primer3settings.py">Upload</a>'
 html += '</body>'
