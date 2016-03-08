@@ -8,7 +8,7 @@
 		<style type="text/css">
 			body {
 				background-color: #E0E0E0;
-			}		
+			}
 
 			.container {
 				width: 75%;
@@ -48,7 +48,7 @@
 			}
 			hr {
 				color: #00CCCC;
-				border: 0; 
+				border: 0;
 				height: 0;
 				content: "\00a0";
 				box-shadow: 0 0 10px 1px black;
@@ -61,7 +61,7 @@
 				<h1>
 					Hemi-NeSTR: Turbo batch primer design for targeted STR genotyping of single cells
 				</h1>
-				
+
 				<hr>
 				<br>
 				<h2>
@@ -75,7 +75,7 @@
 					<li>
 						<label>Run name:</label>
 						<input type="text" name="batchname" />
-					
+
 					</li>
 					<h3>
 						2. Upload your Primer3 parameter file, otherwise the standard settings are used
@@ -91,13 +91,13 @@
 					</h3>
 						<li>
 						<label>
-							Sequence File: 
+							Sequence File:
 						</label>
 						<input type="file" name="fastafile" />
 						<br>
-					
+
 						<label>
-							Target Sequence(s): 
+							Target Sequence(s):
 						</label>
 						<textarea name="fastasequence" cols="60" rows="10"></textarea>
 					</li>
@@ -106,18 +106,18 @@
 					</h3>
 					<li>
 						<label>
-							Maximum length of repeats which are searched: 
+							Maximum length of repeats which are searched:
 						</label>
-						
+
 						<input type="number" name="maxrepeats" min="2" max="6" value="3" />
 						<br>
-					
+
 						<label>
-							Maximum number of primers to be returned: 
+							Maximum number of primers to be returned:
 						</label>
 						<input type="number" name="primerpairs" value="2" min="1" max="100" step="1" />
 						<br>
-					
+
 						<label>
 							Maximum similarity of primer pairs:
 						</label>
@@ -125,7 +125,7 @@
 						<br>
 
 						<label>
-							Search for nested primers: 
+							Search for nested primers:
 						</label>
 						<select name="nested">
 							<option value="0">If needed</option>
@@ -139,13 +139,22 @@
 						5. Start your job
 					</h3>
 					<li>
+						<input type="checkbox" name="private" value="Make results private"/>
+					</li>
+					<li>
 						<input type="submit" value="Submit job" name="Submit job" formaction="cgi-bin/server.py" />
 					</li>
 					<hr>
-					<h2>Check old runs and change parameters</h2>
-						<input type="submit" value="Change Primer3 parameters" name="Primer3 settings" formaction="cgi-bin/primer3_settings.py" />
-						<input type="submit" value="Show all results" name="Show all results" formaction="cgi-bin/results.py" />
 				</ul>
+			</form>
+			<h2>
+				Check old runs and change parameters
+			</h2>
+			<form action="cgi-bin/primer3_settings.py">
+				<input type="submit" value="Change Primer3 parameters" name="Primer3settings" />
+			</form>
+			<form action="cgi-bin/results.py" >
+				<input type="submit" value="Show all results" name="ShowResults" />
 			</form>
 		</div>
 	</body>
