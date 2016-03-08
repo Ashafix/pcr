@@ -108,7 +108,7 @@ def clean_sequence(sequence):
 	"""
 	new_sequence = ''
 	nucleotides = 'ATGC'
-	legal_header = ascii_lowercase + ascii_uppercase + digits + '_'
+	legal_header = ascii_lowercase + ascii_uppercase + digits + '_=:\'+- '
 	for line in sequence.splitlines():
 		if line.startswith('>'):
 			new_sequence += '>'
@@ -168,11 +168,13 @@ elif len(sys.argv) > len(cgi_args):
 	form = cgi_result(formdata, formdata_environ)	
 
 try:
-	fileitem = form['fastafile']
+	fasta_fileitem = form['fastafile']
+	primer3_fileitem = form['primer3file']
 except:
 	html += 'Error: Not started via a proper CGI form'
 	html_output('Error: Not started via a proper CGI form')
 	sys.exit()
+
 
 nested = -1
 try:
@@ -182,6 +184,7 @@ except:
 	html += 'Not started via a proper CGI form - Nested checkbox is missing'
 	html_output('Not started via a proper CGI form - Nested checkbox is missing')
 #checks if the sequence is OK
+
 
 
 #checks if the input file is OK
@@ -202,8 +205,8 @@ else:
 
 # Test if a sequence file was uploaded
 sequence = ''
-if fileitem.filename:
-	for line in fileitem.file.readlines():
+if fasta_fileitem.filename:
+	for line in fasta_fileitem.file.readlines():
 		sequence += line
 elif form.getvalue('fastasequence') != '':
 	sequence = form.getvalue('fastasequence')
@@ -211,6 +214,18 @@ else:
 	msg = 'Error: No valid FASTA sequence was provided<br>'
 	html += msg
 	html_output(msg)
+
+#Test if a primer3 settings file was uploaded
+input_args.append('-PRIMER3_SETTINGS')
+if primer3_fileitem.filename:
+	primer3_settings = primer3_fileitem.file.read()
+	primer3_filename = data_dir + run_name + '_primer3.ini'
+	primer3_file = open(primer3_filename, 'w')
+	primer3_file.write(primer3_settings)
+	primer3_file.close()
+	input_args.append(primer3_filename)
+else:
+	input_args.append(config_args['PRIMER3_SETTINGS'])
 
 if sequence.count('>') > 48:
 	msg = "Error: Please don't submit more than 48 sequences at once. Feel free to contact us at maximili.peters@mail.huji.ac.il to discuss further options.<br>"
@@ -229,8 +244,6 @@ else:
 sequence = sequence.strip()
 sequence_filename = write_sequence(sequence)
 input_args = []
-input_args.append('-PRIMER3_SETTINGS')
-input_args.append(config_args['PRIMER3_SETTINGS'])
 input_args.append('-PRIMER3_DIRECTORY')
 input_args.append(config_args['PRIMER3_DIRECTORY'])
 input_args.append('-PRIMER3_EXE')
@@ -260,7 +273,8 @@ if form.getvalue('batchname') != '':
 	name_file.write(form.getvalue('batchname'))
 	name_file.close()
 #primer3 settings
-copyfile(config_args['PRIMER3_SETTINGS'], data_dir + run_name + '_primer3.ini')
+if not primer3_fileitem.filename:
+	copyfile(config_args['PRIMER3_SETTINGS'], data_dir + run_name + '_primer3.ini')
 #batchprimer settings
 batchprimer_file = open(data_dir + run_name + '_batchprimer.ini', 'w')
 for input_arg in input_args:
