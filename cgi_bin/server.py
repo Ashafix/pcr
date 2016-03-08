@@ -346,7 +346,6 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append(config_args['SERVERNAME'])
 	input_args.append('-SERVERPORT')
 	input_args.append(config_args['SERVERPORT'])
-
 	input_args.append('-GFSERVER')
 	input_args.append(config_args['GFSERVER'])
 	input_args.append('-GFPCR')
