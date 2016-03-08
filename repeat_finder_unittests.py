@@ -28,7 +28,7 @@ class TestCustomMethods(unittest.TestCase):
 		test_cases = [['', []], ['AAAAAAAA', []], [12 * 'AT', [11 * 'AT']]]
 		for test_case in test_cases:
 			self.assertTrue(test_case[1] == exclude_list(test_case[0]))
-		
+
 	#def import_parameters(*arguments):
 	def test_find_repeats(self):
 		test_cases = [[12 * 'A', 3, 12 * 'A']]
