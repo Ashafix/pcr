@@ -8,7 +8,6 @@ from repeat_finder import *
 
 class TestCustomMethods(unittest.TestCase):
 
-
 	def test_read_configfile(self):
 		#read_configfile():
 		self.assertTrue(True)
