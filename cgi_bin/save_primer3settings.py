@@ -22,7 +22,7 @@ html += 'Primer3 File - http://primer3.sourceforge.net\n'
 html += 'P3_FILE_TYPE=settings\n'
 
 for line in primer3_settings.split('\n'):
-	if '=' in line and (line.startswith('PRIMER_') or line.startswith('P3_FILE_ID')):
+	if '=' in line and (line.startswith('PRIMER_') or line.startswith('P3')):
 		cells = line.split('=')
 		if len(cells) == 2:
 			if cells[0] in form.keys():
