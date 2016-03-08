@@ -36,7 +36,6 @@ html += '<hr>'
 
 html += '<input type="submit" value="Download Primer3 parameters" name="Primer3settings" formaction="../cgi-bin/save_primer3settings.py" />'
 html += '</form>'
-html += '<a href="../cgi-bin/load_primer3settings.py">Upload</a>'
 html += '</body>'
 html += '</html>'
 
