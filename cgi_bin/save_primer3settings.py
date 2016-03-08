@@ -28,7 +28,7 @@ for line in primer3_settings.split('\n'):
 			if cells[0] in form.keys():
 				html += cells[0]
 				html += '='
-				html += str(form[cells[0]])
+				html += ''.join(form.getlist(cells[0]))
 				html += '\n'
 html += '=\n'
 
