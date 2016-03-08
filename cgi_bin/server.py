@@ -21,7 +21,7 @@ global run_name
 html = ''
 sequence_filename = ''
 config_filename = 'batchprimer.conf'
-
+input_args = []
 cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
 
 #dictionary with 'number of CPUs':extension
@@ -243,7 +243,6 @@ else:
 
 sequence = sequence.strip()
 sequence_filename = write_sequence(sequence)
-input_args = []
 input_args.append('-PRIMER3_DIRECTORY')
 input_args.append(config_args['PRIMER3_DIRECTORY'])
 input_args.append('-PRIMER3_EXE')

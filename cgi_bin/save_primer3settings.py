@@ -18,7 +18,6 @@ with open(primer3_settings_filename, 'r') as primer3_settings_file:
 
 form = cgi.FieldStorage()
 
-html += 'Primer3 File - http://primer3.sourceforge.net\n'
 html += 'P3_FILE_TYPE=settings\n'
 
 for line in primer3_settings.split('\n'):
