@@ -11,12 +11,11 @@ if len(sys.argv) == 1:
 else:
 	primer3_settings_filename = sys.argv[1]
 
-print ('Content-Type: text/html\n')
-print ('<html><body>')
+html = 'Content-type:text/html; charset=utf-8\n\n'
+html += '<html><body>'
 
 for line in primer3_settings.split('\n'):
 	if '=' in line and line.startswith('PRIMER_'):
-		html = ''
 		html += '<li>'
 		html += '<label>'
 		html += line.split('=')[0]
@@ -27,16 +26,22 @@ for line in primer3_settings.split('\n'):
 		html += ' value="'
 		html += line.split('=')[1].strip()
 		html += '"'
-		html += '>'
+		html += ' />'
 		html += '</li>'
-		print (html)
 	elif len(line.strip()) > 1:
-		print (line)
-		print ('<br>')
-	print ('\n')
-print ('<hr>')
+		html += '<br>\n'
+	
+html += '<hr>'
 
-print ('<input type="submit" value="Save Primer3 parameters to file" name="SaveSettings" formaction="../cgi-bin/save_primer3settings.py" />')
-print ('<input type="submit" value="Load Primer3 parameters from file" name="SaveSettings" formaction="../cgi-bin/load_primer3settings.py" />')
-print ('</body>')
-print ('</html>')
+html += '<input type="submit" value="Change Primer3 parameters" name="Primer3settings" formaction="../cgi-bin/save_primer3settings.py" />'
+html += '<a href="../cgi-bin/save_primer3settings.py"><img src="/images/Farm-Fresh_file_extension_zip.png"</a>'
+html += '<a href="../cgi-bin/load_primer3settings.py">Upload</a>'
+
+html += '</body>'
+html += '</html>'
+
+
+sys.stdout.write(html)
+sys.stdout.flush()
+
+
