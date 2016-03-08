@@ -143,6 +143,7 @@
 							Make results private
 						</label>
 						<input type="checkbox" name="private"/>
+						<br>
 						<input type="submit" value="Submit job" name="Submit job" formaction="cgi-bin/server.py" />
 					</li>
 					<hr>
@@ -151,11 +152,15 @@
 			<h2>
 				Check old runs and change parameters
 			</h2>
-			<form action="cgi-bin/primer3_settings.py">
-				<input type="submit" name="Primer3settings" />
+			<form action="cgi-bin/primer3_settings.py" method="get">
+				<button type="submit" value="" name="Primer3settings">
+					Primer3 settings
+				</button>
 			</form>
-			<form action="cgi-bin/results.py" >
-				<input type="submit" name="ShowResults" />
+			<form action="cgi-bin/results.py" method="get">
+				<button type="submit" value="" name="ShowResults">
+					Show all previous results
+				</button>
 			</form>
 		</div>
 	</body>
