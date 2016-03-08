@@ -35,13 +35,12 @@ if compute_host == '':
 #sleeps for 30 min to prevent immediate shutdown
 sleep(1800)
 while True:
+	file_list = []
 	file_list = [(os.path.getmtime(data_dir + fn), os.path.basename(data_dir + fn))
 		for fn in os.listdir(data_dir)]
 	file_list.sort()
 	newest = file_list[len(file_list) - 1][0]
-	print(newest)
 
-	
 	#shuts the compute host down 50 min after the last job
 	if ((time() - newest) / 60) > 50:
 		#checks if the instance is idle
