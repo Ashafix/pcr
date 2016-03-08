@@ -95,7 +95,7 @@ class MyRequestHandler (BaseHTTPRequestHandler) :
 			self.wfile.write("\n")
 			cpuInfo = {}
 			cpuInfo['CPU Utilization'] = int(psutil.cpu_percent())
-			cpuInfo['CPU Cores'] = int(psutil.cpu_count(logical = False))
+			cpuInfo['CPU Cores'] = int(psutil.cpu_count())
 			json.dump(cpuInfo, self.wfile)
 		#returns the number of running primer3 processes
 		elif self.path == '/primer3processes':
