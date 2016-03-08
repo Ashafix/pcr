@@ -43,6 +43,9 @@ print ('Your job was submitted. Please be patient....<br><br>\n')
 sys.stdout.flush()
 
 class dots(threading.Thread):
+	"""
+	a background thread for printing dots
+	"""
 	def __init__(self, dot):
 		threading.Thread.__init__(self)
 		self.runnable = dot
@@ -52,6 +55,9 @@ class dots(threading.Thread):
 		self.runnable()
 
 def dot():
+	"""
+	prints a dot every second
+	"""
 	global print_dots
 	while print_dots:
 		html_output('.')
