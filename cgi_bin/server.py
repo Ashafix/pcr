@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-#to do
-#read file, pass as sequence
-#list results
-
 import cgi, os
 from repeat_finder import *
 from random import SystemRandom
@@ -14,6 +10,7 @@ import socket
 import urllib2
 import threading
 from time import sleep
+from multiprocessing import Queue
 
 global data_dir
 global run_name
@@ -23,6 +20,13 @@ sequence_filename = ''
 config_filename = 'batchprimer.conf'
 input_args = []
 cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
+
+#dictionary with all the jobs, key = worker_id
+proc_items = {}
+#queue storing jobs, list: ID, input_parameters
+myQueue = Queue()
+#dictionary with batchprimer3 results, key: job number
+worker_results = {}
 
 #dictionary with 'number of CPUs':extension
 server_extensions = {2:'c4.large', 8:'c4.2xlarge'}
@@ -42,6 +46,24 @@ print (header)
 print ('Your job was submitted. Please be patient....<br><br>\n')
 sys.stdout.flush()
 
+def worker(worker_id):
+
+	global jobs
+	global proc_items
+	global tmp_file_in
+	global tmp_file_out
+	worker_stdout[worker_id] = primer3_dir + 'worker_output_' + str(worker_id) + '.txt'
+	worker_stdin[worker_id] = primer3_dir + 'worker_input_' + str(worker_id) + '.txt'
+
+	while True:
+		if not myQueue.empty():
+			proc_items[worker_id] = myQueue.get()
+			worker_results[proc_items[worker_id][0]] = start_repeat_finder(False, proc_items[worker_id][1])
+			
+		else:
+			sleep(0.5)
+
+
 class dots(threading.Thread):
 	"""
 	a background thread for printing dots
@@ -50,7 +72,6 @@ class dots(threading.Thread):
 		threading.Thread.__init__(self)
 		self.runnable = dot
 		self.daemon = True
-	
 	def run(self):
 		self.runnable()
 
@@ -165,7 +186,7 @@ elif len(sys.argv) > len(cgi_args):
 		'QUERY_STRING': '',
 		'REQUEST_METHOD': 'POST',
 	}
-	form = cgi_result(formdata, formdata_environ)	
+	form = cgi_result(formdata, formdata_environ)
 
 try:
 	fasta_fileitem = form['fastafile']
@@ -174,7 +195,6 @@ except:
 	html += 'Error: Not started via a proper CGI form'
 	html_output('Error: Not started via a proper CGI form')
 	sys.exit()
-
 
 nested = -1
 try:
@@ -382,8 +402,19 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	print_dots = False
 	thread = dots(dot)
 	thread.start()
-
-	for i in range(0, len(sub_seqs), int(config_args['MAXTHREADS'])):
+	for i in range(0, int(config_args['MAXTHREADS'])):
+		#starts worker threads
+		t = Thread(target = worker, args = (i,))
+		t.daemon = True
+		t.start()
+	for i in range(0, len(sub_seqs)):
+		input_args = base_args[:]
+		sequence = ''
+		sequence += sub_seqs[i + j] + '\n'
+		sequence_filename = write_sequence(sequence, str(i))
+		input_args.append(sequence_filename)
+		myqueue.put([i, input_args])
+	for i in range(0, len(sub_seqs)):
 		input_args = base_args[:]
 		sequence = ''
 		for j in range(0, int(config_args['MAXTHREADS'])):
@@ -395,6 +426,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		input_args.append(sequence_filename)
 		print_dots = True
 		html_output('<br>a batch of jobs was started<br>')
+
 		batchprimer_result = start_repeat_finder(False, input_args)
 		html_output('<br>a batch of jobs just finished<br>')
 		print_dots = False
