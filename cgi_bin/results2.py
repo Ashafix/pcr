@@ -257,7 +257,7 @@ def result_to_html(result):
 	html += '<table class="resulttable">'
 	if len(primers) > 0:
 		html += '<tr><th colspan="3">Forward Primer</th><th colspan="3">Reverse Primer</th><th class="amplicon" colspan="5">Amplicon</th></th></tr>'
-		html += '</table><table class="resulttable">'
+		#html += '</table><table class="resulttable">'
 		html += '<tr><th class="primer">Sequence</th><th class="digits4">TM</th><th class="digits4">GC</th><th class="primer">Sequence</th><th class="digits4">TM</th><th class="digits4">GC</th><th>Sequence</th><th class="location">Location</th><th class="size">Size</th><th class="digits4">TM</th><th class="digits4">GC</th>'
 	else:
 		html += '<font color="red">No suitable primer pairs found</font>'
