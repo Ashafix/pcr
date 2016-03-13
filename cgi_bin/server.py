@@ -418,14 +418,14 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 			if i in worker_results.keys():
 				batchprimer_result += worker_results[i] + '\n'
 		if batchprimer_result == '':
-			batchprimer_results = 'Your job is still running. Just be patient and refresh the page in a couple of the minutes.'
+			batchprimer_result = 'Your job is still running. Just be patient and refresh the page in a couple of the minutes.'
 		result_file.write(batchprimer_result)
 		result_file.close()
 		sleep(0.5)
 
 	html_output('<br>a batch of jobs just finished<br>')
 	print_dots = False
-	result_file = open(data_dir + run_name + '_results.txt', 'a')
+	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	batchprimer_result = ''
 	for i in range(0, len(sub_seqs)):
 		batchprimer_result += worker_results[i] + '\n'
