@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+import cgi
+
 results = """
 ==========
 Target:, CA1 hg19_microsat_21xCA range=chr2:36894133-36894974 5'pad=400 3'pad=400 strand=+ repeatMasking=none
@@ -166,7 +170,22 @@ primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC
 63.77, 58.60, 54.17, 36.00, 76.16, 21.74
 """
 
-html = '<html><head> <link rel="stylesheet" type="text/css" href="results.css" /> </head><body>'
+html = 'Content-Type: text/html\n\n<html><head> <link rel="stylesheet" type="text/css" href="../html/results.css" /> </head><body>'
+
+if 'result' in cgi.FieldStorage().keys():
+	result_filename = '/var/www/data/'
+	result_filename += cgi.FieldStorage()['result'].value
+	result_filename += '_results.txt'
+	try:
+		result_file = open(result_filename, 'r')
+		results = result_file.read()
+		result_file.close()
+	except:
+		results = ''
+		html += '<br>No results were found<br>'
+else:
+	html += '<h1>THIS IS ONLY TEST DATA</h1><br>'
+
 
 class Primer:
 	def __init__(self):
@@ -191,9 +210,9 @@ def parse_output(output_text):
 	new_amplicon = Amplicon()
 	primers = []
 	amplicons = []
-	
+
 	primer_table = False
-	
+
 	lines = output_text.split('\n')
 	for line in lines:
 		if line.startswith('Target:'):
