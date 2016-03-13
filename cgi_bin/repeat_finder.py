@@ -919,7 +919,7 @@ def get_primers(sequence):
 												amplicon = get_amplicon_from_primer3output(primerF_1st, primerR_1st, primer3_output)
 												output += make_output(primerF_1st, primerR_1st, amplicon, isPCRoutput, primer3_output)
 												#should fix the problem with the doubled amplicon
-												#amplicon = get_amplicon_from_primer3output(primerF_nested, primerR_nested, primer3_nested_output)
+												amplicon = get_amplicon_from_primer3output(primerF_nested, primerR_nested, primer3_nested_output)
 												output += make_output(primerF_nested, primerR_nested, amplicon, isPCRoutput_nested, primer3_nested_output)
 												stdoutput += output + '\n'
 												break
