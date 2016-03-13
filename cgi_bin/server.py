@@ -49,18 +49,11 @@ sys.stdout.flush()
 
 def worker(worker_id):
 
-	global jobs
 	global proc_items
-	global tmp_file_in
-	global tmp_file_out
-	worker_stdout[worker_id] = primer3_dir + 'worker_output_' + str(worker_id) + '.txt'
-	worker_stdin[worker_id] = primer3_dir + 'worker_input_' + str(worker_id) + '.txt'
-
 	while True:
 		if not myQueue.empty():
 			proc_items[worker_id] = myQueue.get()
 			worker_results[proc_items[worker_id][0]] = start_repeat_finder(False, proc_items[worker_id][1])
-			
 		else:
 			sleep(0.5)
 
