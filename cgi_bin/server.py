@@ -87,7 +87,7 @@ def cgi_result(data, environ):
 	"""
 	fake_stdin = StringIO(data)
 	fake_stdin.seek(0)
-	fake_form = cgi.FieldStorage(fp = fake_stdin, environ = environ)	
+	fake_form = cgi.FieldStorage(fp = fake_stdin, environ = environ)
 	return fake_form
 
 def html_output(new_line):
