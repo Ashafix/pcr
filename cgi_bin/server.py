@@ -22,6 +22,7 @@ config_filename = 'batchprimer.conf'
 input_args = []
 cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
 print_dots = False
+kill_worker = False
 
 #dictionary with all the jobs, key = worker_id
 proc_items = {}
@@ -51,7 +52,7 @@ sys.stdout.flush()
 def worker(worker_id):
 
 	global proc_items
-	while True:
+	while not kill_worker:
 		if not myQueue.empty():
 			proc_items[worker_id] = myQueue.get()
 			worker_results[proc_items[worker_id][0]] = start_repeat_finder(False, proc_items[worker_id][1])
@@ -422,7 +423,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		result_file.write(batchprimer_result)
 		result_file.close()
 		sleep(0.5)
-
+	kill_worker = True
 	html_output('<br>a batch of jobs just finished<br>')
 	print_dots = False
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
