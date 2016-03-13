@@ -21,6 +21,7 @@ sequence_filename = ''
 config_filename = 'batchprimer.conf'
 input_args = []
 cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
+print_dots = False
 
 #dictionary with all the jobs, key = worker_id
 proc_items = {}
@@ -393,10 +394,10 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	base_args = input_args[:]
 	
 	#starts the background thread for printing dots
-	print_dots = False
 	thread = dots(dot)
 	thread.start()
 	html_output('<br>a batch of jobs was started<br>')
+	print_dots = True
 	for i in range(0, int(config_args['MAXTHREADS'])):
 		#starts worker threads
 		t = Thread(target = worker, args = (i,))
@@ -411,7 +412,6 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		myQueue.put([i, input_args])
 
 	while not myQueue.empty() or len(worker_results) < len(sub_seqs):
-		print_dots = True
 		result_file = open(data_dir + run_name + '_results.txt', 'w')
 		batchprimer_result = ''
 		for i in range(0, len(sub_seqs)):
