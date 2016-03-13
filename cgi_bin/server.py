@@ -10,7 +10,7 @@ import socket
 import urllib2
 import threading
 from time import sleep
-from multiprocessing import Queue
+from Queue import Queue
 from threading import Thread
 
 global data_dir
@@ -408,17 +408,29 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		sequence += sub_seqs[i] + '\n'
 		sequence_filename = write_sequence(sequence, str(i))
 		input_args.append(sequence_filename)
-		myqueue.put([i, input_args])
+		myQueue.put([i, input_args])
 
-	while not myQueue.empty():
+	while not myQueue.empty() or len(worker_results) < len(sub_seqs):
 		print_dots = True
+		result_file = open(data_dir + run_name + '_results.txt', 'w')
+		batchprimer_result = ''
+		for i in range(0, len(sub_seqs)):
+			if i in worker_results.keys():
+				batchprimer_result += worker_results[i] + '\n'
+		if batchprimer_result == '':
+			batchprimer_results = 'Your job is still running. Just be patient and refresh the page in a couple of the minutes.'
+		result_file.write(batchprimer_result)
+		result_file.close()
 		sleep(0.5)
 
 	html_output('<br>a batch of jobs just finished<br>')
 	print_dots = False
 	result_file = open(data_dir + run_name + '_results.txt', 'a')
+	batchprimer_result = ''
+	for i in range(0, len(sub_seqs)):
+		batchprimer_result += worker_results[i] + '\n'
 	if batchprimer_result != '':
-		result_file.write(str(worker_results))
+		result_file.write(batchprimer_result)
 	else:
 		result_file.write('FAILED\n')
 	result_file.close()
