@@ -11,6 +11,7 @@ import urllib2
 import threading
 from time import sleep
 from multiprocessing import Queue
+from threading import Thread
 
 global data_dir
 global run_name
@@ -402,6 +403,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	print_dots = False
 	thread = dots(dot)
 	thread.start()
+	html_output('<br>a batch of jobs was started<br>')
 	for i in range(0, int(config_args['MAXTHREADS'])):
 		#starts worker threads
 		t = Thread(target = worker, args = (i,))
@@ -410,32 +412,23 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	for i in range(0, len(sub_seqs)):
 		input_args = base_args[:]
 		sequence = ''
-		sequence += sub_seqs[i + j] + '\n'
+		sequence += sub_seqs[i] + '\n'
 		sequence_filename = write_sequence(sequence, str(i))
 		input_args.append(sequence_filename)
 		myqueue.put([i, input_args])
-	for i in range(0, len(sub_seqs)):
-		input_args = base_args[:]
-		sequence = ''
-		for j in range(0, int(config_args['MAXTHREADS'])):
-			if i + j < len(sub_seqs):
-				if sub_seqs[i + j] != '':
-					sequence += sub_seqs[i + j] + '\n'
 
-		sequence_filename = write_sequence(sequence, str(i))
-		input_args.append(sequence_filename)
+	while not myQueue.empty():
 		print_dots = True
-		html_output('<br>a batch of jobs was started<br>')
+		sleep(0.5)
 
-		batchprimer_result = start_repeat_finder(False, input_args)
-		html_output('<br>a batch of jobs just finished<br>')
-		print_dots = False
-		result_file = open(data_dir + run_name + '_results.txt', 'a')
-		if batchprimer_result != '':
-			result_file.write(batchprimer_result)
-		else:
-			result_file.write('FAILED\n')
-		result_file.close()
+	html_output('<br>a batch of jobs just finished<br>')
+	print_dots = False
+	result_file = open(data_dir + run_name + '_results.txt', 'a')
+	if batchprimer_result != '':
+		result_file.write(str(worker_results))
+	else:
+		result_file.write('FAILED\n')
+	result_file.close()
 
 	html_output('<br>Your job is finished and the link above should work now.<br>')
 	#print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
