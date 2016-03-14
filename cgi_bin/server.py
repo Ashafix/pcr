@@ -12,6 +12,8 @@ import threading
 from time import sleep
 from Queue import Queue
 from threading import Thread
+#import multiprocessing
+#from functools import partial
 
 global data_dir
 global run_name
@@ -393,8 +395,9 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 			sub_seqs.append(sequence[offset:sequence.find('>', offset + 1)].strip())
 
 	input_args.append('-FASTA')
-	base_args = input_args[:]
-	
+	input_args.append(write_sequence(sequence))
+	#base_args = input_args[:]
+
 	#starts the background thread for printing dots
 	thread = dots(dot)
 	thread.start()
@@ -407,15 +410,14 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		#t.start()
 
 	seqs = []
-	for i in range(0, len(sub_seqs)):
-		input_args = base_args[:]
-		sequence = ''
-		sequence += sub_seqs[i] + '\n'
-		sequence_filename = write_sequence(sequence, str(i))
-		input_args.append(sequence_filename)
-		seqs.append(input_args)
-	
-	 
+	#for i in range(0, len(sub_seqs)):
+		#input_args = base_args[:]
+		#sequence = ''
+		#sequence += sub_seqs[i] + '\n'
+		#sequence_filename = write_sequence(sequence, str(i))
+		#input_args.append(sequence_filename)
+		#seqs.append(input_args)
+
 	#while not myQueue.empty() or len(worker_results) < len(sub_seqs):
 		#result_file = open(data_dir + run_name + '_results.txt', 'w')
 		#batchprimer_result = ''
@@ -427,8 +429,9 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		#result_file.write(batchprimer_result)
 		#result_file.close()
 		#sleep(0.5)
-	pool = multiprocessing.Pool(processes = config_args['MAXTHREADS'])
-	batchprimer_result = pool.map(start_repeat_finder, seqs)
+	#pool = multiprocessing.Pool(processes = config_args['MAXTHREADS'])
+	#partial1 = partial(start_repeat_finder, False)
+	batchprimer_result = start_repeat_finder(False, input_args)
 	#kill_worker = True
 	print_dots = False
 	html_output('<br>a batch of jobs just finished<br>')
@@ -460,3 +463,4 @@ elif sequence_filename:
 	html_output('Server is not ready, please try again later.<br>')
 
 print (end)
+7
