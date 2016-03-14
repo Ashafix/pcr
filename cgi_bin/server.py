@@ -266,7 +266,8 @@ input_args.append(config_args['PRIMER3_EXE'])
 input_args.append('-NESTED')
 input_args.append(nested)
 input_args.append('-MAXTHREADS')
-input_args.append(config_args['MAXTHREADS'])
+#input_args.append(config_args['MAXTHREADS'])
+input_args.append(1)
 
 if int(form.getvalue('maxrepeats')) > 1 and int(form.getvalue('maxrepeats')) < 7:
 	input_args.append('-MAXREPEATS')
@@ -399,37 +400,42 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	thread.start()
 	html_output('<br>a batch of jobs was started<br>')
 	print_dots = True
-	for i in range(0, int(config_args['MAXTHREADS'])):
+	#for i in range(0, int(config_args['MAXTHREADS'])):
 		#starts worker threads
-		t = Thread(target = worker, args = (i,))
-		t.daemon = True
-		t.start()
+		#t = Thread(target = worker, args = (i,))
+		#t.daemon = True
+		#t.start()
+
+	seqs = []
 	for i in range(0, len(sub_seqs)):
 		input_args = base_args[:]
 		sequence = ''
 		sequence += sub_seqs[i] + '\n'
 		sequence_filename = write_sequence(sequence, str(i))
 		input_args.append(sequence_filename)
-		myQueue.put([i, input_args])
-
-	while not myQueue.empty() or len(worker_results) < len(sub_seqs):
-		result_file = open(data_dir + run_name + '_results.txt', 'w')
-		batchprimer_result = ''
-		for i in range(0, len(sub_seqs)):
-			if i in worker_results.keys():
-				batchprimer_result += worker_results[i] + '\n'
-		if batchprimer_result == '':
-			batchprimer_result = 'Your job is still running. Just be patient and refresh the page in a couple of the minutes.'
-		result_file.write(batchprimer_result)
-		result_file.close()
-		sleep(0.5)
-	kill_worker = True
-	html_output('<br>a batch of jobs just finished<br>')
+		seqs.append(input_args)
+	
+	 
+	#while not myQueue.empty() or len(worker_results) < len(sub_seqs):
+		#result_file = open(data_dir + run_name + '_results.txt', 'w')
+		#batchprimer_result = ''
+		#for i in range(0, len(sub_seqs)):
+			#if i in worker_results.keys():
+				#batchprimer_result += worker_results[i] + '\n'
+		#if batchprimer_result == '':
+			#batchprimer_result = 'Your job is still running. Just be patient and refresh the page in a couple of the minutes.'
+		#result_file.write(batchprimer_result)
+		#result_file.close()
+		#sleep(0.5)
+	pool = multiprocessing.Pool(processes = config_args['MAXTHREADS'])
+	batchprimer_result = pool.map(start_repeat_finder, seqs)
+	#kill_worker = True
 	print_dots = False
+	html_output('<br>a batch of jobs just finished<br>')
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	batchprimer_result = ''
-	for i in range(0, len(sub_seqs)):
-		batchprimer_result += worker_results[i] + '\n'
+	#for i in range(0, len(sub_seqs)):
+		#batchprimer_result += worker_results[i] + '\n'
 	if batchprimer_result != '':
 		result_file.write(batchprimer_result)
 	else:
