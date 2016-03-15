@@ -417,7 +417,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	batchprimer_result_dict = {}
 	pool_iterator = pool.imap(partial1, seqs)
 	for i in range(0, len(sub_seqs)):
-		html_output('<br>another job was just started<br>')
+		html_output('<br>a job was just started<br>')
 		batchprimer_result_dict[i] = pool_iterator.next()
 		result_file = open(data_dir + run_name + '_results.txt', 'a')
 		if i in batchprimer_result_dict.keys():
