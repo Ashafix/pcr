@@ -401,7 +401,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	#starts the background thread for printing dots
 	thread = dots(dot)
 	thread.start()
-	html_output('<br>a batch of jobs was started<br>')
+	#html_output('<br>a batch of jobs was started<br>')
 	print_dots = True
 	#for i in range(0, int(config_args['MAXTHREADS'])):
 		#starts worker threads
@@ -451,15 +451,15 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	#kill_worker = True
 	print_dots = False
 	#html_output('<br>all jobs are finished<br>')
-	result_file = open(data_dir + run_name + '_results.txt', 'w')
-	batchprimer_result = ''
+	#result_file = open(data_dir + run_name + '_results.txt', 'w')
+	#batchprimer_result = ''
 	#for i in range(0, len(sub_seqs)):
 		#batchprimer_result += worker_results[i] + '\n'
-	if batchprimer_result != '':
-		result_file.write(batchprimer_result)
-	else:
-		result_file.write('FAILED\n')
-	result_file.close()
+	#if batchprimer_result != '':
+		#result_file.write(batchprimer_result)
+	#else:
+		#result_file.write('FAILED\n')
+	#result_file.close()
 
 	html_output('<br>Your job is finished and the link above should work now.<br>')
 	#print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
