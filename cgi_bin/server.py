@@ -410,13 +410,19 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		#t.start()
 
 	seqs = []
-	#for i in range(0, len(sub_seqs)):
-		#input_args = base_args[:]
-		#sequence = ''
-		#sequence += sub_seqs[i] + '\n'
-		#sequence_filename = write_sequence(sequence, str(i))
-		#input_args.append(sequence_filename)
-		#seqs.append(input_args)
+	for i in range(0, len(sub_seqs)):
+		input_args = base_args[:]
+		sequence = ''
+		sequence += sub_seqs[i] + '\n'
+		sequence_filename = write_sequence(sequence, str(i))
+		input_args.append(sequence_filename)
+		seqs.append(input_args)
+	partial1 = partial(start_repeat_finder, started_via_commandline = False)
+	pool = multiprocessing.Pool(processes = config_args['MAXTHREADS'])
+	batchprimer_results = ''
+	for x in pool.imap(partial1, seqs):
+		html_output = 'another job was just started<br>'
+		batchprimer_results += x
 
 	#while not myQueue.empty() or len(worker_results) < len(sub_seqs):
 		#result_file = open(data_dir + run_name + '_results.txt', 'w')
@@ -429,9 +435,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		#result_file.write(batchprimer_result)
 		#result_file.close()
 		#sleep(0.5)
-	#pool = multiprocessing.Pool(processes = config_args['MAXTHREADS'])
-	#partial1 = partial(start_repeat_finder, False)
-	batchprimer_result = start_repeat_finder(False, input_args)
+	#batchprimer_result = start_repeat_finder(False, input_args)
 	#kill_worker = True
 	print_dots = False
 	html_output('<br>a batch of jobs just finished<br>')
