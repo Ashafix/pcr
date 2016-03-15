@@ -6,9 +6,9 @@ hr
 
 table.resulttable
 {
-    border-collapse: collapse;
-    width: 95%;
-    table-layout:fixed;
+	order-collapse: collapse;
+	width: 95%;
+	table-layout:fixed;
 }
 
 table.resulttable tr:hover {
@@ -42,15 +42,16 @@ table.resulttable th.size
 
 table.resulttable td
 {
-    padding: 5px;
-    border: 1px solid #AAA;
+	padding: 5px;
+	border: 1px solid #AAA;
 	width: 300px;
-	word-wrap:break-word;
+	word-wrap: break-word;
+	font-size: 80%;
 }
 
 tr.head
 {
-    background: #EEE;
+	background: #EEE;
 }
 
 table.resulttable td.sequence
@@ -61,7 +62,7 @@ table.resulttable td.sequence
 table.resulttable td.amplicon
 {
 	font-family: "Courier";
-	word-wrap:break-word;
+	word-wrap: break-word;
 }
 
 
