@@ -1171,6 +1171,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	if len(sequences) > 1:
 		p = Pool(processes = max_threads)
 		results = p.map(get_primers, sequences)
+		p.terminate()
 	else:
 		results = get_primers (sequences[0])
 
