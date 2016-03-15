@@ -421,12 +421,13 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	pool = multiprocessing.Pool(processes = config_args['MAXTHREADS'])
 	batchprimer_results = ''
 	batchprimer_result_dict = {}
-	pool_iterator = pool.imap(partial1, seqs):
+	pool_iterator = pool.imap(partial1, seqs)
 	for i in range(0, len(sub_seqs)):
-		html_output('another job was just started<br>')
-		batchprimer_result_dict[i] = pool_iterator.next
+		html_output('<br>another job was just started<br>')
+		batchprimer_result_dict[i] = pool_iterator.next()
 		result_file = open(data_dir + run_name + '_results.txt', 'a')
-		result_file.write(batchprimer_result_dict[i])
+		if i in batchprimer_result_dict.keys():
+			result_file.write(batchprimer_result_dict[i])
 		result_file.close()
 
 	for i in range(0, len(sub_seqs)):
