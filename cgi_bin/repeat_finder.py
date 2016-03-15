@@ -1173,7 +1173,8 @@ def start_repeat_finder(started_via_commandline, *arguments):
 		results = p.map(get_primers, sequences)
 		p.terminate()
 	else:
-		results = get_primers (sequences[0])
+		results = []
+		results.append(get_primers(sequences[0]))
 
 	output = []
 	stdoutput = []
