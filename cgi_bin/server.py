@@ -450,7 +450,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	#batchprimer_result = start_repeat_finder(False, input_args)
 	#kill_worker = True
 	print_dots = False
-	html_output('<br>a batch of jobs just finished<br>')
+	#html_output('<br>all jobs are finished<br>')
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	batchprimer_result = ''
 	#for i in range(0, len(sub_seqs)):
