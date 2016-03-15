@@ -379,7 +379,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	html_output('<br><a target="_blank" href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
 
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
-	ressult_file.write('Your job is still running. Just be patient and refresh the page in a couple of the minutes.')
+	result_file.write('Your job is still running. Just be patient and refresh the page in a couple of the minutes.')
 	result_file.close()
 
 	sub_seqs = []
