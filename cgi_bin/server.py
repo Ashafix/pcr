@@ -12,8 +12,8 @@ import threading
 from time import sleep
 from Queue import Queue
 from threading import Thread
-#import multiprocessing
-#from functools import partial
+import multiprocessing
+from functools import partial
 
 global data_dir
 global run_name
@@ -395,8 +395,8 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 			sub_seqs.append(sequence[offset:sequence.find('>', offset + 1)].strip())
 
 	input_args.append('-FASTA')
-	input_args.append(write_sequence(sequence))
-	#base_args = input_args[:]
+	#input_args.append(write_sequence(sequence))
+	base_args = input_args[:]
 
 	#starts the background thread for printing dots
 	thread = dots(dot)
@@ -417,12 +417,23 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		sequence_filename = write_sequence(sequence, str(i))
 		input_args.append(sequence_filename)
 		seqs.append(input_args)
-	partial1 = partial(start_repeat_finder, started_via_commandline = False)
+	partial1 = partial(start_repeat_finder, False)
 	pool = multiprocessing.Pool(processes = config_args['MAXTHREADS'])
 	batchprimer_results = ''
-	for x in pool.imap(partial1, seqs):
-		html_output = 'another job was just started<br>'
-		batchprimer_results += x
+	batchprimer_result_dict = {}
+	pool_iterator = pool.imap(partial1, seqs):
+	for i in range(0, len(sub_seqs)):
+		html_output('another job was just started<br>')
+		batchprimer_result_dict[i] = pool_iterator.next
+		result_file = open(data_dir + run_name + '_results.txt', 'a')
+		result_file.write(batchprimer_result_dict[i])
+		result_file.close()
+
+	for i in range(0, len(sub_seqs)):
+		batchprimer_results += batchprimer_result_dict[i] + '\n'
+	result_file = open(data_dir + run_name + '_results.txt', 'w')
+	result_file.write(batchprimer_results)
+	result_file.close()
 
 	#while not myQueue.empty() or len(worker_results) < len(sub_seqs):
 		#result_file = open(data_dir + run_name + '_results.txt', 'w')
