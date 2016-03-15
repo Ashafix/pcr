@@ -8,6 +8,12 @@
 		<style type="text/css">
 			body {
 				background-color: #E0E0E0;
+				font-size: 80%;
+				font-family: 'Helvetica';
+			}
+			input[type="checkbox"] {
+				width: 120px:
+				height: 120px;
 			}
 
 			.container {
@@ -19,9 +25,16 @@
 				clear: both;
 				text-align: right;
 			}
+			.container input[type="file"] {
+				width: 30%;
+				clear: both;
+				text-align: left;
+				
+			}
+
 			.container textarea {
 				padding:8px;
-				width:50%;
+				width:60%;
 				text-align: left;
 				font-family:"courier"
 			}
@@ -36,15 +49,33 @@
 				margin-left:20px;
 			}
 			.container label {
-				width:50%;
-				margin-top: 3px;
-				display:inline;
-				padding:3px;
-				float:left;
+				width: 40%;
+				margin-top:10px;
+				margin: 0;
+				padding: 3px;
+				display:inline-block;
+				
 			}
+			h1 {
+				font-size: 150%
+			}
+			h2 {
+				font-size: 125%
+				margin-bottom: 0px;
+				margin-top: 20px;
+			}
+			h3 {
+				font-size: 110%
+				margin-top: 0px;
+				margin: 0;
+			}
+
 			input, textarea {
+				clear: none;
+			}
+			select {
+				font-size: 75%
 				width: 20%;
-			clear: none;
 			}
 			hr {
 				color: #00CCCC;
@@ -52,6 +83,20 @@
 				height: 0;
 				content: "\00a0";
 				box-shadow: 0 0 10px 1px black;
+				width: 78%;
+				align: center;
+				margin-left: 0;
+			}
+			input {
+				width: 20%;
+				font-size: 75%;
+			}
+			.floated {
+				float:left;
+				
+			}
+			button {
+				font-size: 75%;
 			}
 		</style>
 	</head>
@@ -99,12 +144,14 @@
 						<label>
 							Target Sequence(s):
 						</label>
+						<br>
 						<textarea name="fastasequence" cols="60" rows="10"></textarea>
 					</li>
 					<h3>
 						4. Specify your parameters here
 					</h3>
 					<li>
+						<div>
 						<label>
 							Maximum length of repeats which are searched:
 						</label>
@@ -123,7 +170,7 @@
 						</label>
 						<input type="number" name="maxsimilarity" value="1" min="0" max="1" step="0.1" />
 						<br>
-
+					
 						<label>
 							Search for nested primers:
 						</label>
@@ -132,8 +179,7 @@
 							<option selected value="1">Always</option>
 							<option value="-1">Never</option>
 						</select>
-						<br>
-						<br>
+						</div>
 					</li>
 					<h3>
 						5. Start your job
@@ -142,26 +188,33 @@
 						<label>
 							Make results private
 						</label>
+						
 						<input type="checkbox" name="private"/>
+						<br>
 						<br>
 						<input type="submit" value="Submit job" name="Submit job" formaction="cgi-bin/server.py" />
 					</li>
-					<hr>
+					
 				</ul>
 			</form>
+			<br>
+			<hr>
+			<br>
 			<h2>
 				Check old runs and change parameters
 			</h2>
-			<form action="cgi-bin/primer3_settings.py" method="get">
+			
+			<form class="floated" action="cgi-bin/primer3_settings.py" method="get">
 				<button type="submit" value="" name="">
 					Primer3 settings
 				</button>
 			</form>
-			<form action="cgi-bin/results.py" method="get">
+			<form class="floated" action="cgi-bin/results.py" method="get">
 				<button type="submit" value="" name="">
 					Show all previous results
 				</button>
 			</form>
+			
 		</div>
 	</body>
 </html>
