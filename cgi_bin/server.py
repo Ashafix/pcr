@@ -379,8 +379,8 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	html_output('<br><a target="_blank" href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
 
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
+	ressult_file.write('Your job is still running. Just be patient and refresh the page in a couple of the minutes.')
 	result_file.close()
-	finished = False
 
 	sub_seqs = []
 	offset = 0
@@ -395,7 +395,6 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 			sub_seqs.append(sequence[offset:sequence.find('>', offset + 1)].strip())
 
 	input_args.append('-FASTA')
-	#input_args.append(write_sequence(sequence))
 	base_args = input_args[:]
 
 	#starts the background thread for printing dots
@@ -403,11 +402,6 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	thread.start()
 	#html_output('<br>a batch of jobs was started<br>')
 	print_dots = True
-	#for i in range(0, int(config_args['MAXTHREADS'])):
-		#starts worker threads
-		#t = Thread(target = worker, args = (i,))
-		#t.daemon = True
-		#t.start()
 
 	seqs = []
 	for i in range(0, len(sub_seqs)):
@@ -436,30 +430,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	result_file.write(batchprimer_results)
 	result_file.close()
 
-	#while not myQueue.empty() or len(worker_results) < len(sub_seqs):
-		#result_file = open(data_dir + run_name + '_results.txt', 'w')
-		#batchprimer_result = ''
-		#for i in range(0, len(sub_seqs)):
-			#if i in worker_results.keys():
-				#batchprimer_result += worker_results[i] + '\n'
-		#if batchprimer_result == '':
-			#batchprimer_result = 'Your job is still running. Just be patient and refresh the page in a couple of the minutes.'
-		#result_file.write(batchprimer_result)
-		#result_file.close()
-		#sleep(0.5)
-	#batchprimer_result = start_repeat_finder(False, input_args)
-	#kill_worker = True
 	print_dots = False
-	#html_output('<br>all jobs are finished<br>')
-	#result_file = open(data_dir + run_name + '_results.txt', 'w')
-	#batchprimer_result = ''
-	#for i in range(0, len(sub_seqs)):
-		#batchprimer_result += worker_results[i] + '\n'
-	#if batchprimer_result != '':
-		#result_file.write(batchprimer_result)
-	#else:
-		#result_file.write('FAILED\n')
-	#result_file.close()
 
 	html_output('<br>Your job is finished and the link above should work now.<br>')
 	#print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
@@ -479,4 +450,4 @@ elif sequence_filename:
 	html_output('Server is not ready, please try again later.<br>')
 
 print (end)
-7
+sys.exit(0)
