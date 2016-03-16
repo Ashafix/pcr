@@ -13,7 +13,8 @@ with open(primer3_settings_filename, 'r') as primer3_settings_file:
 	primer3_settings = primer3_settings_file.read()
 
 html = 'Content-type:text/html; charset=utf-8\n\n'
-html += '<html><body>'
+
+html += '<html><head> <link rel="stylesheet" type="text/css" href="../html/primer3_settings.css" /> </head><body>'
 html += '<form>'
 for line in primer3_settings.split('\n'):
 	if '=' in line and (line.startswith('PRIMER_') or line.startswith('P3_FILE_ID')):
