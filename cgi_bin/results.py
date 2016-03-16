@@ -58,8 +58,8 @@ else:
 
 		#Result file
 		if 'Result' in result_files[result]:
-			message += '<td>' + url + result_files[result]['Result'] + '"> Raw results </a>'
-			message += '&nbsp;&nbsp;&nbsp;<a href="../cgi-bin/results2.py?result=' + result + '"> Pretty results</a></td>'
+			message += '<td>' + url + result_files[result]['Result'] + '"> CSV results </a>'
+			message += '&nbsp;&nbsp;&nbsp;<a href="../cgi-bin/results2.py?result=' + result + '"> HTML results</a></td>'
 		else:
 			message += '<td></td>'
 		message += '<td>' + url + result + '_sequence.fasta">' + result + '_sequence.fasta' + '</a></td>'

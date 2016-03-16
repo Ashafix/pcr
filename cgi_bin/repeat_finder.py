@@ -659,11 +659,14 @@ def check_fasta(sequence, fasta_type, strict):
 	return passed
 
 def get_primers(sequence):
-
+	"""
+	main function
+	finds primers for a given sequence
+	"""
 	global max_primerpairs
 	global nested
 	global run_name
-	#Step 3: creates primer3 input file for each sequence
+	#creates primer3 input file for each sequence
 	output = ''
 	stdoutput = ''
 	sequences = []
@@ -1155,7 +1158,6 @@ def start_repeat_finder(started_via_commandline, *arguments):
 
 	###multiprocess
 	print (run_name + ' program started, please be patient')
-	p = Pool(processes = max_threads)
 
 	sequences = []
 
@@ -1166,9 +1168,14 @@ def start_repeat_finder(started_via_commandline, *arguments):
 		else:
 			sequences[-1] += line
 	fasta_file.close()
-	#print sequences
-	results = p.map(get_primers, sequences)
-	#results = get_primers(sequences[0])
+	if len(sequences) > 1:
+		p = Pool(processes = max_threads)
+		results = p.map(get_primers, sequences)
+		p.terminate()
+	else:
+		results = []
+		results.append(get_primers(sequences[0]))
+
 	output = []
 	stdoutput = []
 	for a in results:
