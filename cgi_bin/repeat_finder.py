@@ -933,7 +933,6 @@ def get_primers(sequence):
 
 				stdoutput += 'Primer3 for forced nested primers finished\n'
 
-
 	if (len(accepted_primers) < max_primerpairs and nested == -1) or (len(accepted_primers) < 2 and nested != -1):
 		stdoutput += 'not enough primer pairs found\n'
 
