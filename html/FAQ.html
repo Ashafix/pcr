@@ -1,0 +1,24 @@
+
+
+<html>
+	<body>
+		<h3>Who are the people behind the programm?</h3>
+		This program was developed as a collaboration between David Zeevi and Maximilian Peters. David Zeevi had the original idea and is responsible for all the wet lab implementation, Maximilian Peters is responsible for all the code and software architecture behind it.
+		<h3>How does it work?</h3>
+		A lot of Python code identifies the sequence for which primers should be designed. <a href="http://primer3.sourceforge.net/releases.php">Primer3</a> creates an initital list of possible primers which are checked against the human hg19 genome by <a href="https://genome.ucsc.edu/cgi-bin/hgPcr">isPCR</a>. Depending on the settings either different primer pairs or hemi-nested primers are suggested. Since this program was developed independent of any research institutes and we do not have access to a computing center, we run the programs on Amazon Web Service. The main compute server is only started when needed to save money.
+		<h3>Which tools are used by the program?</h3>
+		Primers are designed with <a href="http://primer3.sourceforge.net/releases.php">Primer3</a> and the specificity is checked with <a href="https://genome.ucsc.edu/cgi-bin/hgPcr">isPCR</a>.
+		<h3>I want to use this program on my own computer</h3>
+		Sure, go ahead. You can download the source code from GitHub
+		<h3>What are the hardware requirements?</h3>
+		Any Linux machine with 4 GB of RAM can handle the program. For Windows computers a virtual machine is needed. If you need help setting it up, let use know.
+		<h3>Can I use this program for other genomes?</h3>
+		I guess so, we never tested it with other genomes but all tools can handle other genomes as well.
+		<h3>Is there a publication about the program?</h3>
+		Not yet, but we will submit a manuscript soon.
+		<h3>I miss a specific feature</h3>
+		Please send us an email and we will check how to implement it.
+		<h3>I found a bug</h3>
+		Please send an email to Maximilian Peters.
+	</body>
+</html>
