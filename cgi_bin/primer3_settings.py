@@ -15,7 +15,7 @@ with open(primer3_settings_filename, 'r') as primer3_settings_file:
 html = 'Content-type:text/html; charset=utf-8\n\n'
 
 html += '<html><head> <link rel="stylesheet" type="text/css" href="../html/primer3_settings.css" /> </head><body>'
-html += '<form>'
+html += '<div class="container"><form>'
 for line in primer3_settings.split('\n'):
 	if '=' in line and (line.startswith('PRIMER_') or line.startswith('P3_FILE_ID')):
 		html += '<li>'
@@ -37,7 +37,7 @@ for line in primer3_settings.split('\n'):
 html += '<hr>'
 
 html += '<input type="submit" value="Download Primer3 parameters" name="Primer3settings" formaction="../cgi-bin/save_primer3settings.py" />'
-html += '</form>'
+html += '</form></div>'
 html += '</body>'
 html += '</html>'
 
