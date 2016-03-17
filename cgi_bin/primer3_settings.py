@@ -30,8 +30,9 @@ for line in primer3_settings.split('\n'):
 		html += '"'
 		html += ' />'
 		html += '</li>'
-	elif len(line.strip()) > 1:
-		html += '<br>\n'
+		html += '\n'
+	#elif len(line.strip()) > 1:
+		#html += '<br>\n'
 
 html += '<hr>'
 
