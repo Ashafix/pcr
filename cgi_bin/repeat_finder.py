@@ -443,7 +443,6 @@ def get_amplicon_from_primer3output(primerF, primerR, primer3output):
 	sequence = ''
 	end_line = 0
 	orig_output = primer3output
-	amplicon_start = -1
 	amplicon_end = -1
 	
 	while amplicon_start == 0 and ('_SEQUENCE=' + primerF) in primer3output:
@@ -478,7 +477,7 @@ def get_amplicon_from_primer3output(primerF, primerR, primer3output):
 			elif primerF_found == True and line.startswith('PRIMER_RIGHT_') and \
 				line.find('_SEQUENCE=' + primerR) <= 0:
 				primerF_found = False
-	if amplicon_start != -1 and amplicon_end != -1:
+	if amplicon_start != 0 and amplicon_end != -1:
 		return sequence[amplicon_start - 1 + len(primerF):amplicon_end]
 	else:
 		return ''
