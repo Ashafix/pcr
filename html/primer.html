@@ -5,147 +5,7 @@
 		<title>
 			Input form
 		</title>
-		<style type="text/css">
-			body {
-				background-color: #F0F0F0;
-				font-family: 'Helvetica';
-			}
-			input[type="checkbox"] {
-				width: 120px:
-				height: 120px;
-			}
-			.container {
-				width: 100%;
-			}
-			.container input[type="number"] {
-				width: 5%;
-				text-align: right;
-			}
-			.container input[type="file"] {
-				width: 30%;
-				text-align: left;
-			}
-			.container input[type="submit"] {
-				width: 40%;
-				text-align: center;
-				padding: 5px;
-			}
-			.container textarea {
-				padding:8px;
-				width:60%;
-				text-align: left;
-				font-family:"courier"
-			}
-			.container li {
-				padding:12px;
-				position:relative;
-				list-style-type: none;
-				width: 75%;
-			 }
-			.container button {
-				margin-left:20px;
-			}
-			.container label {
-				width: 30%;
-				margin-top:10px;
-				margin: 0;
-				padding: 3px;
-				display:inline-block;
-			}
-			label[name="start"] {
-				width: 15%;
-			}
-			h1 {
-				font-size: 200%;
-				background-color: #108A8B;
-				margin-bottom: 1px;
-				margin-top: 0px;
-				padding: 40px 0px 40px 25px;
-				color: #FFFFFF;
-				font-weight: normal;
-				text-align: left;
-				width: 75%;
-			}
-			h2 {
-				font-size: 125%;
-				background-color: #555555;
-				margin-bottom: 0px;
-				margin-top: 0px;
-				margin-bottom: 0px;
-				padding: 15px 0px 15px 25px;
-				color: #FFFFFF;
-				font-weight: normal;
-				text-align: left;
-				width: 75%;
-			}
-			h3:before {
-				position: relative;
-				color: #108A8B;
-				left: -1%;
-				content: "\27A4";
-				margin-right: -12px;
-			}
-			h3 {
-				font-size: 110%;
-				margin-top: 0px;
-				margin: 0;
-				color: #303030;
-			}
-			input {
-				clear: none;
-				border-color: #108A8B;
-				border-width: 1px;
-			}
-			textarea {
-				border-color: #108A8B;
-				border-width: 1px;
-				border-style: solid;
-			}
-			select {
-				width: 5%;
-			}
-			hr {
-				color: #000000;
-				border: 1;
-				height: 1;
-				left: -10px;
-				width: 105%;
-				align: right;
-				margin-left: -30%;
-			}
-			button:before {
-				content: "\21A6";
-				color: #108A8B;
-				font-size: 30px;
-			}
-			button {
-				background-color: #F0F0F0;
-				padding: 5px;
-				border: 0;
-				margin-left: 10px;
-				font-size: 100%;
-				color: #108A8B;
-			}
-			input[name="SubmitJob"] {
-				font-color: #FF0000;
-				color: white;
-				background: #108A8B;
-				font-size:110%;
-				border: 2px solid;
-				border-radius: 10px;
-				margin-left: 50px;
-			}
-			input[type=checkbox] {
-				-ms-transform: scale(1.5); /* IE */
-				-moz-transform: scale(1.5); /* FF */
-				-webkit-transform: scale(1.5); /* Safari and Chrome */
-				-o-transform: scale(1.5); /* Opera */
-				padding: 10px;
-			}
-			input[type=text] {
-				width: 10%;
-			}
-		</style>
+		<link rel="stylesheet" type="text/css" href="styles.css" />
 	</head>
 	<body>
 		<div class="container">
@@ -256,6 +116,11 @@
 				<form action="cgi-bin/results.py" method="get">
 					<button type="submit" value="">
 						Show previous results
+					</button>
+				</form>
+				<form action="FAQ.html" method="get">
+					<button type="submit" value="">
+						FAQ
 					</button>
 				</form>
 			</li>

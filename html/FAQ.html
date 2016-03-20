@@ -1,29 +1,54 @@
-
-
 <html>
+	<link rel="stylesheet" type="text/css" href="styles.css" />
 	<body>
 		<h1>FAQ</h1>
-		<h3>Who are the people behind the program?</h3>
-		This program was developed as a collaboration between David Zeevi and Maximilian Peters. David Zeevi had the original idea and is responsible for all the wet lab implementation, Maximilian Peters is responsible for all the code and software architecture behind it.
-		<h3>How does it work?</h3>
-		A lot of Python code identifies the sequence for which primers should be designed. <a href="http://primer3.sourceforge.net/releases.php">Primer3</a> creates an initial list of possible primers which are checked against the human hg19 genome by <a href="https://genome.ucsc.edu/cgi-bin/hgPcr">isPCR</a>. Depending on the settings either different primer pairs or hemi-nested primers are suggested. Since this program was developed independent of any research institutes and we do not have access to a computing center, we run the programs on Amazon Web Service. The main compute server is only started when needed to save money.
-		<h3>Which tools are used by the program?</h3>
-		Primers are designed with <a href="http://primer3.sourceforge.net/releases.php">Primer3</a> and the specificity is checked with <a href="https://genome.ucsc.edu/cgi-bin/hgPcr">isPCR</a>.
-		<h3>How fast is it?/How much time does it take?</h3>
-		It takes approximately 2-3 minutes per sequence to finish. All your jobs are handled in parallel by the server. Most of the time is consumed by primer3, for nested primer3 is has to run at least twice. Each primer3 run takes between 1-3 minutes. Depending on the number of sequences either a 2 or 8 core server is started in order to find an acceptable ratio between run time and costs. As a rule of thumb: 2 sequence: 2-3 min, 8: sequences: 8-12 min, 16 sequences: 4-6 min, 32 sequences: 8-12 min.
-		<h3>I want to use this program on my own computer</h3>
-		Sure, go ahead. You can download the source code from GitHub
-		<h3>How reliable are the results?</h3>
-		Over the course of one year, Hemi-NeSTR was used to design an average of 16.6 hemi-nesting STR-flanking amplicons in each of 39 different 4Mb sized genomic regions. For each region, 78.4%+/-18.7% of the designed primer pairs successfully amplified their respective STR targets. After linkage analysis, an average of 46.8%+/-21.4% of the designed STR amplicons were identified as informative for single cell haplotype analysis. Thus far, 17 novel mutation-flanking STR panels were applied in live PGD cases. Generally, each panel consisted of 5-6 informative STR markers for haplotype analysis of single cell embryo biopsies. Using hemi-nested PCR amplification strategies,  97.2%+/-6.1% of the markers in each panel were successfully amplified with Hemi-NeSTR designed PCR primers. In all PGD cases, a diagnosis was achieved for each biopsy and currently there are 8 ongoing pregnancies from Hemi-NeSTR facilitated PGD.
-		<h3>What are the hardware requirements?</h3>
-		Any Linux machine with 4 GB of RAM can handle the program. For Windows computers a virtual machine is needed. If you need help setting it up, let use know.
-		<h3>Can I use this program for other genomes?</h3>
-		I guess so, we never tested it with other genomes but all tools can handle other genomes as well.
-		<h3>Is there a publication about the program?</h3>
-		Not yet, but we will submit a manuscript soon.
-		<h3>I miss a specific feature</h3>
-		Please send us an email and we will check how to implement it.
-		<h3>I found a bug</h3>
-		Please send an email to Maximilian Peters.
+		<ul>
+			<h3>Who are the people behind the program?</h3>
+			<p>
+				This program was developed as a collaboration between David Zeevi and Maximilian Peters. David Zeevi had the original idea and is responsible for all the wet lab implementation, Maximilian Peters is responsible for all the code and software architecture behind it.
+			</p>
+			<h3>How does it work?</h3>
+			<p>
+				A lot of Python code identifies the sequence for which primers should be designed. <a href="http://primer3.sourceforge.net/releases.php">Primer3</a> creates an initial list of possible primers which are checked against the human hg19 genome by <a href="https://genome.ucsc.edu/cgi-bin/hgPcr">isPCR</a>. Depending on the settings either different primer pairs or hemi-nested primers are suggested. Since this program was developed independent of any research institutes and we do not have access to a computing center, we run the programs on Amazon Web Service. The main compute server is only started when needed to save money.
+			</p>
+			<h3>Which tools are used by the program?</h3>
+			<p>
+				Primers are designed with <a href="http://primer3.sourceforge.net/releases.php">Primer3</a> and the specificity is checked with <a href="https://genome.ucsc.edu/cgi-bin/hgPcr">isPCR</a>.
+			</p>
+			<h3>How fast is it?/How much time does it take?</h3>
+			<p>
+				It takes approximately 2-3 minutes per sequence to finish. All your jobs are handled in parallel by the server. Most of the time is consumed by primer3, for nested primer3 is has to run at least twice. Each primer3 run takes between 1-3 minutes. Depending on the number of sequences either a 2 or 8 core server is started in order to find an acceptable ratio between run time and costs. As a rule of thumb: 2 sequence: 2-3 min, 8: sequences: 8-12 min, 16 sequences: 4-6 min, 32 sequences: 8-12 min.
+			</p>
+			<h3>I want to use this program on my own computer</h3>
+			<p>
+				Sure, go ahead. You can download the source code from GitHub
+			</p>
+			<h3>How reliable are the results?</h3>
+			<p>
+				Over the course of one year, Hemi-NeSTR was used to design an average of 16.6 hemi-nesting STR-flanking amplicons in each of 39 different 4Mb sized genomic regions. For each region, 78.4%+/-18.7% of the designed primer pairs successfully amplified their respective STR targets. After linkage analysis, an average of 46.8%+/-21.4% of the designed STR amplicons were identified as informative for single cell haplotype analysis. Thus far, 17 novel mutation-flanking STR panels were applied in live PGD cases. Generally, each panel consisted of 5-6 informative STR markers for haplotype analysis of single cell embryo biopsies. Using hemi-nested PCR amplification strategies,  97.2%+/-6.1% of the markers in each panel were successfully amplified with Hemi-NeSTR designed PCR primers. In all PGD cases, a diagnosis was achieved for each biopsy and currently there are 8 ongoing pregnancies from Hemi-NeSTR facilitated PGD.
+			</p>
+			<h3>What are the hardware requirements?</h3>
+			<p>
+				Any Linux machine with 4 GB of RAM can handle the program. For Windows computers a virtual machine is needed. If you need help setting it up, let use know.
+			</p>
+			<h3>Can I use this program for other genomes?</h3>
+			<p>
+				I guess so, we never tested it with other genomes but all tools can handle other genomes as well.
+			</p>
+			<h3>Is there a publication about the program?</h3>
+			<p>
+				Not yet, but we will submit a manuscript soon.
+			</p>
+			<h3>I miss a specific feature</h3>
+			<p>
+				Please send us an email and we will check how to implement it.
+			</p>
+			<h3>I found a bug</h3>
+			<p>
+				Please send an email to Maximilian Peters.
+			</p>
+		</ul>
+		
+
 	</body>
 </html>
