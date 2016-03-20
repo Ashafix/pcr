@@ -71,7 +71,7 @@ else:
 			message += '<td>' + url + result_files[result]['Primer3'] + '">' + result_files[result]['Primer3'] + '</a></td>'
 		else:
 			message += '<td></td>'
-		message += '<td>' + ctime(path.getctime(conf_arguments['DATADIR'] + result + '_sequence.fasta')) + '</td>'
+		message += '<td>' + ctime(path.getmtime(conf_arguments['DATADIR'] + result + '_sequence.fasta')) + '</td>'
 		message += '<td><a href="../cgi-bin/zip_results.py?run=' + result + '"><img src="/images/Farm-Fresh_file_extension_zip.png" '
 		message += 'download="' + conf_arguments['DATADIR']+ 'Batchprimer_' + result + '.zip''"></a></td>'
 		message += '</tr>\n'
