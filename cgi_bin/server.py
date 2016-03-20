@@ -245,8 +245,8 @@ if primer3_fileitem.filename:
 else:
 	input_args.append(config_args['PRIMER3_SETTINGS'])
 
-if sequence.count('>') > 48:
-	msg = "Error: Please don't submit more than 48 sequences at once. Feel free to contact us at maximili.peters@mail.huji.ac.il to discuss further options.<br>"
+if sequence.count('>') > 100:
+	msg = "Error: Please don't submit more than 100 sequences at once. Feel free to contact us at maximili.peters@mail.huji.ac.il to discuss further options.<br>"
 	html += msg
 	html_output(msg)
 else:
