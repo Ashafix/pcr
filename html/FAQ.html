@@ -5,11 +5,23 @@
 		<ul>
 			<h3>Who are the people behind the program?</h3>
 			<p>
-				This program was developed as a collaboration between David Zeevi and Maximilian Peters. David Zeevi had the original idea and is responsible for all the wet lab implementation, Maximilian Peters is responsible for all the code and software architecture behind it.
+				This program was developed as a collaboration between David Zeevi and Maximilian Peters. David Zeevi had the original idea and is responsible for all the wet lab implementation, Maximilian Peters is responsible for all the code and software architecture behind it. You can contact us by <a href="mailto:m_a_xim___ili.pe___te___rs@m_ai_l.h___uji.a_c.i_l"
+    onmouseover="this.href=this.href.replace(/_/g,'');">email</a>.
 			</p>
 			<h3>How does it work?</h3>
 			<p>
 				A lot of Python code identifies the sequence for which primers should be designed. <a href="http://primer3.sourceforge.net/releases.php">Primer3</a> creates an initial list of possible primers which are checked against the human hg19 genome by <a href="https://genome.ucsc.edu/cgi-bin/hgPcr">isPCR</a>. Depending on the settings either different primer pairs or hemi-nested primers are suggested. Since this program was developed independent of any research institutes and we do not have access to a computing center, we run the programs on Amazon Web Service. The main compute server is only started when needed to save money.
+			</p>
+			<h3>What are all those settings?</h3>
+			<p>
+				The standard settings are the ones which were validated and optimized in wet-lab experiments. You can create your own primer3 input file, upload it and run the program with those settings, for example if you do not care about amplicon length, you can set PRIMER_PAIR_WT_PRODUCT_SIZE_LT and PRIMER_PAIR_WT_PRODUCT_SIZE_GT to zero which dramatically reduces run time but results in different primer pairs. For a general explanation of all the primer3 settings, please have a look at their <a href="http://primer3.sourceforge.net/primer3_manual.htm">manual</a>.
+			</p>
+			<p>
+				The other parameters used by Hemi-NeSTR are:<br>
+				Maximum length of repeats which are searched: Specifies the maximum length of the repeat unit, e.g. 3 will search for repeats of any trinucleotide<br>
+				Maximum number of primers to be returned: The maximum number of primer pairs which are returned<br>
+				Maximum similarity of primer pairs: The maximum similarity of the return primer pairs, 1 equals up to 100% identity, 0.5 would be up to 50% identity, and 0 would be 0% identity.<br>
+				Search for nested primers: always: default setting, will alsways try to find hemi-nested primers, if needed: only if the first run didn't return enough primer pairs, never: even if the first run didn't return enough primer pairs, no 2nd attempt will be undertaken.<br>
 			</p>
 			<h3>Which tools are used by the program?</h3>
 			<p>
@@ -48,7 +60,8 @@
 				Please send an email to Maximilian Peters.
 			</p>
 		</ul>
-		
+		<br>
+		<br>
 
 	</body>
 </html>
