@@ -719,11 +719,14 @@ def get_primers(sequence):
 					primer3_status = json.loads(primer3_response)['job_status'][local_run_name]
 				except:
 					primer3_status = ''
-		primer3_url = urllib2.urlopen(baseurl + '/job_results' + '?' + params)
-		primer3_output = primer3_url.read()
-		while '\\n' in primer3_output:
-			primer3_output = primer3_output.replace('\\n', '\n')
-		primer3_output = primer3_output[1:-1] + '\n'
+		if max_time > 0:
+			primer3_url = urllib2.urlopen(baseurl + '/job_results' + '?' + params)
+			primer3_output = primer3_url.read()
+			while '\\n' in primer3_output:
+				primer3_output = primer3_output.replace('\\n', '\n')
+			primer3_output = primer3_output[1:-1] + '\n'
+		else:
+			stdoutput += 'Primer3 failed to generate output in max time\n'
 	else:
 		sys.stdout = open(str(os.getpid()) + ".out", "w")
 		process = subprocess.Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
