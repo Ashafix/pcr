@@ -39,9 +39,8 @@ end = """\
 """
 html_code = ''
 
-print (header)
-print ('Your job was submitted. Please be patient....<br><br>\n')
-sys.stdout.flush()
+html_output(header)
+html_output('Your job was submitted. Please be patient....<br><br>\n')
 
 class dots(threading.Thread):
 	"""
@@ -62,7 +61,6 @@ def dot():
 	while print_dots:
 		html_output('.')
 		sleep(1)
-
 
 def cgi_result(data, environ):
 	"""fakes a cgi result
@@ -100,7 +98,6 @@ def write_sequence(sequence, index = ''):
 	else:
 		return ''
 	return fasta_filename
-
 
 def clean_sequence(sequence):
 	"""
