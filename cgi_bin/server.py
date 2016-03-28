@@ -376,7 +376,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append('-RUNNAME')
 	input_args.append(run_name)
 	html_output('Hemi-NeSTR was just started. It will take about two minutes per sequence batch.<br>')
-	html_output('<br><a target="_blank" href="/data/' + run_name + '_results.txt">Your results will be here</a><br>')
+	html_output('<br><a target="_blank" href="../cgi-bin/results.py?result=' + run_name + '">Your results will be here</a><br>')
 
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	result_file.write('Your job is still running. Just be patient and refresh the page in a couple of the minutes.\n')
