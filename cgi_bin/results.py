@@ -46,9 +46,12 @@ else:
 	url = '<a href="' + '/data/'
 	if 'result' in cgi.FieldStorage().keys():
 		if len(cgi.FieldStorage()['result'].value) == 6 or len(cgi.FieldStorage()['result'].value) == 20:
-			for i in range(0, len(filelist)):
+			i = 0
+			while i < len(filelist):
 				if not cgi.FieldStorage()['result'].value in filelist[i]:
 					del filelist[i]
+				else:
+					i += 1
 	for filename in filelist:
 		result = filename[0:6]
 		message += '<tr><td name="test">' + result + '</td>'
