@@ -5,6 +5,7 @@ from subprocess import check_output, STDOUT
 from os import path, listdir
 from repeat_finder import read_configfile
 from time import ctime
+import cgi
 
 config_filename = 'batchprimer.conf'
 conf_arguments = read_configfile(config_filename)
@@ -20,7 +21,7 @@ else:
 	message += '</tr>'
 	result_files = {}
 	filelist = listdir(conf_arguments['DATADIR'])
-	
+
 	#sorts files by date, not pretty but it works
 	x = 0
 	while  x < len(filelist):
@@ -43,7 +44,11 @@ else:
 		if path.isfile(data_dir + result + '_name.txt'):
 			result_files[result].update({'Name':result + '_name.txt'})
 	url = '<a href="' + '/data/'
-
+	if 'result' in cgi.FieldStorage().keys():
+		if len(result_filename += cgi.FieldStorage()['result'].value) == 6 or len(result_filename += cgi.FieldStorage()['result'].value) == 20:
+			for i in range(0, len(filelist)):
+				if not result_filename += cgi.FieldStorage()['result'].value in filelist[i] != :
+					del filelist[i]
 	for filename in filelist:
 		result = filename[0:6]
 		message += '<tr><td name="test">' + result + '</td>'
