@@ -324,14 +324,14 @@ html += '</body></html>'
 print html
 
 
-x,y,z= parse_output("""Target:, TG1 hg19_microsat_30xTG range=chr2:36944078-36944938 5'pad=400 3'pad=400 strand=+ repeatMasking=none
+#x,y,z= parse_output("""Target:, TG1 hg19_microsat_30xTG range=chr2:36944078-36944938 5'pad=400 3'pad=400 strand=+ repeatMasking=none
 
-Primer pair:, ATTCTCCTGCCTCAGCCTGGGACTA, GAAACCCTGTCTCACACGGTGAAAC
-Amplicon:, chr2:36944426+36944577, 152bp, ATTCTCCTGCCTCAGCCTGGGACTAcaggctcccaccaccacgcctggctaatgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtttagtagagatgggGTTTCACCGTGTGAGACAGGGTTTC
-primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC
-66.69, 64.12, 56.00, 52.00, 86.36, 53.29
-Primer pair:, GGCACAATCTTGGCTCACTGCAAG, GAAACCCTGTCTCACACGGTGAAAC
-Amplicon:, chr2:36944380+36944577, 198bp, GGCACAATCTTGGCTCACTGCAAGcaggctcccaccaccacgcctggctaatgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtttagtagagatgggGTTTCACCGTGTGAGACAGGGTTTC
-primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC
-64.91, 64.12, 54.17, 52.00, 88.21, 52.98""")
+#Primer pair:, ATTCTCCTGCCTCAGCCTGGGACTA, GAAACCCTGTCTCACACGGTGAAAC
+#Amplicon:, chr2:36944426+36944577, 152bp, ATTCTCCTGCCTCAGCCTGGGACTAcaggctcccaccaccacgcctggctaatgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtttagtagagatgggGTTTCACCGTGTGAGACAGGGTTTC
+#primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC
+#66.69, 64.12, 56.00, 52.00, 86.36, 53.29
+#Primer pair:, GGCACAATCTTGGCTCACTGCAAG, GAAACCCTGTCTCACACGGTGAAAC
+#Amplicon:, chr2:36944380+36944577, 198bp, GGCACAATCTTGGCTCACTGCAAGcaggctcccaccaccacgcctggctaatgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtgtttagtagagatgggGTTTCACCGTGTGAGACAGGGTTTC
+#primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC
+#64.91, 64.12, 54.17, 52.00, 88.21, 52.98""")
 
