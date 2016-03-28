@@ -39,9 +39,6 @@ end = """\
 """
 html_code = ''
 
-html_output(header)
-html_output('Your job was submitted. Please be patient....<br><br>\n')
-
 class dots(threading.Thread):
 	"""
 	a background thread for printing dots
@@ -141,6 +138,10 @@ def correct_fasta (sequence):
 			if not all(nuc in ('ATGC\n\r') for c in fasta_line):
 				return False
 	return True
+
+html_output(header)
+html_output('Your job was submitted. Please be patient....<br><br>\n')
+
 config_args = read_configfile(config_filename)
 data_dir = config_args['DATADIR']
 
