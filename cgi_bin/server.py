@@ -24,14 +24,6 @@ config_filename = 'batchprimer.conf'
 input_args = []
 cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
 print_dots = False
-kill_worker = False
-
-#dictionary with all the jobs, key = worker_id
-proc_items = {}
-#queue storing jobs, list: ID, input_parameters
-myQueue = Queue()
-#dictionary with batchprimer3 results, key: job number
-worker_results = {}
 
 #dictionary with 'number of CPUs':extension
 server_extensions = {2:'c4.large', 8:'c4.2xlarge'}
@@ -50,17 +42,6 @@ html_code = ''
 print (header)
 print ('Your job was submitted. Please be patient....<br><br>\n')
 sys.stdout.flush()
-
-def worker(worker_id):
-
-	global proc_items
-	while not kill_worker:
-		if not myQueue.empty():
-			proc_items[worker_id] = myQueue.get()
-			worker_results[proc_items[worker_id][0]] = start_repeat_finder(False, proc_items[worker_id][1])
-		else:
-			sleep(0.5)
-
 
 class dots(threading.Thread):
 	"""
