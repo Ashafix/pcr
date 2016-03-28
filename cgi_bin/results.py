@@ -45,7 +45,7 @@ else:
 			result_files[result].update({'Name':result + '_name.txt'})
 	url = '<a href="' + '/data/'
 	if 'result' in cgi.FieldStorage().keys():
-		if len(result_filename += cgi.FieldStorage()['result'].value) == 6 or len(result_filename += cgi.FieldStorage()['result'].value) == 20:
+		if len(cgi.FieldStorage()['result'].value) == 6 or len(cgi.FieldStorage()['result'].value) == 20:
 			for i in range(0, len(filelist)):
 				if not result_filename += cgi.FieldStorage()['result'].value in filelist[i] != :
 					del filelist[i]
