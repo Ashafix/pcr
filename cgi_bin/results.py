@@ -47,7 +47,7 @@ else:
 	if 'result' in cgi.FieldStorage().keys():
 		if len(cgi.FieldStorage()['result'].value) == 6 or len(cgi.FieldStorage()['result'].value) == 20:
 			for i in range(0, len(filelist)):
-				if not cgi.FieldStorage()['result'].value in filelist[i] != :
+				if not cgi.FieldStorage()['result'].value in filelist[i]:
 					del filelist[i]
 	for filename in filelist:
 		result = filename[0:6]
