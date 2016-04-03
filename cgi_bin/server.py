@@ -55,8 +55,9 @@ def dot():
 	prints a dot every second
 	"""
 	global print_dots
-	while print_dots:
-		html_output('.')
+	while True:
+		if print_dots:
+			html_output('.')
 		sleep(1)
 
 def cgi_result(data, environ):
