@@ -22,17 +22,18 @@ else:
 	result_files = {}
 	if 'result' in cgi.FieldStorage().keys():
 		filelist = [cgi.FieldStorage()['result'] + '_sequence.fasta']
+		x = 0
+		while  x < len(filelist):
+			search_str = '_sequence.fasta'
+			if filelist[x].find(search_str) != 6:
+				del filelist[x]
+			else:
+				x += 1
+
 	else:
 		filelist = listdir(conf_arguments['DATADIR'])
 
 	#sorts files by date, not pretty but it works
-	x = 0
-	while  x < len(filelist):
-		search_str = '_sequence.fasta'
-		if not filelist[x].find(search_str) in (6, 24):
-			del filelist[x]
-		else:
-			x += 1
 	filelist.sort(key = lambda x: path.getmtime(conf_arguments['DATADIR'] + x), reverse = True)
 	for filename in filelist:
 		result_files[filename[0:filename.find('_')]] = {'Sequence':filename}
