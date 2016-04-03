@@ -294,7 +294,7 @@ if not 'Error: ' in html:
 			html_output('Error: Compute server could not be started.<br><br>')
 		else:
 			config_args['SERVERNAME'] = new_servername
-			html_output('Remote server is running now.<br><br>')
+			html_output('<br>Remote server is running now.<br><br>')
 
 		print_dots = False
 remoteserver_url = ''
