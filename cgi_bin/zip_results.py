@@ -62,7 +62,12 @@ else:
 			zip.close()
 		html = 'Content-Type:application/octet-stream\n'
 		html += 'Content-Disposition: attachment; filename="'
-		html += run_name + '.zip" ' + '\n\n'
+		if os.path.isfile(conf_arguments['DATADIR'] + run_name + '_name.txt'):
+			with open(conf_arguments['DATADIR'] + run_name + '_name.txt') as name_file:
+				output_name = name_file.readline()
+		else:
+			output_name = run_name
+		html += output_name + '.zip" ' + '\n\n'
 		zip_file = open(zip_filename, 'rb')
 		while True:
 			buffer = zip_file.read(4096)
