@@ -139,6 +139,10 @@ def correct_fasta (sequence):
 				return False
 	return True
 
+#starts the background thread for printing dots
+thread = dots(dot)
+thread.start()
+
 html_output(header)
 html_output('Your job was submitted. Please be patient....<br><br>\n')
 
@@ -379,9 +383,6 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	input_args.append('-FASTA')
 	base_args = input_args[:]
 
-	#starts the background thread for printing dots
-	thread = dots(dot)
-	thread.start()
 	#html_output('<br>a batch of jobs was started<br>')
 	print_dots = True
 
