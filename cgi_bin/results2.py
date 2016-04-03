@@ -236,7 +236,7 @@ def parse_output(output_text):
 			primer_table = True
 		elif primer_table == True:
 			primer_properties = line.split(',')
-			if len(primer_properties) == 6:
+			if len(primer_properties) in (6, 24):
 				new_primer.TMf = primer_properties[0].strip()
 				new_primer.TMr = primer_properties[1].strip()
 				new_primer.GCf = primer_properties[2].strip()

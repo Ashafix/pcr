@@ -26,13 +26,13 @@ else:
 	x = 0
 	while  x < len(filelist):
 		search_str = '_sequence.fasta'
-		if not filelist[x].find(search_str) == 6:
+		if not filelist[x].find(search_str) in (6, 24):
 			del filelist[x]
 		else:
 			x += 1
 	filelist.sort(key = lambda x: path.getmtime(conf_arguments['DATADIR'] + x), reverse = True)
 	for filename in filelist:
-		result_files[filename[0:6]] = {'Sequence':filename}
+		result_files[filename[0:filename.find('_')]] = {'Sequence':filename}
 
 	for result in result_files:
 		if path.isfile(data_dir + result + '_primer3.ini'):
@@ -45,7 +45,7 @@ else:
 			result_files[result].update({'Name':result + '_name.txt'})
 	url = '<a href="' + '/data/'
 	if 'result' in cgi.FieldStorage().keys():
-		if len(cgi.FieldStorage()['result'].value) == 6 or len(cgi.FieldStorage()['result'].value) == 20:
+		if len(cgi.FieldStorage()['result'].value) in (6, 24):
 			i = 0
 			while i < len(filelist):
 				if not cgi.FieldStorage()['result'].value in filelist[i]:
@@ -53,9 +53,8 @@ else:
 				else:
 					i += 1
 	for filename in filelist:
-		result = filename[0:6]
+		result = filename[0:filename.find('_')]
 		message += '<tr><td name="test">' + result + '</td>'
-
 		#Name
 		message += '<td>' 
 		if 'Name' in result_files[result]:
