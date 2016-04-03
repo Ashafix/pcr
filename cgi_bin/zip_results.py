@@ -37,7 +37,7 @@ form = cgi.FieldStorage()
 run_name = form['run'].value
 
 #prevent download attacks
-if len(run_name) != 6:
+if len(run_name) not in (6, 24):
 	html = invalid_name_html
 elif not all(c in (ascii_uppercase + digits) for c in run_name):
 	html = invalid_name_html
