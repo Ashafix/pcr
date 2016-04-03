@@ -21,7 +21,9 @@ else:
 	message += '</tr>'
 	result_files = {}
 	if 'result' in cgi.FieldStorage().keys():
-		filelist = [cgi.FieldStorage()['result'] + '_sequence.fasta']
+		filelist = [cgi.FieldStorage()['result'].value + '_sequence.fasta']
+	else:
+		filelist = listdir(conf_arguments['DATADIR'])
 		x = 0
 		while  x < len(filelist):
 			search_str = '_sequence.fasta'
@@ -30,8 +32,6 @@ else:
 			else:
 				x += 1
 
-	else:
-		filelist = listdir(conf_arguments['DATADIR'])
 
 	#sorts files by date, not pretty but it works
 	filelist.sort(key = lambda x: path.getmtime(conf_arguments['DATADIR'] + x), reverse = True)
