@@ -32,7 +32,6 @@ else:
 			else:
 				x += 1
 
-
 	#sorts files by date, not pretty but it works
 	filelist.sort(key = lambda x: path.getmtime(conf_arguments['DATADIR'] + x), reverse = True)
 	for filename in filelist:
