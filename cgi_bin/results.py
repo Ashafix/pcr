@@ -21,7 +21,10 @@ else:
 	message += '</tr>'
 	result_files = {}
 	if 'result' in cgi.FieldStorage().keys():
-		filelist = [cgi.FieldStorage()['result'].value + '_sequence.fasta']
+		if len(cgi.FieldStorage()['result'].value) in (6, 24):
+			filelist = [cgi.FieldStorage()['result'].value + '_sequence.fasta']
+		else:
+			filelist = []
 	else:
 		filelist = listdir(conf_arguments['DATADIR'])
 		x = 0
