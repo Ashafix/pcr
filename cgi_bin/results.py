@@ -20,7 +20,10 @@ else:
 	message += '<th>Input Primer3 parameters</th><th>Date</th><th></th>'
 	message += '</tr>'
 	result_files = {}
-	filelist = listdir(conf_arguments['DATADIR'])
+	if 'result' in cgi.FieldStorage().keys():
+		filelist = [cgi.FieldStorage()['result'] + '_sequence.fasta']
+	else:
+		filelist = listdir(conf_arguments['DATADIR'])
 
 	#sorts files by date, not pretty but it works
 	x = 0
