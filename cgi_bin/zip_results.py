@@ -34,8 +34,11 @@ else:
 
 form = cgi.FieldStorage()
 
-run_name = form['run'].value
-
+if 'run' in form.keys():
+	run_name = form['run'].value
+else:
+	run_name = 'invalid'
+	html = no_input_html
 #prevent download attacks
 if len(run_name) not in (6, 24):
 	html = invalid_name_html
