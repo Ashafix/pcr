@@ -1573,14 +1573,44 @@ PRIMER_PAIR_49_T_OPT_A=59.1750
 
 #def primer_stats(primerF, primerR, primer3output):
 #def amplicon_name(primerF, primerR, amplicon, isPCRoutput):
-def name_from_fasta(primerF, primerR, amplicon, fasta):
+#def name_from_fasta(primerF, primerR, amplicon, fasta):
 	def test_similarity(self):
 		test_cases = [['AAA', 'AAA', 1], ['AAA', 'AA', 1], ['AAATTTAAA', 'TTT', 1], ['AAATATAA', 'CTATC', 0.6], ['AAATATAA', '', 0.0], ['AAATATAA', 'ZZZZZZZZZZZ', 0.0], ['AAATATAA', '???????????', 0.0]]
-		test_cases = ''
 		for test_case in test_cases:
 			self.assertTrue(similarity(test_case[0], test_case[1]) == test_case[2])
 #def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
-#def check_fasta(sequence, fasta_type, strict):
+	def  test_check_fasta(self):
+		test_cases = [['>header\nATGC', 'nuc', False, True]]
+		test_cases.append(['>header\nATGC', 'nuc', True, True])
+		test_cases.append(['>header\nATGC\nATGC', 'nuc', False, True])
+		test_cases.append(['>header\n\rATGC\n\rATGC', 'nuc', False, True])
+		test_cases.append(['>header\n\rATGC\n\rATGC \n', 'nuc', False, True])
+		test_cases.append(['>header\n\rATGC\n\rATGC \n', 'nuc', True, False])
+		test_cases.append(['>header\n\rATGC\n\rATGC \n', 'nuc', True, False])
+		test_cases.append(['>header\n\rATGC\n\rATGC \n', 'NUC', False, True])
+		test_cases.append(['>header\n\rATGC\n\rATGC \n', 'DNA', False, True])
+		test_cases.append(['>header\n\rATGC\n\rATGC \n', 'BASES', False, True])
+		test_cases.append(['>header\n\rATGC\n\rATGC \n', 'N', False, True])
+		test_cases.append(['>header\n\rATGC\n\rATGC \n', '', False, False])
+		test_cases.append(['header\n\rATGC\n\rATGC \n', 'nuc', False, False])
+		test_cases.append(['header\n\rATGC\n\rATGC\nN.-ATGC \n', 'nuc', False, False])
+		test_cases.append(['>header\n', 'nuc', True, False])
+		test_cases.append(['>header\n\nATGC', 'nuc', True, False])
+		test_cases.append(['>header\n\nATGC', 'protein', True, False])
+		test_cases.append(['>header\n\nATGC', 'protein', False, True])
+		test_cases.append(['>header\n\nATGC', 'nuc', False, True])
+		test_cases.append(['', '', False, False])
+		test_cases.append(['', '', True, False])
+		test_cases.append(['>header\nAAA', 'PROTEIN', False, True])
+		test_cases.append(['>header\nAAA', 'P', False, True])
+		test_cases.append(['>header\nAAA', 'AA', False, True])
+		test_cases.append(['>header\nAAA', 'Amino Acid', False, True])
+		test_cases.append(['>header\nAAA', 'AminoAcid', False, True])
+		test_cases.append(['>header\nAAA', 'PROTEIN', False, True])
+		test_cases.append(['>header\nAAA', 'PROTEIN', True, True])
+		test_cases.append(['>header\nAAATCVSKYW', 'PROTEIN', True, True])
+		for test_case in test_cases:
+			self.assertTrue(check_fasta(test_case[0], test_case[1], test_case[2]) == test_case[3])
 #def get_primers(sequence):
 
 
