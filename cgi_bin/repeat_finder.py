@@ -626,33 +626,36 @@ def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
 
 	return output
 
-
 def check_fasta(sequence, fasta_type, strict):
 	"""
 	checks if an input sequence looks like a proper single fasta sequence
-	strict: boolean, enforces perfect format, i.e. no extra line breaks or spaces, etc.
 	sequence: string the input sequence
 	fasta_type: protein or nucleotide
+	strict: boolean, enforces perfect format, i.e. no extra line breaks or spaces, etc.
 	"""
 	passed = True
 	fasta_type = fasta_type.upper()
 
 	if fasta_type == 'PROTEIN' or \
+		fasta_type.startswith('P') or \
 		fasta_type == 'AA' or \
 		fasta_type.startswith('AMINOACID') or \
 		fasta_type.startswith('AMINO ACID'):
-		fasta_type = 'P'
 		if strict:
 			allowed_characters = 'ARNDCEQGHILKMFPSTWYV'
 		else:
 			allowed_characters = 'ARNDBCEQZGHILKMFPSTWYV'
 	elif fasta_type.startswith('NUC') or \
 		fasta_type == 'DNA' or \
+		fasta_type == 'N' or \
 		fasta_type == 'BASES':
-		fasta_type = 'N'
-		allowed_characters = 'ATGC'
+		if strict:
+			allowed_characters = 'ATGC'
+			allowed_characters += allowed_characters.lower()
+		else:
+			allowed_characters = 'ATGCURYSWKMBDHVN.-'
 	else:
-		allowed_character = ''
+		allowed_characters = ''
 
 	if not strict:
 		sequence = sequence.strip()
@@ -672,13 +675,17 @@ def check_fasta(sequence, fasta_type, strict):
 				sequence = sequence.replace('\r', '')
 				sequence = sequence.replace(' ', '')
 				sequence = sequence.upper()
-				passed = all(i in allowed_characters for i in sequence)
 			else:
-				if len(sequence) > 2:
+				if len(lines) != 2:
 					passed = False
+					sequence = ''
 				else:
 					sequence = lines[1]
-					passed = all(i in allowed_characters for i in sequence)
+			if len(sequence) > 0:
+				passed = all(i in allowed_characters for i in sequence)
+			else:
+				passed = False
+
 
 	return passed
 
