@@ -507,6 +507,11 @@ def primer_stats(primerF, primerR, primer3output):
 	"""
 	takes a primer pair and primer3output as input
 	returns GC-content, primer TM, product size, product TM
+	input:
+		primerF, primerR: string
+		primer3output: string
+	output:
+		GC-content, primer TM, product size, product TM
 	"""
 	primerF = primerF.upper()
 	primerR = primerR.upper()
@@ -517,10 +522,10 @@ def primer_stats(primerF, primerR, primer3output):
 		if found == -1:
 			if temp_output[i].startswith('PRIMER_LEFT_') and \
 				'_SEQUENCE=' in temp_output[i] and \
-				temp_output[i].endswith(primerF):
+				temp_output[i].endswith('=' + primerF):
 				if temp_output[i + 1].startswith('PRIMER_RIGHT_') and \
 					'_SEQUENCE=' in temp_output[i + 1] and \
-					temp_output[i + 1].endswith(primerR):
+					temp_output[i + 1].endswith('=' + primerR):
 					found = temp_output[i][len('PRIMER_LEFT_'):temp_output[i].find('_SEQUENCE')]
 		else:
 			if temp_output[i].startswith('PRIMER_LEFT_' + found + '_TM='):
@@ -539,34 +544,6 @@ def primer_stats(primerF, primerR, primer3output):
 	else:
 		print (run_name + ' Error: Primer not found in output')
 		return '0', '0', '0', '0', '0'
-
-def amplicon_name(primerF, primerR, amplicon, isPCRoutput):
-	"""
-	takes isPCRoutput and searches for the name of the amplicon which is exactly primer,amplicon,primerR
-	primerR will be reversed
-	amplicon has to be in lower score, primers in upper score
-	"""
-	primerR = primerR.upper()
-	primerRold = primerR
-	#reverses the reverse primer
-	primerR = primerR.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1]
-	temp_output = isPCRoutput.splitlines()
-	i = 0
-	isPCRamplicon = ''
-	while i < len(temp_output):
-		if ' ' + primerF + ' ' in temp_output[i] and \
-			temp_output[i].find(' ' + primerRold) == len(temp_output) - len(primerRold):
-			return temp_output[i][0:temp_output[i].find(' ')]
-		if temp_output[i].startswith('>') or ';' in temp_output[i]:
-			if isPCRamplicon.replace('\n', '') == primerF + amplicon.lower() + primerR:
-				return temp_output[name_line]
-			else:
-				name_line = i
-				isPCRamplicon = ''
-		else:
-			isPCRamplicon += temp_output[i]
-		i += 1
-	return ''
 
 def name_from_fasta(primerF, primerR, amplicon, fasta):
 	"""
@@ -618,7 +595,7 @@ def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
 	generates output which can be written to log file
 	"""
 	output = 'Primer pair:, ' + primerF + ', ' + primerR + '\n'
-	output += (str('Amplicon: ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2]).replace(' ', ', ') + ', ' + amplicon_name(primerF, primerR, amplicon.lower(), isPCRoutput)).replace('\n', '')
+	output += 'Amplicon: ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2].replace(' ', ', ') + ', '
 	output += primerF.upper() + amplicon.lower() + primerR.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1] + '\n'
 	output += 'primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC\n'
 	ampliconGC = str(round(100 * (float(str(primerF + amplicon + primerR).count('G')) + float(str(primerF + amplicon + primerR).count('C'))) / float(len(str(primerF + amplicon + primerR))), 2))
@@ -685,8 +662,6 @@ def check_fasta(sequence, fasta_type, strict):
 				passed = all(i in allowed_characters for i in sequence)
 			else:
 				passed = False
-
-
 	return passed
 
 def get_primers(sequence):
