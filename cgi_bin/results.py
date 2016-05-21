@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 #Shows all results from previous runs
-from subprocess import check_output, STDOUT
 from os import path, listdir
 from repeat_finder import read_configfile
 from time import ctime
@@ -86,6 +85,7 @@ else:
 			message += '<td></td>'
 		message += '<td>' + ctime(path.getmtime(conf_arguments['DATADIR'] + result + '_sequence.fasta')) + '</td>'
 		message += '<td><a href="../cgi-bin/zip_results.py?run=' + result + '"><img src="/images/Farm-Fresh_file_extension_zip.png" '
+		#not sure if 'download' is needed
 		message += 'download="' + conf_arguments['DATADIR']+ 'Batchprimer_' + result + '.zip''"></a></td>'
 		message += '</tr>\n'
 	message += '</form>'
