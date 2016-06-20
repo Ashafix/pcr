@@ -45,15 +45,19 @@
 						<label name="start" >
 							Sequence File:
 						</label>
-						<input type="file" name="fastafile" />
+						<input type="file" name="fastafile"/>
 						<br>
 
 						<label>
 							Target Sequence(s):
 						</label>
 						<br>
-						<textarea name="fastasequence" cols="60" rows="10"></textarea>
+						<textarea name="fastasequence" cols="60" rows="10" onkeypress="validateDNA()" onpaste="validateDNA()" oninput="validateDNA()"></textarea>
 					</span>
+					<br>
+					<div name="warning">
+						Please add a valid FASTA sequence with header.
+					</div>
 					</li>
 					<hr>
 					<h3>
@@ -98,7 +102,7 @@
 						<label>
 							Make results private:
 							<input type="checkbox" name="private"/>
-							<input type="submit" value="Submit Job" name="SubmitJob" formaction="cgi-bin/server.py" />
+							<input type="submit" value="Submit Job" name="SubmitJob" formaction="cgi-bin/server.py" disabled="true"/>
 						</label>
 					</li>
 					
@@ -127,4 +131,49 @@
 			<br><br>
 		</div>
 	</body>
+
+	<script type="text/javascript" >
+
+	function validateDNA() {
+		//Based on: http://www.blopig.com/blog/2013/03/a-javascript-function-to-validate-fasta-sequences/
+		//Taken from: http://www.dnacoil.com/tools/validate-dna-fasta-file-with-a-javascript-function/
+		// immediately remove trailing spaces
+		
+		seq = document.getElementsByName("fastasequence")[0].value.trim();
+	 
+		// split on newlines... 
+		var lines = seq.split('\n');
+	 
+		// check for header
+		if (seq[0] == '>') {
+			// remove one line, starting at the first position  
+			lines.splice(0, 1);
+		 
+		}
+	 
+		// join the array back into a single string without newlines and 
+		// trailing or leading spaces
+		seq = lines.join('').trim();
+		 
+		//Search for charaters that are not G, A, T or C.
+		if (seq.search(/[^gatc\s]/i) != -1) {   
+			//The seq string contains non-DNA characters
+			document.getElementsByName("SubmitJob")[0].disabled=true;
+			document.getElementsByName("warning")[0].style.display="block"
+			console.log('0');
+			return false;
+			/// The next line can be used to return a cleaned version of the DNA
+			/// return seq.replace(/[^gatcGATC]/g, "");
+		}
+		else
+		{
+			//The seq string contains only GATC
+			document.getElementsByName("SubmitJob")[0].disabled=false;
+			document.getElementsByName("warning")[0].style.display="none"
+			console.log('1');
+			return true;
+		}
+		 
+	}
+	</script>
 </html>
