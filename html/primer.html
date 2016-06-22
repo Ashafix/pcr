@@ -1,179 +1,244 @@
 <!DOCTYPE html>
 
 <html>
-	<head>
-		<title>
-			Hemi-NeSTR: Turbo batch primer design for targeted STR genotyping of single cells
-		</title>
-		<link rel="stylesheet" type="text/css" href="styles.css" />
-	</head>
-	<body>
-		<div class="container">
-			<form enctype="multipart/form-data" action="../cgi-bin/save_file.py" method="post">
-				<h1>
-					Hemi-NeSTR: Turbo batch primer design for targeted STR genotyping of single cells
-				</h1>
-				<h2>
-					Start a new run by providing all the input parameters for your primer design
-				</h2>
-				<ul>
-					<h3>
-						1. Provide a name for your run
-					</h3>
-					<li>
-						<label name="start">
-							Run name:
-						</label>
-						<input type="text" name="batchname" />
-					</li>
-					<hr>
-					<h3>
-						2. Upload your Primer3 parameter file, otherwise the standard settings are used
-					</h3>
-					<li>
-						<label name="start" >
-							Primer3 parameter file:
-						</label>
-						<input type="file" name="primer3file" />
-					</li>
-					<hr>
-					<h3>
-						3. Paste your sequence(s) in FASTA format (with header) or upload a FASTA file
-					</h3>
-					<span title="Paste your correctly formatted FASTA sequence here or upload a FASTA file, up to 48 sequences can be handled at once">
-						<li>
-						<label name="start" >
-							Sequence File:
-						</label>
-						<input type="file" name="fastafile"/>
-						<br>
+    <head>
+        <title>
+            Hemi-NeSTR: Turbo batch primer design for targeted STR genotyping of single cells
+        </title>
+        <link rel="stylesheet" type="text/css" href="styles.css" />
+    </head>
+    <body>
+        <div class="container">
+            <form enctype="multipart/form-data" action="../cgi-bin/save_file.py" method="post">
+                <h1>
+                    Hemi-NeSTR: Turbo batch primer design for targeted STR genotyping of single cells
+                </h1>
+                <h2>
+                    Start a new run by providing all the input parameters for your primer design
+                </h2>
+                <ul>
+                    <h3>
+                        1. Provide a name for your run
+                    </h3>
+                    <li>
+                        <label name="start">
+                            Run name:
+                        </label>
+                        <input type="text" name="batchname" />
+                    </li>
+                    <hr>
+                    <h3>
+                        2. Upload your Primer3 parameter file, otherwise the standard settings are used
+                    </h3>
+                    <li>
+                        <label name="start" >
+                            Primer3 parameter file:
+                        </label>
+                        <input type="file" name="primer3file" />
+                    </li>
+                    <hr>
+                    <h3>
+                        3. Paste your sequence(s) in FASTA format (with header) or upload a FASTA file
+                    </h3>
+                    <span title="Paste your correctly formatted FASTA sequence here or upload a FASTA file, up to 48 sequences can be handled at once">
+                        <li>
+                        <label name="start" >
+                            Sequence File:
+                        </label>
+                        <input type="file" id="fastafile" name="fastafile">
+                        
+                        
+                        <br>
 
-						<label>
-							Target Sequence(s):
-						</label>
-						<br>
-						<textarea name="fastasequence" cols="60" rows="10" onkeypress="validateDNA()" onpaste="validateDNA()" oninput="validateDNA()"></textarea>
-					</span>
-					<br>
-					<div name="warning">
-						Please add a valid FASTA sequence with header.
-					</div>
-					</li>
-					<hr>
-					<h3>
-						4. Specify your parameters here
-					</h3>
-					<li>
-						<div>
-						<label>
-							Maximum length of repeats which are searched:
-						</label>
+                        <label>
+                            Target Sequence(s):
+                        </label>
+                        <br>
+                        <textarea name="fastasequence" id="fastasequence" cols="60" rows="10" onkeypress="validateFasta(id)" onpaste="validateFasta(id)" oninput="validateFasta(id)"></textarea>
+                        <br><input type="button" value="Example Sequence" id="exampleSequence">
+                        <input type="button" value="Clear" id="clearSequence"><br>
+                    </span>
+                    <br>
+                    <div name="warning">
+                        Please add a valid FASTA sequence with header.
+                    </div>
+                    </li>
+                    <hr>
+                    <h3>
+                        4. Specify your parameters here
+                    </h3>
+                    <li>
+                        <div>
+                        <label>
+                            Maximum length of repeats which are searched:
+                        </label>
 
-						<input type="number" name="maxrepeats" min="2" max="6" value="3" />
-						<br>
+                        <input type="number" name="maxrepeats" min="2" max="6" value="3" />
+                        <br>
 
-						<label>
-							Maximum number of primer pairs to be returned:
-						</label>
-						<input type="number" name="primerpairs" value="2" min="1" max="100" step="1" />
-						<br>
+                        <label>
+                            Maximum number of primer pairs to be returned:
+                        </label>
+                        <input type="number" name="primerpairs" value="2" min="1" max="100" step="1" />
+                        <br>
 
-						<label>
-							Maximum similarity of primer pairs:
-						</label>
-						<input type="number" name="maxsimilarity" value="1" min="0" max="1" step="0.1" />
-						<br>
-					
-						<label>
-							Search for hemi-nested primers:
-						</label>
-						<select name="nested">
-							<option value="0">If needed</option>
-							<option selected value="1">Always</option>
-							<option value="-1">Never</option>
-						</select>
-						</div>
-					</li>
-					<hr>
-					<h3>
-						5. Start your job
-					</h3>
-					<li>
-						<label>
-							Make results private:
-							<input type="checkbox" name="private"/>
-							<input type="submit" value="Submit Job" name="SubmitJob" formaction="cgi-bin/server.py" disabled="true"/>
-						</label>
-					</li>
-					
-				</ul>
-			</form>
-			<h2>
-				Check old runs and change parameters
-			</h2>
-			<li>
-				<form action="cgi-bin/primer3_settings.py" method="get">
-					<button type="submit" value="">
-						Edit Primer3 settings
-					</button>
-				</form>
-				<form action="cgi-bin/results.py" method="get">
-					<button type="submit" value="">
-						Show previous results
-					</button>
-				</form>
-				<form action="FAQ.html" method="get">
-					<button type="submit" value="">
-						FAQ
-					</button>
-				</form>
-			</li>
-			<br><br>
-		</div>
-	</body>
+                        <label>
+                            Maximum similarity of primer pairs:
+                        </label>
+                        <input type="number" name="maxsimilarity" value="1" min="0" max="1" step="0.1" />
+                        <br>
+                    
+                        <label>
+                            Search for hemi-nested primers:
+                        </label>
+                        <select name="nested">
+                            <option value="0">If needed</option>
+                            <option selected value="1">Always</option>
+                            <option value="-1">Never</option>
+                        </select>
+                        </div>
+                    </li>
+                    <hr>
+                    <h3>
+                        5. Start your job
+                    </h3>
+                    <li>
+                        <label>
+                            Make results private:
+                            <input type="checkbox" name="private"/>
+                            <input type="submit" id="submit" value="Submit Job" name="SubmitJob" formaction="cgi-bin/server.py" disabled="true"/>
+                        </label>
+                    </li>
+                    
+                </ul>
+            </form>
+            <h2>
+                Check old runs and change parameters
+            </h2>
+            <li>
+                <form action="cgi-bin/primer3_settings.py" method="get">
+                    <button type="submit" value="">
+                        Edit Primer3 settings
+                    </button>
+                </form>
+                <form action="cgi-bin/results.py" method="get">
+                    <button type="submit" value="">
+                        Show previous results
+                    </button>
+                </form>
+                <form action="FAQ.html" method="get">
+                    <button type="submit" value="">
+                        FAQ
+                    </button>
+                </form>
+            </li>
+            <br><br>
+        </div>
+    </body>
 
-	<script type="text/javascript" >
+    <script type="text/javascript" >
+document.getElementById("exampleSequence").addEventListener('click', function () {
+    document.getElementById('fastasequence').value = ">M1 HG19_microsat_15xGT range=chr2:187908086-187908915 5'pad=400 3'pad=400 strand=+ repeatMasking=none\
+TACTCTTCAGAAAGTTAATGTGAGTCTCCAGTTAATGGACAGATGGATAA\
+TACATGACTCCAAGTTTCATTTCTTAGATTAAGTTATGTTTGATGTAACT\
+TGAGTTTTGAGCCTAAAAAATGTAAAACAATAAACAGACATCCAGCAAAT\
+GCACCCATTGGTACCTAGATCATGCACAGCTACTTTTAAGTGTACACACA\
+AAACTGTTTGTGACATGTACTCCAAGGAAACTTAGGTGGCAGTAATTTTC\
+AAATCATTTGGAATTTGGTGAGTATCCATCAAAGATGGTTACTTTAGCTT\
+TAGAGTAGTTGCTGTGTTGCTTGTCTTTCCAGCAAGAGCTGGCTAGCAAG\
+TTTTTTGTTTATTTAGGCTTCTTCTATTCAAATTTCCCAAACCATGCAAG\
+GTGTGTGTGTGTGTGTGTGTGTGTGTGTGTTCAAAAGACAACCAGATTAT\
+TCAGACAGTAATTGTTTTATTTATTTTTATTTTTTTATTTTTTTGAGACA\
+GAGTTTTACTCTTGTCACCCAGGCTGGAGTGCAATGGCGGGATCTCAGCT\
+CACTGCAACCTCCAACTCCTGGGTTAAAGCGATTCTCCTGCCTCAGCCTC\
+CTGAGTAGCTGGGATTACAGGCACCTGCCTGTAAAAGATAAACGTTGAAC\
+AAATAATCATTTGATGAGTAATACAAGGGGAAATGTAGAATTTTATGCAA\
+AATAAAACAGGAAGACCCAGTGTAGGTTCTCAGTTCAGAAGTTTTCCTGA\
+AAAAGTAAGATGAGACCTGAAGTATTAATAGAAATTTGCAAAGTGAGATT\
+GGGGGATAGGGTGTTCTAGGCAGAGGAAAC\
+>M4 HG19_microsat_16xAC range=chr3:187652557-187653389 5'pad=400 3'pad=400 strand=+ repeatMasking=none\
+GATTGCCAGTAGTTAACATTTTGGTGAATATCCATCATCTTTTTAAAATC\
+TTTTTTCTAAAGCTTATAAATAAATTTTTAATGGATTTGCACTGAAAAAC\
+TGCTTAGTAATTTGTTTTTGTTGCTTAATAATAAATCACAAATATCTAAT\
+TAGGTCGCAAGTTGATCAAGTGGGAGAATGAGCATATTTTAACAATGTTT\
+GATCAGTTGAGTAACACACAGGTGATGAGATTCCCAAACATTGCTTTCCA\
+TTGACTGTTTTAAGGACCCAGAGAAGCCATATTACCAGTCCTTGCCCGGG\
+CTCTTCCGCTTCTAACATGACCATGGCTGCAACATGGTTAAGGTATCAGT\
+AATTATAATAGCTCGGAATAACAGCTTACATTTTGCTAACCTCTCTTATA\
+ACACACACACACACACACACACACACACACACAGAGTAACATGTCAACCA\
+TTGTGATCAATAGGCAGAGAAGGAAACCTCACATATCTCATGTTCCTTGC\
+ACAACCCTGGAAGAGAAGCAGGTTCATGTCATTATTTTAAAGATGAAAAA\
+CTTGAGGATCAGGGAGATCATGTGACAGGCCTGCCTTTTGGGTTTTTGTT\
+TCTTTGTTTGTTTGTTCTTTTAGTAACATCTTTAGAAAGAAAATAAAGAA\
+AAATGAACCAAAGTTCAAAGAGGAGTTCTTATGATTGGAGATTAGAAAAA\
+GATTTTACTCATTCATACTAGAGAGACTAACACATTCTTGGTCTTTCATT\
+CCAGACCACTCTTTATACCTACCACACTGCTTCCTGACTTAAAACACCTT\
+TGAAAGTTTTGGTGATTTTAGCTAATTTAATAG";
+    changeSubmit(false);
+});
+document.getElementById("clearSequence").addEventListener('click', function () {
+    document.getElementById('fastasequence').value = "";
+    document.getElementById("fastafile").value = "";
+    changeSubmit(true);
+});
 
-	function validateDNA() {
-		//Based on: http://www.blopig.com/blog/2013/03/a-javascript-function-to-validate-fasta-sequences/
-		//Taken from: http://www.dnacoil.com/tools/validate-dna-fasta-file-with-a-javascript-function/
-		// immediately remove trailing spaces
-		
-		seq = document.getElementsByName("fastasequence")[0].value.trim();
-	 
-		// split on newlines... 
-		var lines = seq.split('\n');
-	 
-		// check for header
-		if (seq[0] == '>') {
-			// remove one line, starting at the first position  
-			lines.splice(0, 1);
-		 
-		}
-	 
-		// join the array back into a single string without newlines and 
-		// trailing or leading spaces
-		seq = lines.join('').trim();
-		 
-		//Search for charaters that are not G, A, T or C.
-		if (seq.search(/[^gatc\s]/i) != -1) {   
-			//The seq string contains non-DNA characters
-			document.getElementsByName("SubmitJob")[0].disabled=true;
-			document.getElementsByName("warning")[0].style.display="block"
-			console.log('0');
-			return false;
-			/// The next line can be used to return a cleaned version of the DNA
-			/// return seq.replace(/[^gatcGATC]/g, "");
-		}
-		else
-		{
-			//The seq string contains only GATC
-			document.getElementsByName("SubmitJob")[0].disabled=false;
-			document.getElementsByName("warning")[0].style.display="none"
-			console.log('1');
-			return true;
-		}
-		 
-	}
-	</script>
+document.getElementById('fastafile').onchange = function() {
+    changeSubmit(false);
+};
+
+function changeSubmit(disabled) {
+    var displayStyle = 'none';
+    if (disabled === true) {
+        displayStyle = 'block';
+    }
+    document.getElementById('submit').disabled = disabled;
+    document.getElementsByName("warning")[0].style.display = displayStyle
+
+}
+function validateFasta(id) {
+    console.log(id);
+    seq = document.getElementById(id).value;
+    changeSubmit(!validateFastaSequence(seq));
+}
+
+function validateFastaSequence(seq) {
+    console.log(seq);
+    var lines = seq.split("\n");
+    var line = "";
+    var header = false;
+    var i = 0;
+
+
+    if (lines.length < 1) {
+        console.log("FASTA too short");
+        return false;
+    }
+    if (lines[0][0] !== ">") {
+        console.log("no header");
+        return false;
+    }
+
+    for (i = 0; i < lines.length; i += 1) {
+        if (lines[i][0] === ">" && header === false) {
+            header = true;
+        } else if (lines[i][0] === ">" && header === true) {
+            console.log("two headers in a row");
+            return false;
+        } else {
+            header = false;
+            line = lines[i].trim()
+            if (line.length > 0 && line.search(/[^gatc\s]/i) !== -1) {
+                console.log("invalid characters");
+                return false;
+            }
+        }
+    }
+    if (header === true) {
+        console.log("No final sequence");
+        return false;
+    }
+    console.log("FASTA looks good");
+    return true;
+}
+    </script>
 </html>
