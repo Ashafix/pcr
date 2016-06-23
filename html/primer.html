@@ -34,7 +34,9 @@
                         <label name="start" >
                             Primer3 parameter file:
                         </label>
-                        <input type="file" name="primer3file" />
+                        <input type="file" name="primer3file" id="parameterFile"/>
+                        <input type="button" value="Clear Parameters" id="clearParameters">
+                        <br>
                     </li>
                     <hr>
                     <h3>
@@ -46,7 +48,7 @@
                             Sequence File:
                         </label>
                         <input type="file" id="fastafile" name="fastafile">
-                        
+                        <input type="button" value="Clear File" id="clearFile"><br>
                         
                         <br>
 
@@ -56,7 +58,7 @@
                         <br>
                         <textarea name="fastasequence" id="fastasequence" cols="60" rows="10" onkeypress="validateFasta(id)" onpaste="validateFasta(id)" oninput="validateFasta(id)"></textarea>
                         <br><input type="button" value="Example Sequence" id="exampleSequence">
-                        <input type="button" value="Clear" id="clearSequence"><br>
+                        <input type="button" value="Clear Sequence" id="clearSequence"><br>
                     </span>
                     <br>
                     <div name="warning">
@@ -178,15 +180,26 @@ TGAAAGTTTTGGTGATTTTAGCTAATTTAATAG";
 });
 document.getElementById("clearSequence").addEventListener('click', function () {
     document.getElementById('fastasequence').value = "";
-    document.getElementById("fastafile").value = "";
-    changeSubmit(true);
+    validateFasta("fastasequence");
 });
 
-document.getElementById('fastafile').onchange = function() {
+document.getElementById("clearFile").addEventListener('click', function () {
+    document.getElementById("fastafile").value = "";
+    validateFasta("fastasequence");
+});
+
+document.getElementById("clearParameters").addEventListener('click', function () {
+    document.getElementById("parameterFile").value = "";
+});
+
+document.getElementById("fastafile").onchange = function() {
     changeSubmit(false);
 };
 
 function changeSubmit(disabled) {
+    if (document.getElementById("fastafile").value != '') {
+        disabled = false;
+    }
     var displayStyle = 'none';
     if (disabled === true) {
         displayStyle = 'block';
