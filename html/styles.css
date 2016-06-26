@@ -144,8 +144,9 @@ input[type=checkbox] {
 }
 input[type=text] {
 	width: 10%;
-}
-div[name="warning"] {
+}
+
+div[name="feedback"] {
 	background-color: Tomato;
 	padding:8px;
 	width: 60%
