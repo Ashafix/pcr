@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import cgi, os
-from repeat_finder import *
 from random import SystemRandom
 from string import ascii_uppercase, ascii_lowercase, digits
 from shutil import copyfile
@@ -190,6 +189,19 @@ except:
 
 
 #checks if the input file is OK
+
+#checks which algorithm/version is requested
+#imports the correct version of repeat_finder.py
+if form.getvalue('algorithm') == 'publication':
+	from repeat_finder_publication import *
+elif form.getvalue('algorithm') == 'stable':
+	from repeat_finder import *
+elif form.getvalue('algorithm') == '':
+	from repeat_finder_beta import *
+else:
+	html += 'Algorithm version could not be determined. Exiting now.....'
+	html_output(html)
+	sys.exit(1)
 
 
 #creates a random name for each run
