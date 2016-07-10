@@ -90,7 +90,7 @@ def read_configfile(config_filename):
 			elif option.upper() == '-RUNNAME':
 				run_name = config.get(section, option)
 			else:
-				print ('getConfig: unknown conf entry: ' + option)
+				print('getConfig: unknown conf entry: ' + option)
 
 	if standard_primer_settings_filename == '' or \
 		primer3_directory == '' or \
@@ -101,7 +101,7 @@ def read_configfile(config_filename):
 		gfPCR == '' or \
 		data_dir == '' or \
 		max_threads == 0:
-		print ('getConfig: Missing entry')
+		print('getConfig: Missing entry')
 		return False
 	else:
 		return {'PRIMER3_SETTINGS': standard_primer_settings_filename, \
@@ -119,28 +119,28 @@ def print_help():
 	"""
 	Prints a help message with all input parameters
 	"""
-	print ('Usage')
-	print ('-FASTA %filename : Specifies filename of fasta for which repeats and appropriate primers will be searched, e.g. -FASTA BRCA_markers.fa')
-	print ('-PRIMER3_SETTINGS %filename : Specifies filename which specifies the settings which are used for searching primers, e.g. -PRIMER3_SETTINGS BRCA_markers_primers.txt')
-	print ('-PRIMER3_DIRECTOY %directory : Specifies a directory where the output files will be saved, e.g. PRIMER3_DIRECTORY c:/pcr/BRCA_markers/')
-	print ('-PRIMER3_EXE %filename : Specifies the location of the primer3_core.exe, e.g. -PRIMER3_EXE primer3_core.exe')
-	print ('-SERVERNAME name : Specifies the name of the isPCR server (usually name of the computer running isPCR), e.g. -SERVERNAME pcrcomputer')
-	print ('-SERVERPORT number : Specifies the port which is used to communicate with the isPCR server, e.g. -SERVERPORT 33334')
-	print ('-MAXREPEATS number : Specifies the maximum length of repeats to search, e.g. -MAXREPEATS 3, searches for repeats of di- and trinucleotides')
-	print ('-PRIMERPAIRS number : Specifies the number of suitable primer pairs which will be returned')
-	print ('-GFSERVER filename : Specifies the location of the gfServer.exe')
-	print ('-GFPCR filename : Specifies the location of the gfPCR.exe')
-	print ('-MAX_SIMILARITY number : Specifies the maximal similarity for two primer pairs in order to be accepted, from 0 to 1, default = 0.5')
-	print ('-@ filename : Specifies a file which list the above mentioned arguments, arguments used with -ARGUMENT will overwrite the arguments in the file')
-	print ('-NESTED : Specifies whether the program should search for nested primers if not enough pairs have been found (0), never search (-1) or always search for primers (1)')
-	print ('-OUTPUT filename : Specifies the output filename where all the primers and target will be saved, default: batchprimer_output.txt')
-	print ('-MAXTHREADS number : Specifies how many threads are started in parallel, should be less than your number of CPU cores')
-	print ('-REMOVETEMPFILES boolean : Specifies whether temporary files (e.g. Primer3 input and output) will be deleted after the program finishes. Default is FALSE')
-	print ('-SHUTDOWN number : Shuts the isPCR server down after ### minutes, e.g. -SHUTDOWN 50, the server will be shutdown 50 minutes after the first job was started')
-	print ('-REMOTESERVER string : Specifies the URL of a server which can run primer3 via a REST API')
-	print ('-WAITINGPERIOD float : Specifies the time in seconds between server ping when a remote server is started, default = 0.25')
-	print ('-TIMEOUT integer : Specifies the time in seconds until a remote server start is declared unsuccesful, default = 120')
-	print ('-RUNNAME string : Specifies the name of the run, only used for identifying jobs on the remote server')
+	print('Usage')
+	print('-FASTA %filename : Specifies filename of fasta for which repeats and appropriate primers will be searched, e.g. -FASTA BRCA_markers.fa')
+	print('-PRIMER3_SETTINGS %filename : Specifies filename which specifies the settings which are used for searching primers, e.g. -PRIMER3_SETTINGS BRCA_markers_primers.txt')
+	print('-PRIMER3_DIRECTOY %directory : Specifies a directory where the output files will be saved, e.g. PRIMER3_DIRECTORY c:/pcr/BRCA_markers/')
+	print('-PRIMER3_EXE %filename : Specifies the location of the primer3_core.exe, e.g. -PRIMER3_EXE primer3_core.exe')
+	print('-SERVERNAME name : Specifies the name of the isPCR server (usually name of the computer running isPCR), e.g. -SERVERNAME pcrcomputer')
+	print('-SERVERPORT number : Specifies the port which is used to communicate with the isPCR server, e.g. -SERVERPORT 33334')
+	print('-MAXREPEATS number : Specifies the maximum length of repeats to search, e.g. -MAXREPEATS 3, searches for repeats of di- and trinucleotides')
+	print('-PRIMERPAIRS number : Specifies the number of suitable primer pairs which will be returned')
+	print('-GFSERVER filename : Specifies the location of the gfServer.exe')
+	print('-GFPCR filename : Specifies the location of the gfPCR.exe')
+	print('-MAX_SIMILARITY number : Specifies the maximal similarity for two primer pairs in order to be accepted, from 0 to 1, default = 0.5')
+	print('-@ filename : Specifies a file which list the above mentioned arguments, arguments used with -ARGUMENT will overwrite the arguments in the file')
+	print('-NESTED : Specifies whether the program should search for nested primers if not enough pairs have been found (0), never search (-1) or always search for primers (1)')
+	print('-OUTPUT filename : Specifies the output filename where all the primers and target will be saved, default: batchprimer_output.txt')
+	print('-MAXTHREADS number : Specifies how many threads are started in parallel, should be less than your number of CPU cores')
+	print('-REMOVETEMPFILES boolean : Specifies whether temporary files (e.g. Primer3 input and output) will be deleted after the program finishes. Default is FALSE')
+	print('-SHUTDOWN number : Shuts the isPCR server down after ### minutes, e.g. -SHUTDOWN 50, the server will be shutdown 50 minutes after the first job was started')
+	print('-REMOTESERVER string : Specifies the URL of a server which can run primer3 via a REST API')
+	print('-WAITINGPERIOD float : Specifies the time in seconds between server ping when a remote server is started, default = 0.25')
+	print('-TIMEOUT integer : Specifies the time in seconds until a remote server start is declared unsuccesful, default = 120')
+	print('-RUNNAME string : Specifies the name of the run, only used for identifying jobs on the remote server')
 
 def test_server(gfServer, servername, serverport):
 	"""
@@ -301,18 +301,18 @@ def import_parameters(*arguments):
 		gfServer == '' or \
 		gfPCR == '' or \
 		abs(nested) > 1):
-		print ('Input arguments')
-		print ('fasta_filename: ' + fasta_filename)
-		print ('standard_primer_settings_filename: ' + standard_primer_settings_filename)
-		print ('primer3_directory: ' + primer3_directory)
-		print ('primer3_exe: ' + primer3_exe)
-		print ('servername: ' + servername)
-		print ('serverport: ' + str(serverport))
-		print ('max_repeats: ' + str(max_repeats))
-		print ('gfServer: ' + gfServer)
-		print ('gfPCR: ' + gfPCR)
-		print ('nested: ' + str(nested))
-		print ('Missing arguments!\n\n')
+		print('Input arguments')
+		print('fasta_filename: ' + fasta_filename)
+		print('standard_primer_settings_filename: ' + standard_primer_settings_filename)
+		print('primer3_directory: ' + primer3_directory)
+		print('primer3_exe: ' + primer3_exe)
+		print('servername: ' + servername)
+		print('serverport: ' + str(serverport))
+		print('max_repeats: ' + str(max_repeats))
+		print('gfServer: ' + gfServer)
+		print('gfPCR: ' + gfPCR)
+		print('nested: ' + str(nested))
+		print('Missing arguments!\n\n')
 		print_help()
 		exit()
 
@@ -539,10 +539,10 @@ def primer_stats(primerF, primerR, primer3output):
 			elif temp_output[i].startswith('PRIMER_PAIR_' + found + '_PRODUCT_TM='):
 				product_TM = temp_output[i][temp_output[i].find('=') + 1:]
 
-	if found !=- 1:
-		return "%.2f" % float(primerF_TM), "%.2f" % float(primerR_TM), "%.2f" % float(primerF_GC), "%.2f" % float(primerR_GC), "%.2f" % float(product_TM)
+	if found != -1:
+		return '%.2f' % float(primerF_TM), '%.2f' % float(primerR_TM), '%.2f' % float(primerF_GC), '%.2f' % float(primerR_GC), '%.2f' % float(product_TM)
 	else:
-		print (run_name + ' Error: Primer not found in output')
+		print(run_name + ' Error: Primer not found in output')
 		return '0', '0', '0', '0', '0'
 
 def name_from_fasta(primerF, primerR, amplicon, fasta):
@@ -742,8 +742,8 @@ def get_primers(sequence):
 			primer3_list.append(lines)
 		elif lines.find('SEQUENCE=') > 0:
 			if lines.startswith('PRIMER_LEFT') or lines.startswith('PRIMER_RIGHT'):
-				primer3_list.append(lines[lines.find('=') + 1:len(lines)])
-	print (run_name + " ##################")
+				primer3_list.append(lines[lines.find('=') + 1:])
+	print(run_name + " ##################")
 
 	isPCRoutput = ''
 	i = 0
@@ -821,7 +821,7 @@ def get_primers(sequence):
 					if primer3_list[i + 1].startswith('SEQUENCE_ID'):
 						stdoutput += 'no suitable primer pairs could be found, consider relaxing the primer3 parameters\n'
 
-			elif len(accepted_primers)!= 0 and \
+			elif len(accepted_primers) != 0 and \
 				len(accepted_primers) < max_primerpairs and \
 				nested != -1:
 				if i + 1 >= len(primer3_list):
@@ -852,10 +852,10 @@ def get_primers(sequence):
 				for lines in primer3_nested_output.split('\n'):
 					if lines.find('SEQUENCE') > 0:
 						if lines.startswith('PRIMER_LEFT'):
-							primerF_nested = lines[lines.find('=') + 1:len(lines)]
+							primerF_nested = lines[lines.find('=') + 1:]
 							primerR_nested = ''
 						elif lines.startswith('PRIMER_RIGHT'):
-							primerR_nested = lines[lines.find('=') + 1:len(lines)]
+							primerR_nested = lines[lines.find('=') + 1:]
 							#checks if the new, nested primer pair is specific
 							amplicon = get_amplicon_from_primer3output(primerF_nested, primerR_nested, primer3_nested_output)
 
@@ -888,10 +888,10 @@ def get_primers(sequence):
 				len(accepted_nested_templates) > 0:
 				stdoutput += 'forced to trying to find nested primers\n'
 				#creates new primer3 file with fixed reverse primer
-				for j in range(len(accepted_nested_templates)):
+				for accepted_nested_template in accepted_nested_templates:
 					if len(accepted_primers) < max_primerpairs:
-						primerF_1st = accepted_nested_templates[j][0:accepted_nested_templates[0].find(',')]
-						primerR_1st = accepted_nested_templates[j][accepted_nested_templates[0].find(',') + 1:]
+						primerF_1st = accepted_nested_template[0:accepted_nested_template.find(',')]
+						primerR_1st = accepted_nested_template[j][accepted_nested_template.find(',') + 1:]
 						create_primer3_file(sequences[0], sequences[1], find_repeats(sequences[1], max_repeats), exclude_list(sequences[0]), primerF_1st, primerR_1st)
 						filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
 						primer3_input = ''
@@ -907,10 +907,10 @@ def get_primers(sequence):
 						for lines in primer3_nested_output.split('\n'):
 							if lines.find('SEQUENCE') > 0:
 								if lines.startswith('PRIMER_LEFT'):
-									primerF_nested = lines[lines.find('=') + 1:len(lines)]
+									primerF_nested = lines[lines.find('=') + 1:]
 									primerR_nested = ''
 								elif lines.startswith('PRIMER_RIGHT'):
-									primerR_nested = lines[lines.find('=') + 1:len(lines)]
+									primerR_nested = lines[lines.find('=') + 1:]
 									#checks if the new, nested primer pair is specific
 									amplicon = get_amplicon_from_primer3output(primerF_nested, primerR_nested, primer3_nested_output)
 
@@ -980,11 +980,11 @@ def start_remote_server(*arguments):
 		global hostname
 		global compute_host
 		global timeout
-	print ('Start remote server<br>')
-	print ('Server name: ' + servername)
-	print ('<br>gfServer: ' + gfServer)
-	print ('<br>Server port: ' + str(serverport))
-	print ('<br>Time out: ' + str(timeout))
+	print('Start remote server<br>')
+	print('Server name: ' + servername)
+	print('<br>gfServer: ' + gfServer)
+	print('<br>Server port: ' + str(serverport))
+	print('<br>Time out: ' + str(timeout))
 
 	aws = read_aws_conf()
 	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'],
@@ -994,7 +994,7 @@ def start_remote_server(*arguments):
 
 	instances = ec2.instances.all()
 	if len(list(instances)) < 2:
-		print ('No second AWS instance was found!')
+		print('No second AWS instance was found!')
 		return ''
 
 	hostname = socket.gethostbyaddr(socket.gethostname())[0]
@@ -1012,7 +1012,7 @@ def start_remote_server(*arguments):
 								instance_name = tag['Value']
 			if instance_name == servername + server_extension:
 				servername = instance.private_dns_name
-				print ('<br>' + 'Servername: ' + servername + '<br>')
+				print('<br>' + 'Servername: ' + servername + '<br>')
 				compute_host = instance.id
 				instance.start()
 				#wait until the instance is up and running
@@ -1021,10 +1021,10 @@ def start_remote_server(*arguments):
 					sleep(waiting_period)
 					local_timeout += -waiting_period
 				if local_timeout < 0:
-					print ('Server start was unsuccesful, the timeout period was exceeded')
+					print('Server start was unsuccesful, the timeout period was exceeded')
 					return ''
 				if not test_server(gfServer, servername, serverport):
-					print ('Server start was successful, but gfServer does not respond')
+					print('Server start was successful, but gfServer does not respond')
 					return ''
 				else:
 					return instance_name
@@ -1118,39 +1118,39 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	parameters_legal = False
 
 	if not os.path.isfile(fasta_filename):
-		print (run_name + ' Fasta file could not be found')
-		print (fasta_filename)
+		print(run_name + ' Fasta file could not be found')
+		print(fasta_filename)
 	elif not os.path.isfile(standard_primer_settings_filename):
-		print (os.path.isfile(standard_primer_settings_filename))
-		print (run_name + ' Primer3 settings file could not be found')
+		print(os.path.isfile(standard_primer_settings_filename))
+		print(run_name + ' Primer3 settings file could not be found')
 	elif not os.path.isfile(primer3_exe):
-		print (run_name + ' Primer3.exe file could not be found')
-		print (primer3_exe)
+		print(run_name + ' Primer3.exe file could not be found')
+		print(primer3_exe)
 	elif not os.path.isfile(gfPCR):
-		print (run_name + ' gfPCR.exe file could not be found')
-		print (gfPCR)
+		print(run_name + ' gfPCR.exe file could not be found')
+		print(gfPCR)
 	elif not os.path.isdir(primer3_directory):
-		print (run_name + ' Primer3 directory does not exist')
-		print (primer3_directory)
+		print(run_name + ' Primer3 directory does not exist')
+		print(primer3_directory)
 	elif serverport <= 0:
-		print (run_name + ' Please specificy a legal numerical value for the server port')
+		print(run_name + ' Please specificy a legal numerical value for the server port')
 	elif int(max_repeats) < 0:
-		print (run_name + ' Please specificy a legal numerical value for the max repeats')
+		print(run_name + ' Please specificy a legal numerical value for the max repeats')
 	elif max_primerpairs < 0:
-		print (run_name + ' Please specificy a legal numerical value for the max primer pairs')
+		print(run_name + ' Please specificy a legal numerical value for the max primer pairs')
 	elif max_threads < 1:
-		print (run_name + ' Please specific a legal numerical value for the maximum amount of threads')
+		print(run_name + ' Please specific a legal numerical value for the maximum amount of threads')
 	#test if the in-silico PCR server is ready
 	elif not test_server(gfServer, servername, serverport):
 		if remote_server == '':
-			print (run_name + ' gfServer not ready, please start it')
+			print(run_name + ' gfServer not ready, please start it')
 		else:
-			print (run_name + ' gfServer not ready, it is started now')
+			print(run_name + ' gfServer not ready, it is started now')
 			if start_remote_server(servername) != '':
-				print (run_name + ' Remote server was successfully started')
+				print(run_name + ' Remote server was successfully started')
 				parameters_legal = True
 			else:
-				print (run_name + ' Remote server could not be started')
+				print(run_name + ' Remote server could not be started')
 	else:
 		parameters_legal = True
 
@@ -1165,7 +1165,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	#############################################
 
 	###multiprocess
-	print (run_name + ' program started, please be patient')
+	print(run_name + ' program started, please be patient')
 
 	sequences = []
 
@@ -1193,9 +1193,9 @@ def start_repeat_finder(started_via_commandline, *arguments):
 	final_output.write(''.join(output))
 	final_output.close()
 
-	print (''.join(stdoutput))
+	print(''.join(stdoutput))
 
-	print (run_name + ' done')
+	print(run_name + ' done')
 	sys.stdout = sys.__stdout__
 	return ''.join(output)
 if __name__ == "__main__":
