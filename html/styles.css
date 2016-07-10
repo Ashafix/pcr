@@ -18,7 +18,7 @@ input[type="checkbox"] {
 	width: 100%;
 }
 .container input[type="number"] {
-	width: 5%;
+	width: 6%;
 	text-align: right;
 }
 .container input[type="file"] {
@@ -101,9 +101,17 @@ textarea {
 	border-width: 1px;
 	border-style: solid;
 }
-select {
-	width: 5%;
+
+select[name="nested"] {
+	width: 6%;
 }
+
+select[name="algorithm"] {
+	margin-bottom: 5px;
+	width: 13%;
+	padding: 2px;
+}
+
 hr {
 	color: #000000;
 	border: 1;
@@ -150,4 +158,12 @@ div[name="feedback"] {
 	background-color: Tomato;
 	padding:8px;
 	width: 60%
+}
+
+div[name="explanation"] {
+	background-color: LightGray;
+	padding:4px;
+	width: 50%;
+	white-space: wrap;
+	display: inline-block;
 }

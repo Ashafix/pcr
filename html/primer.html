@@ -104,8 +104,19 @@
                     <h3>
                         5. Start your job
                     </h3>
-                    <li>
+                    <li> 
+                        <select name="algorithm" id="algorithm">
+                            <option value="publication">Publication release</option>
+                            <option selected value="stable">Stable release</option>
+                            <option value="beta">Beta release</option>
+                        </select>
+                        <div name="explanation" id="explanation">
+                        </div>
+
+                        <br>
                         <label>
+                       
+
                             Make results private:
                             <input type="checkbox" name="private"/>
                             <input type="submit" id="submit" value="Submit Job" name="SubmitJob" formaction="cgi-bin/server.py" disabled="true"/>
@@ -192,9 +203,32 @@ document.getElementById("clearParameters").addEventListener('click', function ()
     document.getElementById("parameterFile").value = "";
 });
 
+document.getElementById("algorithm").addEventListener('change', function () {
+    var textValue = "";
+    switch(document.getElementById("algorithm").value) {
+    case "publication":
+        textValue = "The original code which was used to generate the data in the publication";
+        break;
+    case "stable":
+        textValue = "Code built on the publication release with new feature and less bugs";
+        break;
+    case "beta":
+        textValue = "Code built on the stable release, not fully tested, results should be compared with the stable version";
+        break;
+    };
+    document.getElementById("explanation").innerHTML = textValue;
+});
+
 document.getElementById("fastafile").onchange = function() {
     changeSubmit(false);
 };
+
+//initialize changeEvents on page load
+function init_page() {
+    var event = new Event('change');
+    document.getElementById("algorithm").dispatchEvent(event);
+}
+init_page();
 
 function changeSubmit(disabled) {
     var textValue = "Your FASTA sequence looks OK and can be submitted";
