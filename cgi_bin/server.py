@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import cgi, os
+import cgi
+import os
+import sys
 from random import SystemRandom
 from string import ascii_uppercase, ascii_lowercase, digits
 from shutil import copyfile
