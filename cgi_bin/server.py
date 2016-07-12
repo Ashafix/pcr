@@ -148,9 +148,6 @@ thread.start()
 html_output(header)
 html_output('Your job was submitted. Please be patient....<br><br>\n')
 
-config_args = read_configfile(config_filename)
-data_dir = config_args['DATADIR']
-
 #standard use via web
 if len(sys.argv) == 1:
 	form = cgi.FieldStorage()
@@ -183,6 +180,10 @@ else:
 	html += 'Algorithm version could not be determined. Exiting now.....'
 	html_output(html)
 	sys.exit(1)
+
+#read configuration file
+config_args = read_configfile(config_filename)
+data_dir = config_args['DATADIR']
 
 try:
 	fasta_fileitem = form['fastafile']
