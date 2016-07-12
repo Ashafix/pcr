@@ -19,20 +19,6 @@ from functools import partial
 global data_dir
 global run_name
 
-#checks which algorithm/version is requested
-#imports the correct version of repeat_finder.py
-if form.getvalue('algorithm') == 'publication':
-	from repeat_finder_publication import *
-elif form.getvalue('algorithm') == 'stable':
-	from repeat_finder import *
-elif form.getvalue('algorithm') == '':
-	from repeat_finder_beta import *
-else:
-	html += 'Algorithm version could not be determined. Exiting now.....'
-	html_output(html)
-	sys.exit(1)
-
-
 html = ''
 sequence_filename = ''
 config_filename = 'batchprimer.conf'
@@ -184,6 +170,19 @@ elif len(sys.argv) > len(cgi_args):
 		'REQUEST_METHOD': 'POST',
 	}
 	form = cgi_result(formdata, formdata_environ)
+
+#checks which algorithm/version is requested
+#imports the correct version of repeat_finder.py
+if form.getvalue('algorithm') == 'publication':
+	from repeat_finder_publication import *
+elif form.getvalue('algorithm') == 'stable':
+	from repeat_finder import *
+elif form.getvalue('algorithm') == '':
+	from repeat_finder_beta import *
+else:
+	html += 'Algorithm version could not be determined. Exiting now.....'
+	html_output(html)
+	sys.exit(1)
 
 try:
 	fasta_fileitem = form['fastafile']
