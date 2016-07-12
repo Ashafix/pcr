@@ -190,7 +190,7 @@ def exclude_list(sequence):
 	for ssr in ssr_list:
 		if len(ssr) <= 3:
 			max_length = 0
-			for i in range(1, round(len(sequence) / 2)):
+			for i in range(1, int(round(len(sequence) / 2, 0))):
 				if ssr * i in sequence and i * len(ssr) >= 9:
 					max_length = i
 			if max_length > 0:
