@@ -891,7 +891,7 @@ def get_primers(sequence):
 				for accepted_nested_template in accepted_nested_templates:
 					if len(accepted_primers) < max_primerpairs:
 						primerF_1st = accepted_nested_template[0:accepted_nested_template.find(',')]
-						primerR_1st = accepted_nested_template[j][accepted_nested_template.find(',') + 1:]
+						primerR_1st = accepted_nested_template[accepted_nested_template.find(',') + 1:]
 						create_primer3_file(sequences[0], sequences[1], find_repeats(sequences[1], max_repeats), exclude_list(sequences[0]), primerF_1st, primerR_1st)
 						filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
 						primer3_input = ''
