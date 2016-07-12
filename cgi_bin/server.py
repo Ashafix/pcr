@@ -174,7 +174,7 @@ if form.getvalue('algorithm') == 'publication':
 	from repeat_finder_publication import *
 elif form.getvalue('algorithm') == 'stable':
 	from repeat_finder import *
-elif form.getvalue('algorithm') == '':
+elif form.getvalue('algorithm') == 'beta':
 	from repeat_finder_beta import *
 else:
 	html += 'Algorithm version could not be determined. Exiting now.....'
