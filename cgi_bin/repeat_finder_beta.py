@@ -446,13 +446,13 @@ def check_specificity(primerF, primerR, targetSequence, isPCRoutput):
 		else:
 			return False
 
-def get_amplicon_from_primer3output(primerF, primerR, primer3output):
+def get_amplicon_from_primer3output(primer_pair, primer3output):
 	"""
 	takes primer3output and returns the amplicon based on primerF and primerR bindingsites and input sequence
 	returns the amplicon without the primers
 	"""
-	primerF = primerF.upper()
-	primerR = primerR.upper()
+	primerF = primer_pair[0].upper()
+	primerR = primer_pair[1].upper()
 	#check validity of input
 	if not primerF or not primerR:
 		return ''
@@ -693,10 +693,9 @@ def get_primers(sequence):
 
 	primer3_output = ''
 	filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
-	primer3_input = ''
 
 	with open(primer3_directory + filename, 'ru') as temp_file:
-		primer3_input += ''.join(temp_file.readlines())
+		primer3_input = ''.join(temp_file.readlines())
 	temp_file.close()
 
 	stdoutput += 'Primer3 subprocess started\n'
@@ -785,7 +784,7 @@ def get_primers(sequence):
 
 			#checks if the primer pair amplifies only one amplicon
 			if no_amplicons == 1:
-				amplicon = get_amplicon_from_primer3output(primerF, primerR, primer3_output)
+				amplicon = get_amplicon_from_primer3output([primerF, primerR], primer3_output)
 
 				#checks if the primer pair amplifies the original target sequence
 				accept_primerpair = False
@@ -836,7 +835,7 @@ def get_primers(sequence):
 				stdoutput += 'trying to find nested primers\n'
 
 				primer3_nested_output = ''
-				primer3_input = ''
+
 				primerF_nested = ''
 				primerR_nested = ''
 				#creates new primer3 file with fixed reverse primer
@@ -859,7 +858,7 @@ def get_primers(sequence):
 						elif lines.startswith('PRIMER_RIGHT'):
 							primerR_nested = lines[lines.find('=') + 1:]
 							#checks if the new, nested primer pair is specific
-							amplicon = get_amplicon_from_primer3output(primerF_nested, primerR_nested, primer3_nested_output)
+							amplicon = get_amplicon_from_primer3output([primerF_nested, primerR_nested], primer3_nested_output)
 
 							if dinucleotide_repeat(primerF_nested) >= 6 or \
 								dinucleotide_repeat(primerR_nested) >= 6:
@@ -896,9 +895,9 @@ def get_primers(sequence):
 						primerR_1st = accepted_nested_template[accepted_nested_template.find(',') + 1:]
 						create_primer3_file(sequences[0], sequences[1], find_repeats(sequences[1], max_repeats), exclude_list(sequences[0]), primerF_1st, primerR_1st)
 						filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
-						primer3_input = ''
+
 						with open(primer3_directory + filename, 'ru') as temp_file:
-							primer3_input += ''.join(temp_file.readlines())
+							primer3_input = ''.join(temp_file.readlines())
 						primer3_nested_output = ''
 						process = subprocess.Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
 						process.stdin.write(primer3_input)
@@ -914,7 +913,7 @@ def get_primers(sequence):
 								elif lines.startswith('PRIMER_RIGHT'):
 									primerR_nested = lines[lines.find('=') + 1:]
 									#checks if the new, nested primer pair is specific
-									amplicon = get_amplicon_from_primer3output(primerF_nested, primerR_nested, primer3_nested_output)
+									amplicon = get_amplicon_from_primer3output([primerF_nested, primerR_nested], primer3_nested_output)
 
 									if dinucleotide_repeat(primerF_nested) >= 6 or dinucleotide_repeat(primerR_nested) >= 6:
 										stdoutput += primerF_nested + ' ' + primerR_nested + ' rejected, repeats\n'
@@ -930,10 +929,10 @@ def get_primers(sequence):
 												
 												process = subprocess.Popen([gfPCR, servername, str(serverport), pcr_location, primerF_1st, primerR_1st, 'stdout'], stdout = subprocess.PIPE, stdin = subprocess.PIPE)
 												isPCRoutput = primerF_1st + ';' + primerR_1st + '\n' + process.communicate()[0]
-												amplicon = get_amplicon_from_primer3output(primerF_1st, primerR_1st, primer3_output)
+												amplicon = get_amplicon_from_primer3output([primerF_1st, primerR_1st], primer3_output)
 												output += make_output(primerF_1st, primerR_1st, amplicon, isPCRoutput, primer3_output)
 												#should fix the problem with the doubled amplicon
-												amplicon = get_amplicon_from_primer3output(primerF_nested, primerR_nested, primer3_nested_output)
+												amplicon = get_amplicon_from_primer3output([primerF_nested, primerR_nested], primer3_nested_output)
 												output += make_output(primerF_nested, primerR_nested, amplicon, isPCRoutput_nested, primer3_nested_output)
 												stdoutput += output + '\n'
 												break
