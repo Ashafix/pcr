@@ -495,9 +495,11 @@ def get_amplicon_from_primer3output(primerF, primerR, primer3output):
 				if line.startswith('PRIMER_RIGHT_') and \
 					('_SEQUENCE=' + primerR) in line:
 					end_line = i
-			elif primerF_found == True and line.startswith('PRIMER_RIGHT_') and \
-				line.find('_SEQUENCE=' + primerR) <= 0:
-				primerF_found = False
+			#doesn't make any sense: can't be reached
+			#because of previous if primerF_found == True
+			#elif primerF_found == True and line.startswith('PRIMER_RIGHT_') and \
+			#	line.find('_SEQUENCE=' + primerR) <= 0:
+			#	primerF_found = False
 	if amplicon_start != 0 and amplicon_end != -1:
 		return sequence[amplicon_start - 1 + len(primerF):amplicon_end]
 	else:
