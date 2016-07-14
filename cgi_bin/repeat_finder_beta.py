@@ -666,6 +666,124 @@ def check_fasta(sequence, fasta_type, strict):
 				passed = False
 	return passed
 
+def create_nested_primers(sequences, accepted_primers, primers_1st, i, primer3_list, accepted_nested_templates):
+	"""
+	takes the output of primer3 and returns primer pairs which are specific
+	input:
+	sequences = sequences
+	primers_1st = list of first pair of primers [list]
+	accepted_primers = list of accepted primers
+	i = running variable
+	primer3_list = primer3_list
+	accepted_nested_templates = accepted_nested_templates
+	returns
+		stdoutput
+	"""
+	if make_nested_primers and nested == 0:
+		stdoutput = 'trying to find nested primers\n'
+		
+		#creates new primer3 file with fixed reverse primer
+		create_primer3_file(sequences[0], sequences[1], find_repeats(sequences[1], max_repeats), exclude_list(sequences[0]), primers_1st[0], primers_1st[1])
+		filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
+		with open(primer3_directory + filename, 'ru') as temp_file:
+			primer3_input = ''.join(temp_file.readlines())
+		process = subprocess.Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
+		process.stdin.write(primer3_input)
+		primer3_nested_output = process.communicate()[0] + '\n'
+		stdoutput += 'Primer3 for nested primers finished\n'
+		
+		for lines in primer3_nested_output.split('\n'):
+			if lines.find('SEQUENCE') > 0:
+				if lines.startswith('PRIMER_LEFT'):
+					primers_nested = [lines[lines.find('=') + 1:]]
+					
+				elif lines.startswith('PRIMER_RIGHT'):
+					primers_nested.append(lines[lines.find('=') + 1:])
+					#checks if the new, nested primer pair is specific
+					amplicon = get_amplicon_from_primer3output(primers_nested, primer3_nested_output)
+		
+					if dinucleotide_repeat(primers_nested[0]) >= 6 or dinucleotide_repeat(primers_nested[1]) >= 6:
+						stdoutput += primers_nested[0] + ' ' + primers_nested[1] + ' rejected, repeats\n'
+					else:
+						process = subprocess.Popen([gfPCR, servername, str(serverport), pcr_location, primers_nested[0], primers_nested[1], 'stdout'], stdout = subprocess.PIPE, stdin = subprocess.PIPE)
+						isPCRoutput_nested = ';'.join(primers_nested) + '\n' + process.communicate()[0]
+		
+						if check_specificity(primers_nested[0], primers_nested[1], amplicon, isPCRoutput_nested):
+							if similarity(primers_nested[0], primers_1st[0]) < max_similarity:
+								stdoutput += ' '.join(primers_nested) + ' found nested primer\n'
+								accepted_primers.append(','.join(primers_nested))
+								output += make_output(primers_nested[0], primers_nested[1], amplicon, isPCRoutput_nested, primer3_nested_output)
+								stdoutput += output + '\n'
+								break
+							else:
+								stdoutput += ' '.join(primers_nested) + ' too similar\n'
+						else:
+							stdoutput += primers_nested[0] + ' ' + primers_nested[1] + ' not specific'
+		
+		if len(accepted_primers) < max_primerpairs:
+			stdoutput += 'Not enough primer pairs could be found\n'
+			max_primerpairs = 0
+		####
+		#added in v1.03 for forced nested primers
+	elif nested == 1 and (i + 1 >= len(primer3_list) or \
+		(i != 0 and primer3_list[i + 1].startswith('SEQUENCE_ID'))) and \
+		len(accepted_nested_templates) > 0:
+		stdoutput += 'forced to trying to find nested primers\n'
+		#creates new primer3 file with fixed reverse primer
+		for accepted_nested_template in accepted_nested_templates:
+			if len(accepted_primers) < max_primerpairs:
+				primers_1st = accepted_nested_template.split(',')
+				create_primer3_file(sequences[0], sequences[1], find_repeats(sequences[1], max_repeats), exclude_list(sequences[0]), primers_1st[0], primers_1st[1])
+				filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
+
+				with open(primer3_directory + filename, 'ru') as temp_file:
+					primer3_input = ''.join(temp_file.readlines())
+				
+				process = subprocess.Popen(primer3_exe, stdout = subprocess.PIPE, stdin = subprocess.PIPE)
+				process.stdin.write(primer3_input)
+				primer3_nested_output = process.communicate()[0] + '\n'
+				
+				
+				for lines in primer3_nested_output.split('\n'):
+					if lines.find('SEQUENCE') > 0:
+						if lines.startswith('PRIMER_LEFT'):
+							primers_nested = [lines[lines.find('=') + 1:]]
+						elif lines.startswith('PRIMER_RIGHT'):
+							primers_nested.append(lines[lines.find('=') + 1:])
+							#checks if the new, nested primer pair is specific
+							amplicon = get_amplicon_from_primer3output(primers_nested, primer3_nested_output)
+		
+							if dinucleotide_repeat(primers_nested[0]) >= 6 or dinucleotide_repeat(primers_nested[1]) >= 6:
+								stdoutput += ' '.join(primers_nested[0]) + ' rejected, repeats\n'
+							else:
+								isPCRoutput_nested = ';'.join(primers_nested) + '\n'
+								process = subprocess.Popen([gfPCR, servername, str(serverport), pcr_location, primers_nested[0], primers_nested[1], 'stdout'], stdout = subprocess.PIPE, stdin = subprocess.PIPE)
+								isPCRoutput_nested += process.communicate()[0]
+		
+								if check_specificity(primers_nested[0], primers_nested[1], amplicon, isPCRoutput_nested):
+									if similarity(primers_nested[0], primers_1st[0]) < max_similarity:
+										stdoutput += ' '.join(primers_1st) + ' found forced nested primer\n'
+										accepted_primers.append(','.join(primers_1st))
+										accepted_primers.append(','.join(primers_nested))
+										isPCRoutput = ';'.join(primers_1st) + '\n'
+										process = subprocess.Popen([gfPCR, servername, st(serverport), pcr_location, primers_1st[0], primers_1st[1], 'stdout'], stdout = subprocess.PIPE, stdin = subprocess.PIPE)
+										isPCRoutput += process.communicate()[0]
+										amplicon = get_amplicon_from_primer3output(primers_1st, primer3_output)
+		
+										output += make_output(primers_1st[0], primers_1st[1], amplicon, isPCRoutput, primer3_output)
+										#should fix the problem with the doubled amplicon
+										amplicon = get_amplicon_from_primer3output(primers_nested, primer3_nested_output)
+										output += make_output(primers_nested[0], primers_nested[1], amplicon, isPCRoutput_nested, primer3_nested_output)
+										stdoutput += output + '\n'
+										break
+									else:
+										stdoutput += primers_1st[0] + ' ' + primers_nested[1] + ' too similar\n'
+								else:
+									stdoutput += ' '.join(primers_nested) + ' not specific\n'
+		
+	return stdoutput
+
+
 def get_primers(sequence):
 	"""
 	main function
