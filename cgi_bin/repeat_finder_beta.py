@@ -2,7 +2,7 @@
 
 import sys
 import os
-import subprocess
+from subprocess import check_output, PIPE, call, Popen, STDOUT
 from multiprocessing import Pool
 import logging
 from time import time, sleep
@@ -429,7 +429,7 @@ def test_server(gfServer, servername, serverport):
 
     command_line = gfServer + ' status ' + servername + ' ' + str(serverport)
     try:
-        gfServer_response = subprocess.check_output([command_line], shell=True, stderr=subprocess.STDOUT)
+        gfServer_response = check_output([command_line], shell=True, stderr=STDOUT)
     except:
         return False
 
@@ -975,7 +975,7 @@ def create_nested_primers(sequences, accepted_primers, primers_1st, i, primer3_l
         filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
         with open(primer3_directory + filename, 'ru') as temp_file:
             primer3_input = ''.join(temp_file.readlines())
-        process = subprocess.Popen(primer3_exe, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        process = Popen(primer3_exe, stdout=PIPE, stdin=PIPE)
         process.stdin.write(primer3_input)
         primer3_nested_output = process.communicate()[0] + '\n'
         stdoutput += 'Primer3 for nested primers finished\n'
@@ -993,9 +993,9 @@ def create_nested_primers(sequences, accepted_primers, primers_1st, i, primer3_l
                     if dinucleotide_repeat(primers_nested[0]) >= 6 or dinucleotide_repeat(primers_nested[1]) >= 6:
                         stdoutput += primers_nested[0] + ' ' + primers_nested[1] + ' rejected, repeats\n'
                     else:
-                        process = subprocess.Popen(
+                        process = Popen(
                             [gfPCR, servername, str(serverport), pcr_location, primers_nested[0], primers_nested[1],
-                             'stdout'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                             'stdout'], stdout=PIPE, stdin=PIPE)
                         isPCRoutput_nested = ';'.join(primers_nested) + '\n' + process.communicate()[0]
 
                         if check_specificity(primers_nested[0], primers_nested[1], amplicon, isPCRoutput_nested):
@@ -1031,7 +1031,7 @@ def create_nested_primers(sequences, accepted_primers, primers_1st, i, primer3_l
                 with open(primer3_directory + filename, 'ru') as temp_file:
                     primer3_input = ''.join(temp_file.readlines())
 
-                process = subprocess.Popen(primer3_exe, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                process = Popen(primer3_exe, stdout=PIPE, stdin=PIPE)
                 process.stdin.write(primer3_input)
                 primer3_nested_output = process.communicate()[0] + '\n'
 
@@ -1049,9 +1049,9 @@ def create_nested_primers(sequences, accepted_primers, primers_1st, i, primer3_l
                                 stdoutput += ' '.join(primers_nested[0]) + ' rejected, repeats\n'
                             else:
                                 isPCRoutput_nested = ';'.join(primers_nested) + '\n'
-                                process = subprocess.Popen(
+                                process = Popen(
                                     [gfPCR, servername, str(serverport), pcr_location, primers_nested[0],
-                                     primers_nested[1], 'stdout'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                                     primers_nested[1], 'stdout'], stdout=PIPE, stdin=PIPE)
                                 isPCRoutput_nested += process.communicate()[0]
 
                                 if check_specificity(primers_nested[0], primers_nested[1], amplicon,
@@ -1061,9 +1061,9 @@ def create_nested_primers(sequences, accepted_primers, primers_1st, i, primer3_l
                                         accepted_primers.append(','.join(primers_1st))
                                         accepted_primers.append(','.join(primers_nested))
                                         isPCRoutput = ';'.join(primers_1st) + '\n'
-                                        process = subprocess.Popen(
+                                        process = Popen(
                                             [gfPCR, servername, st(serverport), pcr_location, primers_1st[0],
-                                             primers_1st[1], 'stdout'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                                             primers_1st[1], 'stdout'], stdout=PIPE, stdin=PIPE)
                                         isPCRoutput += process.communicate()[0]
                                         amplicon = get_amplicon_from_primer3output(primers_1st, primer3_output)
 
@@ -1151,7 +1151,7 @@ def get_primers(sequence):
             stdoutput += 'Primer3 failed to generate output in max time\n'
     else:
         sys.stdout = open(str(os.getpid()) + ".out", "w")
-        process = subprocess.Popen(primer3_exe, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        process = Popen(primer3_exe, stdout=PIPE, stdin=PIPE)
         process.stdin.write(primer3_input)
         primer3_output += process.communicate()[0] + '\n'
     stdoutput += 'Primer3 finished\n'
@@ -1195,9 +1195,8 @@ def get_primers(sequence):
                 no_amplicons = 0
                 stdoutput += primerF + ' ' + primerR + ' rejected, repeats\n'
             else:
-                process = subprocess.Popen(
-                    [gfPCR, servername, str(serverport), pcr_location, primerF, primerR, 'stdout'],
-                    stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                process = Popen(
+                    [gfPCR, servername, str(serverport), pcr_location, primerF, primerR, 'stdout'],stdout=PIPE, stdin=PIPE)
                 isPCRoutput = primerF + ';' + primerR + '\n' + process.communicate()[0]
                 no_amplicons = count_amplicons(isPCRoutput, primerF, primerR)
 
@@ -1266,7 +1265,7 @@ def get_primers(sequence):
                 filename = 'primer3_' + makefilename(sequences[0]) + '.txt'
                 with open(primer3_directory + filename, 'ru') as temp_file:
                     primer3_input = ''.join(temp_file.readlines())
-                process = subprocess.Popen(primer3_exe, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                process = Popen(primer3_exe, stdout=PIPE, stdin=PIPE)
                 process.stdin.write(primer3_input)
                 primer3_nested_output += process.communicate()[0] + '\n'
                 stdoutput += 'Primer3 for nested primers finished\n'
@@ -1288,9 +1287,9 @@ def get_primers(sequence):
                                             dinucleotide_repeat(primerR_nested) >= 6:
                                 stdoutput += primerF_nested + ' ' + primerR_nested + ' rejected, repeats\n'
                             else:
-                                process = subprocess.Popen(
+                                process = Popen(
                                     [gfPCR, servername, str(serverport), pcr_location, primerF_nested, primerR_nested,
-                                     'stdout'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                                     'stdout'], stdout=PIPE, stdin=PIPE)
                                 isPCRoutput_nested = primerF_nested + ';' + primerR_nested + '\n' + \
                                                      process.communicate()[0]
 
@@ -1328,7 +1327,7 @@ def get_primers(sequence):
                         with open(primer3_directory + filename, 'ru') as temp_file:
                             primer3_input = ''.join(temp_file.readlines())
                         primer3_nested_output = ''
-                        process = subprocess.Popen(primer3_exe, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                        process = Popen(primer3_exe, stdout=PIPE, stdin=PIPE)
                         process.stdin.write(primer3_input)
                         primer3_nested_output += process.communicate()[0] + '\n'
                         primerF_nested = ''
@@ -1349,9 +1348,9 @@ def get_primers(sequence):
                                             primerR_nested) >= 6:
                                         stdoutput += primerF_nested + ' ' + primerR_nested + ' rejected, repeats\n'
                                     else:
-                                        process = subprocess.Popen(
+                                        process = Popen(
                                             [gfPCR, servername, str(serverport), pcr_location, primerF_nested,
-                                             primerR_nested, 'stdout'], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                                             primerR_nested, 'stdout'], stdout=PIPE, stdin=PIPE)
                                         isPCRoutput_nested = primerF_nested + ';' + primerR_nested + '\n' + \
                                                              process.communicate()[0]
 
@@ -1362,10 +1361,9 @@ def get_primers(sequence):
                                                 accepted_primers.append(primerF_1st + ',' + primerR_1st)
                                                 accepted_primers.append(primerF_nested + ',' + primerR_nested)
 
-                                                process = subprocess.Popen(
+                                                process = Popen(
                                                     [gfPCR, servername, str(serverport), pcr_location, primerF_1st,
-                                                     primerR_1st, 'stdout'], stdout=subprocess.PIPE,
-                                                    stdin=subprocess.PIPE)
+                                                     primerR_1st, 'stdout'], stdout=PIPE, stdin=PIPE)
                                                 isPCRoutput = primerF_1st + ';' + primerR_1st + '\n' + \
                                                               process.communicate()[0]
                                                 amplicon = get_amplicon_from_primer3output([primerF_1st, primerR_1st],
