@@ -18,8 +18,9 @@ if sys.version_info < (3, 0):
 else:
     import configparser
 
-global ssr_list
-ssr_list = ['AAAATTC', 'ATCCCCCCCG', 'AAAATTG', 'ATCCCCCCCC', 'AAATCCCGGGGG', 'AGG', 'ATTCCCCC', 'AAAATTT',
+settings = dict{}
+global settings
+settings[ssr_list] = ['AAAATTC', 'ATCCCCCCCG', 'AAAATTG', 'ATCCCCCCCC', 'AAATCCCGGGGG', 'AGG', 'ATTCCCCC', 'AAAATTT',
             'AATTTTTTCCCC', 'AATTTTTTCCCG', 'TTTTGGG', 'AAACCCCCGGG', 'AAAAATTTGGGG', 'ATTCCCCCCCGG', 'AAAACCCCGGGG',
             'ATTCCCCG', 'AAACCCGGG', 'AATCCCGGGGGG', 'AAAACCCGGG', 'AAAATTCCG', 'ATTCCCCGG', 'ATTTCCCCCGGG', 'GG',
             'AATTCGGGGGGG', 'ATTTTCCCCGGG', 'TTTCCGGGGGG', 'TTTTTTTGGGG', 'AATCGGGGG', 'TTTGGGGGGG', 'AAAAAAAACGGG',
@@ -292,6 +293,23 @@ logging.basicConfig(
 )
 
 
+def complement_sequence(sequence):
+    """
+    :param sequence: a nucleotide sequence in upper cases
+    :return: the complementary sequence
+    """
+    sequence.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()
+    return sequence
+
+def reverse_complement(sequence):
+    """
+
+
+    :param sequence: a nucleotide sequence in upper case
+    :return: the reverse complementary sequence
+    """
+    return complement_sequence(sequence)[::-1]
+
 def read_configfile(config_filename):
     """
     reads the config file with all global entries
@@ -451,10 +469,10 @@ def exclude_list(sequence):
     """
     to_exclude = list()
     sequence = sequence.upper()
-    for ssr in ssr_list:
+    for ssr in settings[ssr_list]:
         if len(ssr) <= 3:
             max_length = 0
-            for i in range(1, int(round(len(sequence) / 2, 0))):
+            for i in range(1, int(round(len(sequence) / 2.0, 0))):
                 if ssr * i in sequence and i * len(ssr) >= 9:
                     max_length = i
             if max_length > 0:
@@ -591,7 +609,7 @@ def find_repeats(sequence, max_length):
     """
     longest_repeat = ''
 
-    for ssr in ssr_list:
+    for ssr in settings[ssr_list]:
         if len(ssr) <= int(max_length):
             i = 1
             while ssr * i in sequence:
@@ -628,35 +646,24 @@ def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
         return False
     new_filename = 'primer3_' + makefilename(seq_name)
     primer3_file = open(primer3_directory + new_filename + '.txt', 'w')
-    primer3_file.write('SEQUENCE_ID=')
-    primer3_file.write(seq_name + '\n')
-    primer3_file.write('SEQUENCE_TEMPLATE=')
-    primer3_file.write(sequence + '\n')
-    primer3_file.write('SEQUENCE_TARGET=')
-    primer3_file.write(str(sequence.find(target) + 1))
-    primer3_file.write(',')
-    primer3_file.write(str(len(target)) + '\n')
-    primer3_file.write('SEQUENCE_EXCLUDED_REGION=')
-    excluded_region = str(sequence.find(target) + 1) + ',' + str(len(target)) + '\n'
-    if not exclude == None:
+    primer3_file.write('SEQUENCE_ID=%s\n', % (seq_name ))
+    primer3_file.write('SEQUENCE_TEMPLATE=%s\n' % (sequence)
+    primer3_file.write('SEQUENCE_TARGET=%s,%s\n' %(sequence.find(target) + 1), len(target)))
+    primer3_file.write('SEQUENCE_EXCLUDED_REGION=%s,%s\n' % (sequence.find(target) + 1, len(target)))
+
+    if exclude:
         for excluded_seq in exclude:
-            excluded_region += 'SEQUENCE_EXCLUDED_REGION='
-            excluded_region += str(sequence.find(excluded_seq) + 1) + ','
-            excluded_region += str(len(excluded_seq)) + '\n'
-    primer3_file.write(excluded_region)
-    if primerF != '' and primerR != '':
-        primer3_file.write(
-            'SEQUENCE_EXCLUDED_REGION=' + str(int(sequence.find(primerF) + len(primerF) / 3)) + ',' + str(
-                int(len(primerF) / 3)) + '\n')
-        primerR = primerR.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1]
-        primer3_file.write('SEQUENCE_FORCE_RIGHT_END=' + str(sequence.find(primerR)) + '\n')
-        primer3_file.write('SEQUENCE_FORCE_RIGHT_START=' + str(sequence.find(primerR) + len(primerR) - 1) + '\n')
+            primer3_file.write('SEQUENCE_EXCLUDED_REGION=%s,%s\n' % (sequence.find(excluded_seq) + 1), len(excluded_seq))
 
-    standard_primer3_file = open(standard_primer_settings_filename, 'ru')
-    for line in standard_primer3_file.readlines():
-        primer3_file.write(line)
+    if primerF and primerR:
+        primer3_file.write('SEQUENCE_EXCLUDED_REGION=%s,%s\n' % (sequence.find(primerF) + len(primerF) / 3, len(primerF) / 3))
+        primerR = reverse_complement(primerR)
+        primer3_file.write('SEQUENCE_FORCE_RIGHT_END=%s\n' % (sequence.find(primerR))
+        primer3_file.write('SEQUENCE_FORCE_RIGHT_START=%s\n' % (sequence.find(primerR) + len(primerR) - 1))
 
-    standard_primer3_file.close()
+    with standard_primer3_file as open(standard_primer_settings_filename, 'ru'):
+        primer3_file.write(standard_primer3_file.readlines())
+
     primer3_file.close()
 
     return True
@@ -827,7 +834,7 @@ def name_from_fasta(primerF, primerR, amplicon, fasta):
     primerR will be reversed
     """
     # reverses the reverse primer
-    primerR = primerR.upper().replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1]
+    primerR = reverse_complement(primerR.upper())
     temp_output = fasta.splitlines()
     i = 0
     sequence = ''
@@ -875,10 +882,7 @@ def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
     output = 'Primer pair:, ' + primerF + ', ' + primerR + '\n'
     output += 'Amplicon: ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2].replace(' ',
                                                                                                          ', ') + ', '
-    output += primerF.upper() + amplicon.lower() + primerR.replace('G', 'c').replace('C', 'g').replace('A',
-                                                                                                       't').replace('T',
-                                                                                                                    'a').upper()[
-                                                   ::-1] + '\n'
+    output += primerF.upper() + amplicon.lower() + reverse_complement(primerR.upper()) + '\n'
     output += 'primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC\n'
     full_sequence = str(primerF + amplicon + primerR)
     ampliconGC = str(round(100 * (float(full_sequence .count('G')) + float(full_sequence .count('C'))) / float(len(full_sequence )), 2))
