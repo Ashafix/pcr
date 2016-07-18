@@ -595,7 +595,7 @@ def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
 	generates output which can be written to log file
 	"""
 	output = 'Primer pair:, ' + primerF + ', ' + primerR + '\n'
-	output += 'Amplicon: ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2].replace(' ', ', ') + ', '
+	output += 'Amplicon:, ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2].replace(' ', ', ') + ', '
 	output += primerF.upper() + amplicon.lower() + primerR.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1] + '\n'
 	output += 'primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC\n'
 	ampliconGC = str(round(100 * (float(str(primerF + amplicon + primerR).count('G')) + float(str(primerF + amplicon + primerR).count('C'))) / float(len(str(primerF + amplicon + primerR))), 2))
