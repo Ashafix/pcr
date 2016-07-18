@@ -38,6 +38,13 @@ end = """\
 """
 html_code = ''
 
+def log(args):
+    with open('log.txt', 'a') as f:
+        if type(args) == type(list()):
+            f.write(' '.join(args))
+        else:
+            f.write(args)
+        f.write('\n')
 
 class dots(threading.Thread):
     """
@@ -425,6 +432,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
         sequence_filename = write_sequence(sequence, str(i))
         input_args.append(sequence_filename)
         seqs.append(input_args)
+    log(input_args)
     partial1 = partial(start_repeat_finder, False)
     pool = Pool(processes=config_args['MAXTHREADS'])
 
