@@ -18,12 +18,12 @@ else:
 	message += '<th>Results</th><th>Input sequence(s)</th><th>Input BatchDesign parameters</th>'
 	message += '<th>Input Primer3 parameters</th><th>Date</th><th></th>'
 	message += '</tr>'
-	result_files = {}
+	result_files = dict()
 	if 'result' in cgi.FieldStorage().keys():
 		if len(cgi.FieldStorage()['result'].value) in (6, 24):
 			filelist = [cgi.FieldStorage()['result'].value + '_sequence.fasta']
 		else:
-			filelist = []
+			filelist = list()
 	else:
 		filelist = listdir(conf_arguments['DATADIR'])
 		x = 0
@@ -99,4 +99,4 @@ Content-Type: text/html\n
 <html><body>
 <p>%s</p>
 </body></html>
-""" % (message,)
+""" % (message)
