@@ -1290,8 +1290,8 @@ def get_primers(sequence):
                                 process = Popen(
                                     [gfPCR, servername, str(serverport), pcr_location, primerF_nested, primerR_nested,
                                      'stdout'], stdout=PIPE, stdin=PIPE)
-                                isPCRoutput_nested = primerF_nested + ';' + primerR_nested + '\n' + \
-                                                     process.communicate()[0]
+                                isPCRoutput_nested = primerF_nested + ';' + primerR_nested + '\n'
+                                isPCRoutput_nested += process.communicate()[0]
 
                                 if check_specificity(primerF_nested, primerR_nested, amplicon, isPCRoutput_nested):
                                     if similarity(primerF_nested, primerF_1st) < max_similarity:
