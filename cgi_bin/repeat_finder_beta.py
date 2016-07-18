@@ -298,8 +298,7 @@ def complement_sequence(sequence):
     :param sequence: a nucleotide sequence in upper cases
     :return: the complementary sequence
     """
-    sequence.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()
-    return sequence
+    return sequence.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()
 
 def reverse_complement(sequence):
     """
@@ -1144,6 +1143,8 @@ def get_primers(sequence):
             primer3_output = primer3_output[1:-1] + '\n'
         else:
             stdoutput += 'Primer3 failed to generate output in max time\n'
+            #add error handling, overwrite result file
+            sys.exit(1)
     else:
         sys.stdout = open(str(os.getpid()) + ".out", "w")
         process = Popen(primer3_exe, stdout=PIPE, stdin=PIPE)
@@ -1614,7 +1615,7 @@ def start_repeat_finder(started_via_commandline, *arguments):
             sequences.append(line)
         else:
             sequences[-1] += line
-    
+
     if len(sequences) > 1:
         p = Pool(processes=max_threads)
         results = p.map(get_primers, sequences)
@@ -1628,9 +1629,9 @@ def start_repeat_finder(started_via_commandline, *arguments):
     for a in results:
         output.append(a[0])
         stdoutput.append(a[1])
-    final_output = open(data_dir + output_filename, 'w')
-    final_output.write(''.join(output))
-    final_output.close()
+    with open(data_dir + output_filename, 'w') as final_output:
+        final_output.write(''.join(output))
+
 
     print(''.join(stdoutput))
 
