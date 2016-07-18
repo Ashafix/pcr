@@ -880,7 +880,7 @@ def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
     generates output which can be written to log file
     """
     output = 'Primer pair:, ' + primerF + ', ' + primerR + '\n'
-    output += 'Amplicon: ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2].replace(' ', ', ') + ', '
+    output += 'Amplicon:, ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2].replace(' ', ', ') + ', '
     output += primerF.upper() + amplicon.lower() + reverse_complement(primerR.upper()) + '\n'
     output += 'primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC\n'
     full_sequence = str(primerF + amplicon + primerR)
