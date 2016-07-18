@@ -18,9 +18,9 @@ if sys.version_info < (3, 0):
 else:
     import configparser
 
-settings = dict{}
+settings = dict()
 global settings
-settings[ssr_list] = ['AAAATTC', 'ATCCCCCCCG', 'AAAATTG', 'ATCCCCCCCC', 'AAATCCCGGGGG', 'AGG', 'ATTCCCCC', 'AAAATTT',
+settings['ssr_list'] = ['AAAATTC', 'ATCCCCCCCG', 'AAAATTG', 'ATCCCCCCCC', 'AAATCCCGGGGG', 'AGG', 'ATTCCCCC', 'AAAATTT',
             'AATTTTTTCCCC', 'AATTTTTTCCCG', 'TTTTGGG', 'AAACCCCCGGG', 'AAAAATTTGGGG', 'ATTCCCCCCCGG', 'AAAACCCCGGGG',
             'ATTCCCCG', 'AAACCCGGG', 'AATCCCGGGGGG', 'AAAACCCGGG', 'AAAATTCCG', 'ATTCCCCGG', 'ATTTCCCCCGGG', 'GG',
             'AATTCGGGGGGG', 'ATTTTCCCCGGG', 'TTTCCGGGGGG', 'TTTTTTTGGGG', 'AATCGGGGG', 'TTTGGGGGGG', 'AAAAAAAACGGG',
@@ -469,7 +469,7 @@ def exclude_list(sequence):
     """
     to_exclude = list()
     sequence = sequence.upper()
-    for ssr in settings[ssr_list]:
+    for ssr in settings['ssr_list']:
         if len(ssr) <= 3:
             max_length = 0
             for i in range(1, int(round(len(sequence) / 2.0, 0))):
@@ -609,7 +609,7 @@ def find_repeats(sequence, max_length):
     """
     longest_repeat = ''
 
-    for ssr in settings[ssr_list]:
+    for ssr in settings['ssr_list']:
         if len(ssr) <= int(max_length):
             i = 1
             while ssr * i in sequence:
@@ -646,23 +646,23 @@ def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
         return False
     new_filename = 'primer3_' + makefilename(seq_name)
     primer3_file = open(primer3_directory + new_filename + '.txt', 'w')
-    primer3_file.write('SEQUENCE_ID=%s\n', % (seq_name ))
-    primer3_file.write('SEQUENCE_TEMPLATE=%s\n' % (sequence)
-    primer3_file.write('SEQUENCE_TARGET=%s,%s\n' %(sequence.find(target) + 1), len(target)))
+    primer3_file.write('SEQUENCE_ID=%s\n', % (seq_name))
+    primer3_file.write('SEQUENCE_TEMPLATE=%s\n' % (sequence))
+    primer3_file.write('SEQUENCE_TARGET=%s,%s\n' % (sequence.find(target) + 1, len(target)))
     primer3_file.write('SEQUENCE_EXCLUDED_REGION=%s,%s\n' % (sequence.find(target) + 1, len(target)))
 
     if exclude:
         for excluded_seq in exclude:
-            primer3_file.write('SEQUENCE_EXCLUDED_REGION=%s,%s\n' % (sequence.find(excluded_seq) + 1), len(excluded_seq))
+            primer3_file.write('SEQUENCE_EXCLUDED_REGION=%s,%s\n' % (sequence.find(excluded_seq) + 1, len(excluded_seq)))
 
     if primerF and primerR:
         primer3_file.write('SEQUENCE_EXCLUDED_REGION=%s,%s\n' % (sequence.find(primerF) + len(primerF) / 3, len(primerF) / 3))
         primerR = reverse_complement(primerR)
-        primer3_file.write('SEQUENCE_FORCE_RIGHT_END=%s\n' % (sequence.find(primerR))
+        primer3_file.write('SEQUENCE_FORCE_RIGHT_END=%s\n' % (sequence.find(primerR)))
         primer3_file.write('SEQUENCE_FORCE_RIGHT_START=%s\n' % (sequence.find(primerR) + len(primerR) - 1))
 
-    with standard_primer3_file as open(standard_primer_settings_filename, 'ru'):
-        primer3_file.write(standard_primer3_file.readlines())
+    with open(standard_primer_settings_filename, 'ru') as standard_primer3_file:
+        primer3_file.write(''.join(standard_primer3_file.readlines()))
 
     primer3_file.close()
 
@@ -880,8 +880,7 @@ def make_output(primerF, primerR, amplicon, isPCRoutput, primer3_output):
     generates output which can be written to log file
     """
     output = 'Primer pair:, ' + primerF + ', ' + primerR + '\n'
-    output += 'Amplicon: ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2].replace(' ',
-                                                                                                         ', ') + ', '
+    output += 'Amplicon: ' + isPCRoutput[isPCRoutput.find('\n') + 2:isPCRoutput.find('bp ') + 2].replace(' ', ', ') + ', '
     output += primerF.upper() + amplicon.lower() + reverse_complement(primerR.upper()) + '\n'
     output += 'primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC\n'
     full_sequence = str(primerF + amplicon + primerR)
@@ -1002,8 +1001,7 @@ def create_nested_primers(sequences, accepted_primers, primers_1st, i, primer3_l
                             if similarity(primers_nested[0], primers_1st[0]) < max_similarity:
                                 stdoutput += ' '.join(primers_nested) + ' found nested primer\n'
                                 accepted_primers.append(','.join(primers_nested))
-                                output += make_output(primers_nested[0], primers_nested[1], amplicon,
-                                                      isPCRoutput_nested, primer3_nested_output)
+                                output += make_output(primers_nested[0], primers_nested[1], amplicon, isPCRoutput_nested, primer3_nested_output)
                                 stdoutput += output + '\n'
                                 break
                             else:
@@ -1067,13 +1065,10 @@ def create_nested_primers(sequences, accepted_primers, primers_1st, i, primer3_l
                                         isPCRoutput += process.communicate()[0]
                                         amplicon = get_amplicon_from_primer3output(primers_1st, primer3_output)
 
-                                        output += make_output(primers_1st[0], primers_1st[1], amplicon, isPCRoutput,
-                                                              primer3_output)
+                                        output += make_output(primers_1st[0], primers_1st[1], amplicon, isPCRoutput, primer3_output)
                                         # should fix the problem with the doubled amplicon
-                                        amplicon = get_amplicon_from_primer3output(primers_nested,
-                                                                                   primer3_nested_output)
-                                        output += make_output(primers_nested[0], primers_nested[1], amplicon,
-                                                              isPCRoutput_nested, primer3_nested_output)
+                                        amplicon = get_amplicon_from_primer3output(primers_nested, primer3_nested_output)
+                                        output += make_output(primers_nested[0], primers_nested[1], amplicon, isPCRoutput_nested, primer3_nested_output)
                                         stdoutput += output + '\n'
                                         break
                                     else:
@@ -1172,7 +1167,7 @@ def get_primers(sequence):
     accepted_primers = list()
 
     # list of primers which can be used to search for nested primers
-    # accepted_nested_templates = []
+    accepted_nested_templates = list()
 
     # accepted_pairs=0
     # sequence = ''
