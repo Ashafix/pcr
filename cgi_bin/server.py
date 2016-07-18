@@ -427,22 +427,24 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
         seqs.append(input_args)
     partial1 = partial(start_repeat_finder, False)
     pool = Pool(processes=config_args['MAXTHREADS'])
-    batchprimer_results = ''
-    batchprimer_result_dict = {}
-    pool_iterator = pool.imap(partial1, seqs)
-    for i in range(len(sub_seqs)):
-        html_output('<br>a job was just started<br>')
-        batchprimer_result_dict[i] = pool_iterator.next()
-        result_file = open(data_dir + run_name + '_results.txt', 'a')
-        if i in batchprimer_result_dict.keys():
-            result_file.write(batchprimer_result_dict[i])
-        result_file.close()
 
+    batchprimer_result_dict = dict()
+    pool_iterator = pool.imap(partial1, seqs)
+    with result_file as open(data_dir + run_name + '_results.txt', 'a'):
+        for i in range(len(sub_seqs)):
+            html_output('<br>a job was just started<br>')
+            batchprimer_result_dict[i] = pool_iterator.next()
+
+            if i in batchprimer_result_dict.keys():
+                result_file.write(batchprimer_result_dict[i])
+
+
+    batchprimer_results = ''
     for i in range(len(sub_seqs)):
         batchprimer_results += batchprimer_result_dict[i] + '\n'
-    result_file = open(data_dir + run_name + '_results.txt', 'w')
-    result_file.write(batchprimer_results)
-    result_file.close()
+    with result_file as open(data_dir + run_name + '_results.txt', 'w'):
+        result_file.write(batchprimer_results)
+
 
     print_dots = False
 
