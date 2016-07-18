@@ -6,14 +6,12 @@ import sys
 from random import SystemRandom
 from string import ascii_uppercase, ascii_lowercase, digits
 from shutil import copyfile
-import boto3
 import socket
 import urllib2
 import threading
 from time import sleep
-from Queue import Queue
 from threading import Thread
-import multiprocessing
+from multiprocessing import Pool
 from functools import partial
 
 global data_dir
@@ -314,6 +312,8 @@ if not 'Error: ' in html:
 remoteserver_url = ''
 
 if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
+	import boto3
+
 	#check for new DNS of AWS instance and replace old name
 	aws = read_aws_conf()
 	session = boto3.session.Session(aws_access_key_id = aws['aws_access_key_id'], 
@@ -402,7 +402,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 	print_dots = True
 
 	seqs = []
-	for i in range(0, len(sub_seqs)):
+	for i in range(len(sub_seqs)):
 		input_args = base_args[:]
 		sequence = ''
 		sequence += sub_seqs[i] + '\n'
@@ -410,11 +410,11 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 		input_args.append(sequence_filename)
 		seqs.append(input_args)
 	partial1 = partial(start_repeat_finder, False)
-	pool = multiprocessing.Pool(processes = config_args['MAXTHREADS'])
+	pool = Pool(processes = config_args['MAXTHREADS'])
 	batchprimer_results = ''
 	batchprimer_result_dict = {}
 	pool_iterator = pool.imap(partial1, seqs)
-	for i in range(0, len(sub_seqs)):
+	for i in range(len(sub_seqs)):
 		html_output('<br>a job was just started<br>')
 		batchprimer_result_dict[i] = pool_iterator.next()
 		result_file = open(data_dir + run_name + '_results.txt', 'a')
@@ -422,7 +422,7 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
 			result_file.write(batchprimer_result_dict[i])
 		result_file.close()
 
-	for i in range(0, len(sub_seqs)):
+	for i in range(len(sub_seqs)):
 		batchprimer_results += batchprimer_result_dict[i] + '\n'
 	result_file = open(data_dir + run_name + '_results.txt', 'w')
 	result_file.write(batchprimer_results)
