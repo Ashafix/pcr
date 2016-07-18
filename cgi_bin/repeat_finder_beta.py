@@ -288,7 +288,7 @@ class StreamToLogger(object):
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
-    filename='"python.log',
+    filename='python.log',
     filemode='a'
 )
 
