@@ -173,155 +173,154 @@ primerF TM, primerR TM, primerF GC, primerR GC, product TM, product GC
 html = 'Content-Type: text/html\n\n<html><head> <link rel="stylesheet" type="text/css" href="../html/results.css" /> </head><body>'
 
 if 'result' in cgi.FieldStorage().keys():
-	result_filename = '/var/www/data/'
-	result_filename += cgi.FieldStorage()['result'].value
-	result_filename += '_results.txt'
-	try:
-		result_file = open(result_filename, 'r')
-		results = result_file.read()
-		result_file.close()
-	except:
-		results = ''
-		html += '<br>No results were found<br>'
+    result_filename = '/var/www/data/'
+    result_filename += cgi.FieldStorage()['result'].value
+    result_filename += '_results.txt'
+    try:
+        with result_file as open(result_filename, 'r'):
+            results = result_file.read()
+    except:
+        results = ''
+        html += '<br>No results were found<br>'
 else:
-	html += '<h1>THIS IS ONLY TEST DATA</h1><br>'
+    html += '<h1>THIS IS ONLY TEST DATA</h1><br>'
 
 
 class Primer:
-	def __init__(self):
-		self.forward = ''
-		self.reverse = ''
-		self.TMf = -1
-		self.TMr = -1
-		self.GCf = -1
-		self.GCr = -1
-		self.TMproduct = -1
-		self.GCproduct = -1
+    def __init__(self):
+        self.forward = ''
+        self.reverse = ''
+        self.TMf = -1
+        self.TMr = -1
+        self.GCf = -1
+        self.GCr = -1
+        self.TMproduct = -1
+        self.GCproduct = -1
 
 class Amplicon:
-	def __init__(self):
-		self.product = ''
-		self.location = ''
-		self.size = ''
+    def __init__(self):
+        self.product = ''
+        self.location = ''
+        self.size = ''
 
 def parse_output(output_text):
-	target = ''
-	new_primer = Primer()
-	new_amplicon = Amplicon()
-	primers = []
-	amplicons = []
+    target = ''
+    new_primer = Primer()
+    new_amplicon = Amplicon()
+    primers = list()
+    amplicons = list()
 
-	primer_table = False
+    primer_table = False
 
-	lines = output_text.split('\n')
-	for line in lines:
-		if line.startswith('Target:'):
-			if len(line.split(',')) > 0:
-				target = line.split(',')[1].strip()
-				new_primer = Primer()
-				new_amplicon = Amplicon()
-			primer_table = False
-		elif line.startswith('Primer pair:'):
-			new_primer = Primer()
-			new_primer.forward = line.split(',')[1].strip()
-			new_primer.reverse = line.split(',')[2].strip()
-			primer_table = False
-		elif line.startswith('Amplicon:'):
-			new_amplicon = Amplicon()
-			new_amplicon.location = line.split(',')[1].strip()
-			new_amplicon.size = line.split(',')[2].strip()
-			new_amplicon.product = line.split(',')[3].strip()
-			primer_table = False
-		elif line.startswith('primerF TM'):
-			primer_table = True
-		elif primer_table == True:
-			primer_properties = line.split(',')
-			if len(primer_properties) in (6, 24):
-				new_primer.TMf = primer_properties[0].strip()
-				new_primer.TMr = primer_properties[1].strip()
-				new_primer.GCf = primer_properties[2].strip()
-				new_primer.GCr = primer_properties[3].strip()
-				new_primer.TMproduct = primer_properties[4].strip()
-				new_primer.GCproduct = primer_properties[5].strip()
-				if target != '' and new_amplicon.product != '' and new_primer.forward != '':
-					amplicons.append(new_amplicon)
-					primers.append(new_primer)
-			primer_table = False
-	return target, amplicons, primers
+    lines = output_text.split('\n')
+    for line in lines:
+        if line.startswith('Target:'):
+            if len(line.split(',')) > 0:
+                target = line.split(',')[1].strip()
+                new_primer = Primer()
+                new_amplicon = Amplicon()
+            primer_table = False
+        elif line.startswith('Primer pair:'):
+            new_primer = Primer()
+            new_primer.forward = line.split(',')[1].strip()
+            new_primer.reverse = line.split(',')[2].strip()
+            primer_table = False
+        elif line.startswith('Amplicon:'):
+            new_amplicon = Amplicon()
+            new_amplicon.location = line.split(',')[1].strip()
+            new_amplicon.size = line.split(',')[2].strip()
+            new_amplicon.product = line.split(',')[3].strip()
+            primer_table = False
+        elif line.startswith('primerF TM'):
+            primer_table = True
+        elif primer_table == True:
+            primer_properties = line.split(',')
+            if len(primer_properties) in (6, 24):
+                new_primer.TMf = primer_properties[0].strip()
+                new_primer.TMr = primer_properties[1].strip()
+                new_primer.GCf = primer_properties[2].strip()
+                new_primer.GCr = primer_properties[3].strip()
+                new_primer.TMproduct = primer_properties[4].strip()
+                new_primer.GCproduct = primer_properties[5].strip()
+                if target != '' and new_amplicon.product != '' and new_primer.forward != '':
+                    amplicons.append(new_amplicon)
+                    primers.append(new_primer)
+            primer_table = False
+    return target, amplicons, primers
 
 def result_to_html(result):
-	target, amplicons, primers = parse_output(result)
-	html = '<p class="target"><b>Target: </b>'
-	html += target
-	html += '<br><br>'
-	html += '<table class="resulttable">'
-	if len(primers) > 0:
-		html += '<tr><th colspan="3">Forward Primer</th><th colspan="3">Reverse Primer</th><th class="amplicon" colspan="5">Amplicon</th></th></tr>'
-		html += '</table><table class="resulttable">'
-		html += '<tr><th class="primer">Sequence</th><th class="digits4">TM</th><th class="digits4">GC</th><th class="primer">Sequence</th><th class="digits4">TM</th><th class="digits4">GC</th><th>Sequence</th><th class="location">Location</th><th class="size">Size</th><th class="digits4">TM</th><th class="digits4">GC</th>'
-	else:
-		html += '<font color="red">No suitable primer pairs found</font>'
-	i = -1
-	for primer_pair in primers:
-		i += 1
-		html += '<tr>'
-		html += '<td class="sequence">'
-		html += primer_pair.forward
-		html += '</td>'
-		html += '<td >'
-		html += primer_pair.TMf
-		html += '</td>'
-		html += '<td >'
-		html += primer_pair.GCf
-		html += '</td>'
-		html += '<td class="sequence">'
-		html += primer_pair.reverse
-		html += '</td>'
-		html += '<td >'
-		html += primer_pair.TMr
-		html += '</td>'
-		html += '<td >'
-		html += primer_pair.GCr
-		html += '</td>'
-		html += '<td class="amplicon">'
-		html += amplicons[i].product
-		html += '</td>'
-		html += '<td>'
-		html += '<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?org=Human&db=hg19&position='
-		html += amplicons[i].location.replace('+', '-')
-		html += '">' + amplicons[i].location +'</a>'
-		html += '</td>'
-		html += '<td>'
-		html += amplicons[i].size.replace('bp', '')
-		html += '</td>'
-		html += '<td >'
-		html += primer_pair.TMproduct
-		html += '</td>'
-		html += '<td >'
-		html += primer_pair.GCproduct
-		html += '</td>'
-	html += '</table>'
-	html += '</p>'
-	html += '<hr>'
-	return html
+    target, amplicons, primers = parse_output(result)
+    html = '<p class="target"><b>Target: </b>'
+    html += target
+    html += '<br><br>'
+    html += '<table class="resulttable">'
+    if len(primers) > 0:
+        html += '<tr><th colspan="3">Forward Primer</th><th colspan="3">Reverse Primer</th><th class="amplicon" colspan="5">Amplicon</th></th></tr>'
+        html += '</table><table class="resulttable">'
+        html += '<tr><th class="primer">Sequence</th><th class="digits4">TM</th><th class="digits4">GC</th><th class="primer">Sequence</th><th class="digits4">TM</th><th class="digits4">GC</th><th>Sequence</th><th class="location">Location</th><th class="size">Size</th><th class="digits4">TM</th><th class="digits4">GC</th>'
+    else:
+        html += '<font color="red">No suitable primer pairs found</font>'
+    i = -1
+    for primer_pair in primers:
+        i += 1
+        html += '<tr>'
+        html += '<td class="sequence">'
+        html += primer_pair.forward
+        html += '</td>'
+        html += '<td >'
+        html += primer_pair.TMf
+        html += '</td>'
+        html += '<td >'
+        html += primer_pair.GCf
+        html += '</td>'
+        html += '<td class="sequence">'
+        html += primer_pair.reverse
+        html += '</td>'
+        html += '<td >'
+        html += primer_pair.TMr
+        html += '</td>'
+        html += '<td >'
+        html += primer_pair.GCr
+        html += '</td>'
+        html += '<td class="amplicon">'
+        html += amplicons[i].product
+        html += '</td>'
+        html += '<td>'
+        html += '<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?org=Human&db=hg19&position='
+        html += amplicons[i].location.replace('+', '-')
+        html += '">' + amplicons[i].location +'</a>'
+        html += '</td>'
+        html += '<td>'
+        html += amplicons[i].size.replace('bp', '')
+        html += '</td>'
+        html += '<td >'
+        html += primer_pair.TMproduct
+        html += '</td>'
+        html += '<td >'
+        html += primer_pair.GCproduct
+        html += '</td>'
+    html += '</table>'
+    html += '</p>'
+    html += '<hr>'
+    return html
 
 
 
 result = ''
 for line in results.split('\n'):
-	if line.startswith('Target:'):
-		if result != '':
-			#print result
-			html += result_to_html(result)
-		result = line + '\n'
-	else:
-		if line != '==========' and line.strip() != '':
-			result += line + '\n'
+    if line.startswith('Target:'):
+        if result != '':
+            #print result
+            html += result_to_html(result)
+        result = line + '\n'
+    else:
+        if line != '==========' and line.strip() != '':
+            result += line + '\n'
 
 html += result_to_html(result)
 html += '</body></html>'
 
-print html
+print(html)
 
 
 #x,y,z= parse_output("""Target:, TG1 hg19_microsat_30xTG range=chr2:36944078-36944938 5'pad=400 3'pad=400 strand=+ repeatMasking=none
