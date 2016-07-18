@@ -33,7 +33,7 @@ proc_items = dict()
 jobs = dict()
 
 
-def write_header(target):
+def send_header(target):
     target.send_response(200)
     target.send_header("Content-type:", "text/html")
     target.wfile.write("\n")
