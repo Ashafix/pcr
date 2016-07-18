@@ -302,8 +302,6 @@ def complement_sequence(sequence):
 
 def reverse_complement(sequence):
     """
-
-
     :param sequence: a nucleotide sequence in upper case
     :return: the reverse complementary sequence
     """
