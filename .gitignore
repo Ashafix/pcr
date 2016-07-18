@@ -1,3 +1,9 @@
 *.pyc
 python.log
 *.bat
+.idea/workspace.xml
+.idea/vcs.xml
+.idea/misc.xml
+cpu_stats.py
+.idea/dictionaries/ashafix.xml
+.idea/pcr.iml
