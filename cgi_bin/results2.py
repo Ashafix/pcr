@@ -214,23 +214,26 @@ def parse_output(output_text):
 
     lines = output_text.split('\n')
     for line in lines:
+        cells = line.split(',')
         if line.startswith('Target:'):
-            if len(line.split(',')) > 0:
-                target = line.split(',')[1].strip()
+            if len(cells) > 0:
+                target = cells[1].strip()
                 new_primer = Primer()
                 new_amplicon = Amplicon()
             primer_table = False
         elif line.startswith('Primer pair:'):
             new_primer = Primer()
-            new_primer.forward = line.split(',')[1].strip()
-            new_primer.reverse = line.split(',')[2].strip()
+            new_primer.forward = cells [1].strip()
+            new_primer.reverse = cells [2].strip()
             primer_table = False
         elif line.startswith('Amplicon:'):
+
             new_amplicon = Amplicon()
-            new_amplicon.location = line.split(',')[1].strip()
-            new_amplicon.size = line.split(',')[2].strip()
-            new_amplicon.product = line.split(',')[3].strip()
-            primer_table = False
+            if len(cells) > 3:
+                new_amplicon.location = cells [1].strip()
+                new_amplicon.size = cells [2].strip()
+                new_amplicon.product = cells [3].strip()
+                primer_table = False
         elif line.startswith('primerF TM'):
             primer_table = True
         elif primer_table == True:
