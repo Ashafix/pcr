@@ -1608,13 +1608,13 @@ def start_repeat_finder(started_via_commandline, *arguments):
 
     sequences = list()
 
-    fasta_file = open(fasta_filename, 'ru')
+
     for line in open(fasta_filename, 'ru'):
         if line.startswith('>'):
             sequences.append(line)
         else:
             sequences[-1] += line
-    fasta_file.close()
+    
     if len(sequences) > 1:
         p = Pool(processes=max_threads)
         results = p.map(get_primers, sequences)
