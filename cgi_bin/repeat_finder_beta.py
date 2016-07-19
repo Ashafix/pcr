@@ -1107,10 +1107,9 @@ def get_primers(sequence):
 
     with open(primer3_directory + filename, 'ru') as temp_file:
         primer3_input = ''.join(temp_file.readlines())
-    temp_file.close()
 
     stdoutput += 'Primer3 subprocess started\n'
-    if remote_server != '':
+    if remote_server:
         local_run_name = run_name
         local_run_name += '_' + str(os.getpid())
         baseurl = remote_server + ':8003'
@@ -1593,10 +1592,10 @@ def start_repeat_finder(started_via_commandline, *arguments):
         parameters_legal = True
 
     if parameters_legal == False:
-        exit()
+        sys.exit(1)
 
     # location of hg18.2bit
-    pcr_location = gfPCR[0:len(gfPCR) - len('gfPCR')]
+    pcr_location = gfPCR[:len(gfPCR) - len('gfPCR')]
 
     #############################################
     ###passed all tests, now program can start###
@@ -1606,7 +1605,6 @@ def start_repeat_finder(started_via_commandline, *arguments):
     print(run_name + ' program started, please be patient')
 
     sequences = list()
-
 
     for line in open(fasta_filename, 'ru'):
         if line.startswith('>'):
@@ -1624,9 +1622,9 @@ def start_repeat_finder(started_via_commandline, *arguments):
 
     output = list()
     stdoutput = list()
-    for a in results:
-        output.append(a[0])
-        stdoutput.append(a[1])
+    for result in results:
+        output.append(result[0])
+        stdoutput.append(result[1])
     with open(data_dir + output_filename, 'w') as final_output:
         final_output.write(''.join(output))
 
