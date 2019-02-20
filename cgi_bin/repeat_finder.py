@@ -13,6 +13,7 @@ import json
 import string
 import random
 from nucleotide_tools import similarity
+import argparse
 
 # Python2/3 compatibility
 if sys.version_info < (3, 0):
@@ -21,9 +22,6 @@ if sys.version_info < (3, 0):
     import urllib2
 else:
     import configparser
-
-with open('ssr_list.txt', 'r') as f:
-    ssr_list = ast.literal_eval(f.read())
 
 with open('ssr_list.txt', 'r') as f:
     ssr_list = ast.literal_eval(f.read())
@@ -126,47 +124,57 @@ def read_configfile(config_filename):
                 'MAXTHREADS': max_threads}
     # return True
 
+def parse_args(args):
+    parser = argparse.ArgumentParser(description='Hemi-NestR')
+    parser.add_argument('--FASTA', type=str,
+                        help='Specifies filename of fasta for which repeats and appropriate primers will be searched, e.g. -FASTA BRCA_markers.fa')
+    parser.add_argument('--PRIMER3_SETTINGS', type=str,
+                        help='Specifies filename which specifies the settings which are used for searching primers, e.g. -PRIMER3_SETTINGS BRCA_markers_primers.txt')
+    parser.add_argument('--PRIMER3_DIRECTORY', type=str,
+                        help='Specifies a directory where the output files will be saved, e.g. PRIMER3_DIRECTORY /home/user/pcr/BRCA_markers/')
+    parser.add_argument('--PRIMER3_EXE', type=str,
+                        help='Specifies the location of the primer3_core executable, e.g. --PRIMER3_EXE /home/pcr/bin/x86_64/primer3_core')
+    parser.add_argument('--SERVERNAME', type=str,
+                        help='Specifies the name of the isPCR server (usually name of the computer running isPCR), e.g. --SERVERNAME pcrcomputer')
+    parser.add_argument('--SERVERPORT', type=int,
+                        help='Specifies the port which is used to communicate with the isPCR server, e.g. --SERVERPORT 33334')
+    parser.add_argument('--MAXREPEATS', type=int,
+                        help='Specifies the maximum length of repeats to search, e.g. --MAXREPEATS 3, searches for repeats of di- and trinucleotides')
+    parser.add_argument('--PRIMERPAIRS', type=str,
+                        help='Specifies the number of suitable primer pairs which will be returned')
+    parser.add_argument('--GFSERVER', type=str,
+                        help='Specifies the location of the gfServer executable')
+    parser.add_argument('--GFPCR', type=str,
+                        help='Specifies the location of the gfPCR executable')
+    parser.add_argument('--MAX_SIMILARITY', type=str,
+                        help='Specifies the maximal similarity for two primer pairs in order to be accepted, from 0 to 1, default = 0.5')
+    parser.add_argument('--NESTED', type=int, default=1,
+                        help='Specifies whether the program should search for nested primers if not enough pairs have been found (0), never search (-1) or always search for primers (1)')
+    parser.add_argument('--OUTPUT', type=str,
+                        help='Specifies the output filename where all the primers and target will be saved, default: batchprimer_output.txt')
+    parser.add_argument('--MAXTHREADS', type=int,
+                        help='Specifies how many threads are started in parallel, should be less than your number of CPU cores')
+    parser.add_argument('--REMOVETEMPFILES', type=bool, default=False,
+                        help='Specifies whether temporary files (e.g. Primer3 input and output) will be deleted after the program finishes. Default is False')
+    parser.add_argument('--SHUTDOWN', type=bool, default=-1,
+                        help='Shuts the isPCR server down after ### minutes, e.g. -SHUTDOWN 50, the server will be shutdown 50 minutes after the first job was started')
+    parser.add_argument('--REMOTESERVER', type=str,
+                        help='Specifies the URL of a server which can run primer3 via a REST API')
+    parser.add_argument('--WAITINGPERIOD', type=float, default=0.25,
+                        help='Specifies the time in seconds between server ping when a remote server is started, default = 0.25')
+    parser.add_argument('--TIMEOUT', type=int, default=120,
+                        help='Specifies the time in seconds until a remote server start is declared unsuccessful, default = 120')
+    parser.add_argument('--RUNNAME', type=str,
+                        help='Specifies the name of the run, only used for identifying jobs on the remote server')
+
+    return parser.parse_args(args)
+
 
 def print_help():
     """
     Prints a help message with all input parameters
     """
-    print('Usage')
-    print('-FASTA %filename : Specifies filename of fasta for which repeats and appropriate primers will be searched, e.g. -FASTA BRCA_markers.fa')
-    print(
-        '-PRIMER3_SETTINGS %filename : Specifies filename which specifies the settings which are used for searching primers, e.g. -PRIMER3_SETTINGS BRCA_markers_primers.txt')
-    print(
-        '-PRIMER3_DIRECTOY %directory : Specifies a directory where the output files will be saved, e.g. PRIMER3_DIRECTORY c:/pcr/BRCA_markers/')
-    print('-PRIMER3_EXE %filename : Specifies the location of the primer3_core.exe, e.g. -PRIMER3_EXE primer3_core.exe')
-    print(
-        '-SERVERNAME name : Specifies the name of the isPCR server (usually name of the computer running isPCR), e.g. -SERVERNAME pcrcomputer')
-    print(
-        '-SERVERPORT number : Specifies the port which is used to communicate with the isPCR server, e.g. -SERVERPORT 33334')
-    print(
-        '-MAXREPEATS number : Specifies the maximum length of repeats to search, e.g. -MAXREPEATS 3, searches for repeats of di- and trinucleotides')
-    print('-PRIMERPAIRS number : Specifies the number of suitable primer pairs which will be returned')
-    print('-GFSERVER filename : Specifies the location of the gfServer.exe')
-    print('-GFPCR filename : Specifies the location of the gfPCR.exe')
-    print(
-        '-MAX_SIMILARITY number : Specifies the maximal similarity for two primer pairs in order to be accepted, from 0 to 1, default = 0.5')
-    print(
-        '-@ filename : Specifies a file which list the above mentioned arguments, arguments used with -ARGUMENT will overwrite the arguments in the file')
-    print(
-        '-NESTED : Specifies whether the program should search for nested primers if not enough pairs have been found (0), never search (-1) or always search for primers (1)')
-    print(
-        '-OUTPUT filename : Specifies the output filename where all the primers and target will be saved, default: batchprimer_output.txt')
-    print(
-        '-MAXTHREADS number : Specifies how many threads are started in parallel, should be less than your number of CPU cores')
-    print(
-        '-REMOVETEMPFILES boolean : Specifies whether temporary files (e.g. Primer3 input and output) will be deleted after the program finishes. Default is FALSE')
-    print(
-        '-SHUTDOWN number : Shuts the isPCR server down after ### minutes, e.g. -SHUTDOWN 50, the server will be shutdown 50 minutes after the first job was started')
-    print('-REMOTESERVER string : Specifies the URL of a server which can run primer3 via a REST API')
-    print(
-        '-WAITINGPERIOD float : Specifies the time in seconds between server ping when a remote server is started, default = 0.25')
-    print(
-        '-TIMEOUT integer : Specifies the time in seconds until a remote server start is declared unsuccesful, default = 120')
-    print('-RUNNAME string : Specifies the name of the run, only used for identifying jobs on the remote server')
+    print('-@ filename : Specifies a file which list the above mentioned arguments, arguments used with -ARGUMENT will overwrite the arguments in the file')
 
 
 def test_server(gfServer, servername, serverport):
