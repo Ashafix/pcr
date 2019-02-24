@@ -63,56 +63,28 @@ def read_configfile(config_filename):
     """
     config = ConfigParser.RawConfigParser()
     config.read(config_filename)
+    value_map = {'PRIMER3_SETTINGS': str,
+                 'PRIMER3_DIRECTORY': str,
+                 'SERVERNAME': str,
+                 'SERVERPORT': str,
+                 'GFSERVER': str,
+                 'GFPCR': str,
+                 'DATADIR': str,
+                 'MAXTHREADS': int,
+                 'WAITINGPERIOD': float,
+                 'TIMEOUT': int,
+                 'RUNNAME': str
+                 }
+    output = {}
     for section in config.sections():
         for option in config.options(section):
-            if option.upper() == 'PRIMER3_SETTINGS':
-                standard_primer_settings_filename = str(config.get(section, option)).strip()
-            elif option.upper() == 'PRIMER3_DIRECTORY':
-                primer3_directory = str(config.get(section, option)).strip()
-            elif option.upper() == 'PRIMER3_EXE':
-                primer3_exe = str(config.get(section, option)).strip()
-            elif option.upper() == 'SERVERNAME':
-                servername = str(config.get(section, option)).strip()
-            elif option.upper() == 'SERVERPORT':
-                serverport = int(config.get(section, option))
-            elif option.upper() == 'GFSERVER':
-                gfServer = str(config.get(section, option)).strip()
-            elif option.upper() == 'GFPCR':
-                gfPCR = str(config.get(section, option)).strip()
-            elif option.upper() == 'DATADIR':
-                data_dir = str(config.get(section, option)).strip()
-            elif option.upper() == 'MAXTHREADS':
-                max_threads = int(config.get(section, option))
-            elif option.upper() == '-WAITINGPERIOD':
-                waiting_period = float(config.get(section, option))
-            elif option.upper() == '-TIMEOUT':
-                timeout = int(config.get(section, option))
-            elif option.upper() == '-RUNNAME':
-                run_name = config.get(section, option)
+            _option = option.upper()
+            if _option in value_map:
+                output[_option] = value_map[_option](config.get(section, option).strip())
             else:
-                print('getConfig: unknown conf entry: ' + option)
+                raise ValueError('getConfig: unknown conf entry: {}'.format(option))
 
-    if standard_primer_settings_filename == '' or \
-            primer3_directory == '' or \
-            (primer3_exe == '' and remote_server == '') or \
-            servername == '' or \
-            serverport == '' or \
-            gfServer == '' or \
-            gfPCR == '' or \
-            data_dir == '' or \
-            max_threads < 1:
-        print('getConfig: Missing entry')
-        return {}
-    else:
-        return {'PRIMER3_SETTINGS': standard_primer_settings_filename,
-                'PRIMER3_DIRECTORY': primer3_directory,
-                'PRIMER3_EXE': primer3_exe,
-                'SERVERNAME': servername,
-                'SERVERPORT': serverport,
-                'GFSERVER': gfServer,
-                'GFPCR': gfPCR,
-                'DATADIR': data_dir,
-                'MAXTHREADS': max_threads}
+    return output
 
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Hemi-NestR')
@@ -156,19 +128,19 @@ def parse_args(args):
                         help='Specifies the time in seconds until a remote server start is declared unsuccessful, default = 120')
     parser.add_argument('--RUNNAME', type=str,
                         help='Specifies the name of the run, only used for identifying jobs on the remote server')
-    parser.add_argument('-@', '--config_file', type=str,
-                        help='Specifies a file which list the above mentioned arguments, arguments used with -ARGUMENT will overwrite the arguments in the file')
+    parser.add_argument('-@', '--config_file', type=str, target='config_filename'
+                        help='Specifies a file which list the above mentioned arguments, arguments used with --ARGUMENT will overwrite the arguments in the file')
     return parser.parse_args(args)
 
 
 
 def test_server(gfserver, servername, serverport):
     """
-    tests the gfServer and returns True if the server is working
+    tests the gfServer and returns True if the server is aorking
 
-    :param gfserver:
-    :param servername:
-    :param serverport:
+    :param gfserver: str, location of the gfServer executable
+    :param servername: str, the name of the gfServer
+    :param serverport: int, the port of the gfServer
     :return: bool, True if the server is responding correctly, False, if the server does not responds or the response is incorrect
     """
 
@@ -191,9 +163,8 @@ def count_amplicons(isPCRoutput, primerF, primerR):
     startpoint = isPCRoutput.find('{};{}\n'.format(primerF, primerR))
     if startpoint == -1:
         return -1
-    if startpoint > 0:
-        if isPCRoutput[startpoint - 1:startpoint] != '\n':
-            return -1
+    if startpoint > 0 and isPCRoutput[startpoint - 1] != '\n':
+        return -1
 
     isPCRfragment = isPCRoutput[startpoint:]
     if isPCRfragment.find(';', len(primerF) + len(primerR) + 2) > -1:
@@ -209,109 +180,34 @@ def exclude_list(sequence):
     to_exclude = []
     sequence = sequence.upper()
     for ssr in ssr_list:
-        if len(ssr) <= 3:
-            max_length = 0
-            for i in range(1, int(round(len(sequence) / 2, 0))):
-                if ssr * i in sequence and i * len(ssr) >= 9:
-                    max_length = i
-            if max_length > 0:
-                to_exclude.append(ssr * max_length)
+        if len(ssr) > 3:
+            continue
+        max_length = 0
+        for i in range(1, int(round(len(sequence) / 2, 0))):
+            if ssr * i in sequence and i * len(ssr) >= 9:
+                max_length = i
+        if max_length > 0:
+            to_exclude.append(ssr * max_length)
     return to_exclude
 
 
-def import_parameters(*arguments):
+def import_parameters(arguments):
     """
-    imports parameters from commandline
+    Imports parameters from commandline and validates them
+us
+    :param arguments: argparse objecttat
+    :return: tuple(bool, str), (True if valid, False if invalid), message
+    """
+    """
     """
 
-    data_dir = './'
-    input_args = []
-    if len(sys.argv) > 1 or len(arguments) == 0:
-        if str(sys.argv).find('-help') > -1:
-            print_help()
-            sys.exit()
-        else:
-            input_args = sys.argv
-    if not started_via_commandline and len(arguments) > 0:
-        for argument in arguments[0][0]:
-            input_args.append(argument)
-
-    # reads config file
-    for i in range(len(input_args)):
-        if str(input_args[i]).startswith('-@'):
-            read_configfile(input_args[i + 1])
-
-    # reads named arguments
-    for i in range(len(input_args)):
-        if str(input_args[i]).upper() == '-FASTA':
-            fasta_filename = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-PRIMER3_SETTINGS' or \
-                str(input_args[i]).upper() == '-PRIMER_SETTINGS':
-            standard_primer_settings_filename = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-PRIMER3_DIRECTORY' or \
-                str(input_args[i]).upper() == '-PRIMER_DIRECTORY':
-            primer3_directory = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-PRIMER3_EXE':
-            primer3_exe = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-SERVERNAME':
-            servername = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-SERVERPORT':
-            serverport = int(input_args[i + 1])
-        elif str(input_args[i]).upper() == '-MAXREPEATS':
-            max_repeats = int(input_args[i + 1])
-        elif str(input_args[i]).upper() == '-PRIMERPAIRS':
-            max_primerpairs = int(input_args[i + 1])
-        elif str(input_args[i]).upper() == '-GFSERVER':
-            gfServer = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-GFPCR':
-            gfPCR = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-NESTED':
-            nested = int(input_args[i + 1])
-        elif str(input_args[i]).upper() == '-OUTPUT':
-            output_filename = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-MAXTHREADS':
-            max_threads = int(input_args[i + 1])
-        elif str(input_args[i]).upper() == '-REMOVETEMPFILES':
-            remove_temp_files = bool(input_args[i + 1])
-        elif str(input_args[i]).upper() == '-DATADIR':
-            data_dir = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-MAX_SIMILARITY':
-            max_similarity = float(input_args[i + 1])
-        elif str(input_args[i]).upper() == '-SHUTDOWN':
-            shutdown = int(input_args[i + 1])
-        elif str(input_args[i]).upper() == '-REMOTESERVER':
-            remote_server = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-RUNNAME':
-            run_name = input_args[i + 1]
-        elif str(input_args[i]).upper() == '-WAITINGPERIOD':
-            waiting_period = float(input_args[i + 1])
-        elif str(input_args[i]).upper() == '-TIMEOUT':
-            timeout = int(input_args[i + 1])
-    if (fasta_filename == '' or standard_primer_settings_filename == '' or
-            primer3_directory == '' or
-            primer3_exe == '' or
-            servername == '' or
-            serverport == -1 or
-            max_repeats == -1 or
-            gfServer == '' or
-            gfPCR == '' or
-            abs(nested) > 1):
-        print('Input arguments')
-        print('fasta_filename: ' + fasta_filename)
-        print('standard_primer_settings_filename: ' + standard_primer_settings_filename)
-        print('primer3_directory: ' + primer3_directory)
-        print('primer3_exe: ' + primer3_exe)
-        print('servername: ' + servername)
-        print('serverport: ' + str(serverport))
-        print('max_repeats: ' + str(max_repeats))
-        print('gfServer: ' + gfServer)
-        print('gfPCR: ' + gfPCR)
-        print('nested: ' + str(nested))
-        print('Missing arguments!\n\n')
-        print_help()
-        exit()
-
-    return True
+    args = parse_args(arguments)
+    if args.config_filename is not None:
+        config_args = read_configfile(args.config_filename)
+        for arg, value in config_args.items():
+            args.__setattr__(arg, value)
+    # TODO validate import parameters
+    return True, ''
 
 
 def find_repeats(sequence, max_length):
