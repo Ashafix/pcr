@@ -128,7 +128,7 @@ def parse_args(args):
                         help='Specifies the time in seconds until a remote server start is declared unsuccessful, default = 120')
     parser.add_argument('--RUNNAME', type=str,
                         help='Specifies the name of the run, only used for identifying jobs on the remote server')
-    parser.add_argument('-@', '--config_file', type=str, target='config_filename'
+    parser.add_argument('-@', '--config_file', type=str, target='config_filename',
                         help='Specifies a file which list the above mentioned arguments, arguments used with --ARGUMENT will overwrite the arguments in the file')
     return parser.parse_args(args)
 
@@ -194,11 +194,9 @@ def exclude_list(sequence):
 def import_parameters(arguments):
     """
     Imports parameters from commandline and validates them
-us
-    :param arguments: argparse objecttat
+
+    :param arguments: argparse object
     :return: tuple(bool, str), (True if valid, False if invalid), message
-    """
-    """
     """
 
     args = parse_args(arguments)
@@ -255,14 +253,9 @@ def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
 
     new_filename = 'primer3_{}.txt'.format(create_clean_filename(seq_name))
     with open(os.path.join(primer3_directory, new_filename), 'w') as primer3_file:
-        primer3_file.write('SEQUENCE_ID=')
-        primer3_file.write(seq_name + '\n')
-        primer3_file.write('SEQUENCE_TEMPLATE=')
-        primer3_file.write(sequence + '\n')
-        primer3_file.write('SEQUENCE_TARGET=')
-        primer3_file.write(str(sequence.find(target) + 1))
-        primer3_file.write(',')
-        primer3_file.write(str(len(target)) + '\n')
+        primer3_file.write('SEQUENCE_ID={}\n'.format(seq_name))
+        primer3_file.write('SEQUENCE_TEMPLATE={}\n'.format(sequence))
+        primer3_file.write('SEQUENCE_TARGET={},{}\n'.format(sequence.find(target) + 1, len(target)))
         primer3_file.write('SEQUENCE_EXCLUDED_REGION=')
         excluded_region = '{},{}\n'.format(sequence.find(target) + 1, len(target))
         if exclude is not None:
@@ -274,7 +267,7 @@ def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
             primer3_file.write('SEQUENCE_EXCLUDED_REGION={},{}\n'.format(int(sequence.find(primerF) + len(primerF) / 3),
                                                                          int(len(primerF) / 3)))
             primerR = primerR.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1]
-            primer3_file.write('SEQUENCE_FORCE_RIGHT_END={}\n'.format(sequence.find(primerR))
+            primer3_file.write('SEQUENCE_FORCE_RIGHT_END={}\n'.format(sequence.find(primerR)))
             primer3_file.write('SEQUENCE_FORCE_RIGHT_START={}\n'.format(sequence.find(primerR) + len(primerR) - 1))
 
         with open(standard_primer_settings_filename, 'ru') as standard_primer3_file:
@@ -282,8 +275,6 @@ def create_primer3_file(seq_name, sequence, target, exclude, primerF, primerR):
                 primer3_file.write(line)
 
     return True
-
-
 
 
 def check_specificity(primerF, primerR, targetSequence, isPCRoutput):
@@ -449,7 +440,7 @@ def check_fasta(sequence, fasta_type, strict):
     fasta_type: protein or nucleotide
     strict: boolean, enforces perfect format, i.e. no extra line breaks or spaces, etc.
     """
-
+    
     fasta_type = fasta_type.upper()
 
     if fasta_type == 'PROTEIN' or \
@@ -514,21 +505,22 @@ def get_primers(sequence):
     # creates primer3 input file for each sequence
     output = ''
     stdoutput = ''
-    sequences = [sequence.split('\n', 1)[0][1:],
-                 ''.join(sequence.split('\n', 1)[1:]).replace('\n', '')]
+    header, sequence = sequence.split('\n', 1)
+    header = header[1:]
+    sequence = sequence.replace('\n', '').strip()
 
-    if not check_fasta('>{}'.format('\n'.join(sequences)), 'NUCLEOTIDE', False):
+    if not check_fasta('>{}\n{}'.format(header, sequence), 'NUCLEOTIDE', False):
         stdoutput += 'Sequence did not match FASTA format, no primers were designed\n'
         output = stdoutput
         return output, stdoutput
 
-    create_primer3_file(sequences[0], sequences[1], find_repeats(sequences[1], max_repeats), exclude_list(sequences[1]),
+    create_primer3_file(header, sequence, find_repeats(sequence, max_repeats), exclude_list(sequence),
                         '', '')
 
     stdoutput += 'Primer3 will be started now, please be patient\n'
 
     primer3_output = ''
-    filename = 'primer3_{}.txt'.format(create_clean_filename(sequences[0]))
+    filename = 'primer3_{}.txt'.format(create_clean_filename(header))
     primer3_input = ''
 
     with open(primer3_directory + filename, 'ru') as temp_file:
@@ -647,10 +639,10 @@ def get_primers(sequence):
                 primer3_nested_output = ''
                 primerF_nested = ''
                 # creates new primer3 file with fixed reverse primer
-                create_primer3_file(sequences[0], sequences[1], find_repeats(sequences[1], max_repeats),
-                                    exclude_list(sequences[0]), primerF_1st, primerR_1st)
-                filename = 'primer3_{}.txt'.format(create_clean_filename(sequences[0]))
-                with open(primer3_directory + filename, 'ru') as temp_file:
+                create_primer3_file(header, sequence, find_repeats(sequence, max_repeats),
+                                    exclude_list(sequence), primerF_1st, primerR_1st)
+                filename = 'primer3_{}.txt'.format(create_clean_filename(header))
+                with open(os.path.join(primer3_directory, filename), 'ru') as temp_file:
                     primer3_input = ''.join(temp_file.readlines())
                 if remote_server != '':
                     execute_primer3(primer3_input, local_run_name)
@@ -710,9 +702,9 @@ def get_primers(sequence):
                     if len(accepted_primers) < max_primerpairs:
                         primerF_1st = accepted_nested_template[0:accepted_nested_template.find(',')]
                         primerR_1st = accepted_nested_template[accepted_nested_template.find(',') + 1:]
-                        create_primer3_file(sequences[0], sequences[1], find_repeats(sequences[1], max_repeats),
-                                            exclude_list(sequences[0]), primerF_1st, primerR_1st)
-                        filename = 'primer3_{}.txt'.format(create_clean_filename(sequences[0]))
+                        create_primer3_file(header, sequence, find_repeats(sequence, max_repeats),
+                                            exclude_list(sequence), primerF_1st, primerR_1st)
+                        filename = 'primer3_{}.txt'.format(create_clean_filename(header))
                         primer3_input = ''
                         with open(primer3_directory + filename, 'ru') as temp_file:
                             primer3_input += ''.join(temp_file.readlines())
@@ -1010,17 +1002,17 @@ def start_repeat_finder(started_via_commandline, *arguments):
     #############################################
 
     ###multiprocess
-    print(run_name + ' program started, please be patient')
+    print('{} program started, please be patient'.format(run_name))
 
     sequences = []
 
-    fasta_file = open(fasta_filename, 'ru')
-    for line in open(fasta_filename, 'ru'):
-        if line.startswith('>'):
-            sequences.append(line)
-        else:
-            sequences[-1] += line
-    fasta_file.close()
+    with open(fasta_filename, 'ru') as fasta_file:
+        for line in fasta_file:
+            if line.startswith('>'):
+                sequences.append(line)
+            else:
+                sequences[-1] += line
+
     if len(sequences) > 1:
         p = multiprocessing.Pool(processes=max_threads)
         results = p.map(get_primers, sequences)
@@ -1033,9 +1025,8 @@ def start_repeat_finder(started_via_commandline, *arguments):
     for a in results:
         output.append(a[0])
         stdoutput.append(a[1])
-    final_output = open(data_dir + output_filename, 'w')
-    final_output.write(''.join(output))
-    final_output.close()
+    with open(os.path.join(data_dir, output_filename), 'w') as final_output:
+        final_output.write(''.join(output))
 
     print(''.join(stdoutput))
 
