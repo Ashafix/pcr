@@ -14,6 +14,24 @@ def create_clean_filename(old_name):
     return old_name
 
 
-def reverse_complement(seq):
-    seq = seq.upper()
-    return seq.replace('G', 'c').replace('C', 'g').replace('A', 't').replace('T', 'a').upper()[::-1]
+def read_aws_conf():
+    """
+    reads the AWS credentials
+    returns a dict with the values from the credentials file
+    """
+    aws = {}
+    locations = ['/var/www/data/', '/home/ubuntu/.aws/']
+    for location in locations:
+        if os.path.isfile(location + 'credentials'):
+            try:
+                credentials = open(location + 'credentials', 'r')
+                aws['region_name'] = 'eu-central-1'
+                for line in credentials.readlines():
+                    if '=' in line:
+                        cells = line.split('=')
+                        aws[cells[0].strip()] = cells[1].strip()
+                credentials.close()
+                return aws
+            except:
+                pass
+    return aws
