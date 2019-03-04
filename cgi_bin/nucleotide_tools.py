@@ -146,19 +146,19 @@ def exclude_list(sequence):
     return to_exclude
 
 
-def count_amplicons(isPCRoutput, primerF, primerR):
+def count_amplicons(isPCRoutput, primer):
     """
     Takes a list of isPCRoutputs and counts the numbers of amplicons for a primer pair
     """
-    startpoint = isPCRoutput.find('{};{}\n'.format(primerF, primerR))
+    startpoint = isPCRoutput.find('{};{}\n'.format(primer.forward, primer.reverse))
     if startpoint == -1:
         return -1
     if startpoint > 0 and isPCRoutput[startpoint - 1] != '\n':
         return -1
 
     isPCRfragment = isPCRoutput[startpoint:]
-    if isPCRfragment.find(';', len(primerF) + len(primerR) + 2) > -1:
-        isPCRfragment = isPCRfragment[0:isPCRfragment.find(';', len(primerF) + len(primerR) + 2)]
+    if isPCRfragment.find(';', len(primer.forward) + len(primer.reverse) + 2) > -1:
+        isPCRfragment = isPCRfragment[0:isPCRfragment.find(';', len(primer.forward) + len(primer.reverse) + 2)]
 
     return isPCRfragment.count('>')
 
