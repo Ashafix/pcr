@@ -1,10 +1,20 @@
+import sys
+import os
+import subprocess
+import random
+from GfServer import GfServer
+from Primer import Primer
+import nucleotide_tools as nt
+from support_functions import create_clean_filename, make_output, create_primer3_file, execute_primer3, \
+    start_remote_server
+
+
 class RepeatFinder:
-    def __init__(self, args=None, max_threads=1, max_similarity=1, nested=0):
+    def __init__(self, args=None, max_similarity=1, nested=0):
         self.fasta = None
         self.gfpcr = None
         self.gfserver = None
-        self.maxrepeats = None
-        self.maxthreads = max_threads
+        self.max_repeats = None
         self.max_similarity = max_similarity
         self.nested = nested
         self.output = None
@@ -21,6 +31,12 @@ class RepeatFinder:
         self.timeout = None
         self.waitingperiod = None
 
+        # new attributes
+        self.fasta_filename = ''
+        self.standard_primer_settings_filename = ''
+        self.max_primerpairs = 1
+        self.remote_server = ''
+
         # if args is coming from an ArgParse object
         if args is not None:
             for att, value in args.__dict__.items():
@@ -33,11 +49,12 @@ class RepeatFinder:
         self._gfserver()
         self._validate()
 
+        # location of hg18.2bit
+        self.pcr_location = self.gfpcr[0:len(self.gfpcr) - len('gfPCR')]
+
     def _validate(self):
         if self.nested not in (-1, 0, 1):
             raise ValueError('nested must be either -1, 0 or 1')
-        if self.maxthreads < 1:
-            raise ValueError('max_threads needs to be 1 or higher')
         if not os.path.isfile(self.fasta_filename):
             raise ValueError('Fasta file {} could not be found'.format(self.fasta_filename))
         if not os.path.isfile(self.standard_primer_settings_filename):
@@ -49,24 +66,21 @@ class RepeatFinder:
         if not os.path.isdir(self.primer3_directory):
             raise ValueError('Primer3 directory {} does not exist'.format(self.primer3_directory))
         if self.serverport <= 0:
-            raise ValueError('Please specificy a legal numerical value for the server port, got {}'.format(self.serverport))
-        if int(self.maxrepeats) < 0:
-            print('Please specificy a legal numerical value for the max repeats, got {}'.format(self.maxrepeats))
+            raise ValueError('Please specify a legal numerical value for the server port, got {}'.format(self.serverport))
+        if int(self.max_repeats) < 0:
+            print('Please specify a legal numerical value for the max repeats, got {}'.format(self.max_repeats))
         if self.max_primerpairs < 0:
-            print('Please specificy a legal numerical value for the max primer pairs, got {}'.format(self.max_primerpairs))
+            print('Please specify a legal numerical value for the max primer pairs, got {}'.format(self.max_primerpairs))
         # test if the in-silico PCR server is ready
         if not self.gfserver.test_server():
-            if remote_server == '':
+            if self.remote_server == '':
                 raise RuntimeError('gfServer not ready, please start it')
             else:
-                print(self.run_name + ' gfServer not ready, it is started now')
+                print('{} gfServer not ready, it is started now'.format(self.runname))
                 if start_remote_server(self.servername) != '':
-                    print(self.run_name + ' Remote server was successfully started')
+                    print('{} Remote server was successfully started'.format(self.runname))
                 else:
-                    print(self.run_name + ' Remote server could not be started')
-
-    # location of hg18.2bit
-    pcr_location = gfPCR[0:len(gfPCR) - len('gfPCR')]
+                    print('{} Remote server could not be started'.format(self.runname))
 
     def _gfserver(self):
         self.gfserver = GfServer(self.gfserver, self.servername, self.serverport)
@@ -107,7 +121,7 @@ class RepeatFinder:
             return output, stdoutput
 
         create_primer3_file(header, sequence, nt.find_repeats(sequence, self.maxrepeats), nt.exclude_list(sequence),
-                            Primer('', '', validate=False), self.primer3_directory, standard_primer_settings_filename)
+                            Primer('', '', validate=False), self.primer3_directory, self.standard_primer_settings_filename)
 
         stdoutput += 'Primer3 will be started now, please be patient\n'
 
@@ -118,13 +132,13 @@ class RepeatFinder:
         temp_file.close()
 
         stdoutput += 'Primer3 subprocess started\n'
-        if remote_server != '':
-            local_run_name = '{}_{}'.format(self.run_name, os.getpid())
+        if self.remote_server != '':
+            local_run_name = '{}_{}'.format(self.runname, os.getpid())
             primer3_output, comment = execute_primer3(primer3_input, local_run_name)
             stdoutput += comment
         else:
             orig_stdout = sys.stdout
-            with open(str(os.getpid()) + ".out", "w") as f:
+            with open('{}.out'.format(os.getpid()), 'w') as f:
                 sys.stdout = f
                 primer3_output = self.run_primer3(primer3_input) + '\n'
             sys.stdout = orig_stdout
@@ -137,7 +151,7 @@ class RepeatFinder:
             elif lines.find('SEQUENCE=') > 0:
                 if lines.startswith('PRIMER_LEFT') or lines.startswith('PRIMER_RIGHT'):
                     primer3_list.append(lines[lines.find('=') + 1:])
-        print(self.run_name + " ##################")
+        print('{} ##################'.format(self.runname))
 
         isPCRoutput = ''
 
@@ -167,11 +181,11 @@ class RepeatFinder:
 
             # checks if the primer pair amplifies only one amplicon
             if no_amplicons == 1:
-                amplicon = get_amplicon_from_primer3output(primer, primer3_output)
+                amplicon = nt.get_amplicon_from_primer3output(primer, primer3_output)
 
                 # checks if the primer pair amplifies the original target sequence
                 # should be checked against all primers, not only the first pair
-                if check_specificity(primer, amplicon, isPCRoutput):
+                if nt.check_specificity(primer, amplicon, isPCRoutput):
 
                     if len(accepted_primers) == 0:
                         primer_1st = Primer(primer.forward, primer.reverse)
@@ -214,7 +228,7 @@ class RepeatFinder:
                 # creates new primer3 file with fixed reverse primer
                 create_primer3_file(header, sequence, nt.find_repeats(sequence, self.max_repeats),
                                     nt.exclude_list(sequence), primer_1st, self.primer3_directory,
-                                    standard_primer_settings_filename)
+                                    self.standard_primer_settings_filename)
                 filename = 'primer3_{}.txt'.format(create_clean_filename(header))
                 with open(os.path.join(self.primer3_directory, filename), 'ru') as temp_file:
                     primer3_input = ''.join(temp_file.readlines())
@@ -231,7 +245,7 @@ class RepeatFinder:
                     elif lines.startswith('PRIMER_RIGHT'):
                         primer_nested = Primer(primer_nested_forward, lines[lines.find('=') + 1:])
                         # checks if the new, nested primer pair is specific
-                        amplicon = get_amplicon_from_primer3output(primerF_nested, primer_nested)
+                        amplicon = nt.get_amplicon_from_primer3output(primerF_nested, primer_nested)
 
                         if nt.dinucleotide_repeat(primer_nested.forward) >= 6 or nt.dinucleotide_repeat(
                                 primer_nested.reverse) >= 6:
@@ -240,18 +254,19 @@ class RepeatFinder:
                             isPCRoutput_nested = '{}\n{}'.format(primer_nested.format(';'),
                                                                  self.run_gfpcr(primer_nested))
 
-                            if check_specificity(primer_nested, amplicon, isPCRoutput_nested):
-                                if nt.similarity(primer_nested.forward, primer_1st.forward) < self.max_similarity:
-                                    stdoutput += '{} found nested primer\n'.format(primer_nested.format())
-                                    accepted_primers.append(primer_nested.format(','))
-                                    output += make_output(primer_nested, amplicon,
-                                                          isPCRoutput_nested, primer3_nested_output)
-                                    stdoutput += output + '\n'
-                                    break
-                                else:
-                                    stdoutput += '{} too similar\n'.format(primer_nested.format())
-                            else:
+                            if not nt.check_specificity(primer_nested, amplicon, isPCRoutput_nested):
                                 stdoutput += '{} not specific\n'.format(primer_nested.format())
+                                continue
+
+                            if nt.similarity(primer_nested.forward, primer_1st.forward) < self.max_similarity:
+                                stdoutput += '{} found nested primer\n'.format(primer_nested.format())
+                                accepted_primers.append(primer_nested.format(','))
+                                output += make_output(primer_nested, amplicon,
+                                                      isPCRoutput_nested, primer3_nested_output)
+                                stdoutput += output + '\n'
+                                break
+                            else:
+                                stdoutput += '{} too similar\n'.format(primer_nested.format())
 
                 if len(accepted_primers) < max_primerpairs:
                     stdoutput += 'Not enough primer pairs could be found\n'
@@ -291,7 +306,7 @@ class RepeatFinder:
 
                                 primer_nested = Primer(primer_nested_forward, lines[lines.find('=') + 1:])
                                 # checks if the new, nested primer pair is specific
-                                amplicon = get_amplicon_from_primer3output(primer_nested, primer3_nested_output)
+                                amplicon = nt.get_amplicon_from_primer3output(primer_nested, primer3_nested_output)
 
                                 if nt.dinucleotide_repeat(primer_nested.forward) >= 6 or nt.dinucleotide_repeat(
                                         primer_nested.reverse) >= 6:
@@ -300,68 +315,40 @@ class RepeatFinder:
                                     isPCRoutput_nested = '{}\n{}'.format(primer_nested.format(';'),
                                                                          self.run_gfpcr(primer_nested))
 
-                                    if check_specificity(primer_nested, amplicon, isPCRoutput_nested):
-                                        if nt.similarity(primer_nested.forward, primer_1st.forward) < self.max_similarity:
-                                            stdoutput += '{} {} found forced nested primer\n'.format(
-                                                primer_1st.forward,
-                                                primer_nested.reverse)
-                                            accepted_primers.append(primer_1st.format(','))
-                                            accepted_primers.append(primer_nested.format(','))
-
-                                            isPCRoutput = '{}\n{}'.format(primer_1st.format(';'),
-                                                                          self.run_gfpcr(primer_1st))
-                                            amplicon = get_amplicon_from_primer3output(primer_1st, primer3_output)
-                                            output += make_output(primer_1st, amplicon, isPCRoutput, primer3_output)
-                                            # should fix the problem with the doubled amplicon
-                                            amplicon = get_amplicon_from_primer3output(primer_nested,
-                                                                                       primer3_nested_output)
-                                            output += make_output(primer_nested, amplicon,
-                                                                  isPCRoutput_nested, primer3_nested_output)
-                                            stdoutput += output + '\n'
-                                            break
-                                        else:
-                                            stdoutput += '{} {} too similar\n'.format(primer_1st.forward,
-                                                                                      primer_nested.reverse)
-                                    else:
+                                    if not nt.check_specificity(primer_nested, amplicon, isPCRoutput_nested):
                                         stdoutput += '{} not specific\n'.format(primer_nested.format())
+                                        continue
+
+                                    if nt.similarity(primer_nested.forward, primer_1st.forward) < self.max_similarity:
+                                        stdoutput += '{} {} found forced nested primer\n'.format(
+                                            primer_1st.forward,
+                                            primer_nested.reverse)
+                                        accepted_primers.append(primer_1st.format(','))
+                                        accepted_primers.append(primer_nested.format(','))
+
+                                        isPCRoutput = '{}\n{}'.format(primer_1st.format(';'),
+                                                                      self.run_gfpcr(primer_1st))
+                                        amplicon = nt.get_amplicon_from_primer3output(primer_1st, primer3_output)
+                                        output += make_output(primer_1st, amplicon, isPCRoutput, primer3_output)
+                                        # should fix the problem with the doubled amplicon
+                                        amplicon = nt.get_amplicon_from_primer3output(primer_nested,
+                                                                                      primer3_nested_output)
+                                        output += make_output(primer_nested, amplicon,
+                                                              isPCRoutput_nested, primer3_nested_output)
+                                        stdoutput += output + '\n'
+                                        break
+                                    else:
+                                        stdoutput += '{} {} too similar\n'.format(primer_1st.forward,
+                                                                                  primer_nested.reverse)
 
                 stdoutput += 'Primer3 for forced nested primers finished\n'
 
-        if (len(accepted_primers) < max_primerpairs and self.nested == -1) or (len(accepted_primers) < 2 and self.nested != -1):
+        if (len(accepted_primers) < max_primerpairs and self.nested == -1) or \
+                (len(accepted_primers) < 2 and self.nested != -1):
             stdoutput += 'not enough primer pairs found\n'
 
-        with open(str(os.getpid()) + ".tmp", "w") as temp:
+        with open('{}.tmp'.format(os.getpid()), 'w') as temp:
             temp.write(output)
             temp.write(stdoutput)
 
         return output, stdoutput
-
-
-def read_configfile(config_filename):
-    """
-    reads the config file with all global entries
-    """
-    config = ConfigParser.RawConfigParser()
-    config.read(config_filename)
-    value_map = {'PRIMER3_SETTINGS': str,
-                 'PRIMER3_DIRECTORY': str,
-                 'SERVERNAME': str,
-                 'SERVERPORT': str,
-                 'GFSERVER': str,
-                 'GFPCR': str,
-                 'DATADIR': str,
-                 'MAXTHREADS': int,
-                 'WAITINGPERIOD': float,
-                 'TIMEOUT': int,
-                 'RUNNAME': str
-                 }
-    output = {}
-    for section in config.sections():
-        for option in config.options(section):
-            _option = option.upper()
-            if _option in value_map:
-                output[_option] = value_map[_option](config.get(section, option).strip())
-            else:
-                raise ValueError('getConfig: unknown conf entry: {}'.format(option))
-
-    return output
