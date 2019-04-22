@@ -15,6 +15,7 @@ import nucleotide_tools as nt
 from support_functions import create_clean_filename, read_aws_conf
 from Primer import Primer
 from GfServer import GfServer
+from StreamToLogger import StreamToLogger
 
 
 # Python2/3 compatibility
@@ -29,25 +30,6 @@ else:
 started_via_commandline = False
 
 
-# http://www.electricmonk.nl/log/2011/08/14/redirect-stdout-and-stderr-to-a-logger-in-python/
-class StreamToLogger(object):
-    """
-    Fake file-like stream object that redirects writes to a logger instance.
-    """
-
-    def __init__(self, logger, log_level=logging.INFO):
-        self.logger = logger
-        self.log_level = log_level
-        self.linebuf = ''
-
-    def write(self, buf):
-        for line in buf.rstrip().splitlines():
-            self.logger.log(self.log_level, line.rstrip())
-
-    def flush(self):
-        return ''
-
-
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
@@ -56,34 +38,6 @@ logging.basicConfig(
 )
 
 
-def read_configfile(config_filename):
-    """
-    reads the config file with all global entries
-    """
-    config = ConfigParser.RawConfigParser()
-    config.read(config_filename)
-    value_map = {'PRIMER3_SETTINGS': str,
-                 'PRIMER3_DIRECTORY': str,
-                 'SERVERNAME': str,
-                 'SERVERPORT': str,
-                 'GFSERVER': str,
-                 'GFPCR': str,
-                 'DATADIR': str,
-                 'MAXTHREADS': int,
-                 'WAITINGPERIOD': float,
-                 'TIMEOUT': int,
-                 'RUNNAME': str
-                 }
-    output = {}
-    for section in config.sections():
-        for option in config.options(section):
-            _option = option.upper()
-            if _option in value_map:
-                output[_option] = value_map[_option](config.get(section, option).strip())
-            else:
-                raise ValueError('getConfig: unknown conf entry: {}'.format(option))
-
-    return output
 
 
 def parse_args(args):
@@ -150,13 +104,16 @@ def import_parameters(arguments):
     return True, ''
 
 
-def create_primer3_file(seq_name, sequence, target, exclude, primer, primer3_directory, standard_primer_settings_filename):
+def create_primer3_file(seq_name, sequence, target, exclude, primer,
+                        primer3_directory='.', standard_primer_settings_filename=None):
     """
     creates the input file for primer3
     if primerF and primerR are given, primerR is kept fixed and primerF is excluded, useful for nested PCR
     """
-    if len(target) >= len(sequence) or target not in sequence:
-        return False
+    if len(target) >= len(sequence):
+        raise ValueError('target is longer than sequence')
+    if target not in sequence:
+        raise ValueError('target is not in sequence')
 
     new_filename = 'primer3_{}.txt'.format(create_clean_filename(seq_name))
     with open(os.path.join(primer3_directory, new_filename), 'w') as primer3_file:
@@ -170,19 +127,21 @@ def create_primer3_file(seq_name, sequence, target, exclude, primer, primer3_dir
                 excluded_region += 'SEQUENCE_EXCLUDED_REGION={},{}\n'.format(sequence.find(excluded_seq) + 1,
                                                                              len(excluded_seq))
         primer3_file.write(excluded_region)
+        if primer.forward != '':
+            primer3_file.write('SEQUENCE_EXCLUDED_REGION={},{}\n'.format(int(sequence.find(primer.forward) + len(primer.forward) / 3),
+                                                                         int(len(primer.forward) / 3)))
+        if primer.reverse != '':
+            primer_r_reverse_comp = nt.reverse_complement(primer.reverse)
+            right_end = sequence.find(primer_r_reverse_comp)
+            primer3_file.write('SEQUENCE_FORCE_RIGHT_END={}\n'.format(right_end))
+            primer3_file.write('SEQUENCE_FORCE_RIGHT_START={}\n'.format(right_end + len(primer_r_reverse_comp) - 1))
 
-        primer3_file.write('SEQUENCE_EXCLUDED_REGION={},{}\n'.format(int(sequence.find(primer.forward) + len(primer.forward) / 3),
-                                                                     int(len(primer.forward) / 3)))
-        primer_r_reverse_comp = nt.reverse_complement(primer.reverse)
-        right_end = sequence.find(primer_r_reverse_comp)
-        primer3_file.write('SEQUENCE_FORCE_RIGHT_END={}\n'.format(right_end))
-        primer3_file.write('SEQUENCE_FORCE_RIGHT_START={}\n'.format(right_end + len(primer_r_reverse_comp) - 1))
+        if standard_primer_settings_filename is None:
+            return
 
         with open(standard_primer_settings_filename, 'ru') as standard_primer3_file:
             for line in standard_primer3_file.readlines():
                 primer3_file.write(line)
-
-    return True
 
 
 def check_specificity(primer, targetSequence, isPCRoutput):
@@ -331,285 +290,10 @@ def make_output(primer, amplicon, isPCRoutput, primer3_output):
     return output
 
 
-def get_primers(sequence):
-    """
-    main function
-    finds primers for a given sequence
-    """
-    # creates primer3 input file for each sequence
-    output = ''
-    stdoutput = ''
-    header, sequence = sequence.split('\n', 1)
-    header = header[1:]
-    sequence = sequence.replace('\n', '').strip()
-
-    if not nt.check_fasta('>{}\n{}'.format(header, sequence), 'NUCLEOTIDE', False):
-        stdoutput += 'Sequence did not match FASTA format, no primers were designed\n'
-        output = stdoutput
-        return output, stdoutput
-
-    create_primer3_file(header, sequence, nt.find_repeats(sequence, max_repeats), nt.exclude_list(sequence),
-                        Primer('', '', validate=False), primer3_directory, standard_primer_settings_filename)
-
-    stdoutput += 'Primer3 will be started now, please be patient\n'
-
-    primer3_output = ''
-    filename = 'primer3_{}.txt'.format(create_clean_filename(header))
-    primer3_input = ''
-
-    with open(primer3_directory + filename, 'ru') as temp_file:
-        primer3_input += ''.join(temp_file.readlines())
-    temp_file.close()
-
-    stdoutput += 'Primer3 subprocess started\n'
-    if remote_server != '':
-        local_run_name = '{}_{}'.format(run_name, os.getpid())
-        primer3_output, comment = execute_primer3(primer3_input, local_run_name)
-        stdoutput += comment
-    else:
-        sys.stdout = open(str(os.getpid()) + ".out", "w")
-        process = subprocess.Popen(primer3_exe,
-                                   stdout=subprocess.PIPE,
-                                   stdin=subprocess.PIPE)
-        process.stdin.write(primer3_input)
-        primer3_output += process.communicate()[0] + '\n'
-    stdoutput += 'Primer3 finished\n'
-    primer3_list = []
-
-    for lines in primer3_output.split('\n'):
-        if lines.startswith('SEQUENCE_ID'):
-            primer3_list.append(lines)
-        elif lines.find('SEQUENCE=') > 0:
-            if lines.startswith('PRIMER_LEFT') or lines.startswith('PRIMER_RIGHT'):
-                primer3_list.append(lines[lines.find('=') + 1:])
-    print(run_name + " ##################")
-
-    isPCRoutput = ''
-
-
-    # list of primers which only amplify one amplicon
-    accepted_primers = []
-
-    # list of primers which can be used to search for nested primers
-    accepted_nested_templates = []
-
-
-    # Step 4: checks all created primers
-    output += '==========\nTarget:, {}\n\n'.format(primer3_list[0][primer3_list[0].find('=') + 1:])
-    primerF_1st = ''
-    primerR_1st = ''
-
-    for i in range(1, len(primer3_list), 2):
-        if len(accepted_primers) < max_primerpairs:
-            primer = Primer(primer3_list[i], primer3_list[i + 1])
-            # checks if the primers do not contain repeats, e.g. GAGAGA, not longer than 2x2 repeat
-            # if not, runs isPCR to see if they are specific
-            if nt.dinucleotide_repeat(primer.forward) >= 6 or nt.dinucleotide_repeat(primer.reverse) >= 6:
-                no_amplicons = 0
-                stdoutput += '{} {} rejected, repeats\n'.format(primer.forward, primer.reverse)
-            else:
-                process = subprocess.Popen(
-                    [gfPCR, servername, str(serverport), pcr_location, primer.forward, primer.reverse, 'stdout'],
-                    stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-                isPCRoutput = '{};{}\n{}'.format(primer.forward, primer.reverse, process.communicate()[0])
-                no_amplicons = nt.count_amplicons(isPCRoutput, primer)
-
-            i += 1
-
-            # checks if the primer pair amplifies only one amplicon
-            if no_amplicons == 1:
-                amplicon = get_amplicon_from_primer3output(primer, primer3_output)
-
-                # checks if the primer pair amplifies the original target sequence
-                accept_primerpair = False
-                # should be checked against all primers, not only the first pair
-                if check_specificity(primer, amplicon, isPCRoutput):
-                    if len(accepted_primers) == 0:
-                        primer_1st = Primer(primer.forward, primer.reverse)
-                        accept_primerpair = True
-                    elif nt.similarity(primer.forward, primer_1st.forward) < max_similarity:
-                        if nt.similarity(primer, primerR_1st) < max_similarity:
-                            accept_primerpair = True
-
-                    # if the pair is accepted it will be written to the output file
-                    if accept_primerpair and nested != 1:
-                        accepted_primers.append('{},{}'.format(primer.forward, primer.reverse))
-                        output += make_output(primer.forward, primer.reverse, amplicon, isPCRoutput, primer3_output)
-                        stdoutput += output + '\n'
-                    # v1.03
-                    elif accept_primerpair and nested == 1:
-                        accepted_nested_templates.append('{},{}'.format(primer.forward, primer.reverse))
-            else:
-                stdoutput += '{} {} rejected, not exactly one amplicon\n'.format(primer.forward, primer.reverse)
-            # checks if not enough suitable primer pairs have been found
-            # then tries to design primers for nested PCR
-            # if yes, tries to redesign primers with identical reverse primer but different forward primer
-
-            make_nested_primers = False
-            if len(accepted_primers) == 0 and nested != 1:
-                if i + 1 >= len(primer3_list):
-                    stdoutput += 'no suitable primer pairs could be found, consider relaxing the primer3 parameters\n'
-                elif i != 0 and i + 1 < len(primer3_list) and primer3_list[i + 1].startswith('SEQUENCE_ID'):
-                    stdoutput += 'no suitable primer pairs could be found, consider relaxing the primer3 parameters\n'
-
-            elif len(accepted_primers) != 0 and len(accepted_primers) < max_primerpairs and nested != -1:
-                if i + 1 >= len(primer3_list):
-                    make_nested_primers = True
-                elif i != 0 and i + 1 < len(primer3_list) and primer3_list[i + 1].startswith('SEQUENCE_ID'):
-                        make_nested_primers = True
-
-            if make_nested_primers and nested == 0:
-                stdoutput += 'trying to find nested primers\n'
-
-                primer3_nested_output = ''
-                primerF_nested = ''
-                # creates new primer3 file with fixed reverse primer
-                create_primer3_file(header, sequence, nt.find_repeats(sequence, max_repeats),
-                                    nt.exclude_list(sequence), primer_1st, primer3_directory, standard_primer_settings_filename)
-                filename = 'primer3_{}.txt'.format(create_clean_filename(header))
-                with open(os.path.join(primer3_directory, filename), 'ru') as temp_file:
-                    primer3_input = ''.join(temp_file.readlines())
-                if remote_server != '':
-                    execute_primer3(primer3_input, local_run_name)
-                else:
-                    process = subprocess.Popen(primer3_exe, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-                    process.stdin.write(primer3_input)
-                    primer3_nested_output += process.communicate()[0] + '\n'
-                stdoutput += 'Primer3 for nested primers finished\n'
-                for lines in primer3_nested_output.split('\n'):
-                    if lines.find('SEQUENCE') > 0:
-                        if lines.startswith('PRIMER_LEFT'):
-                            primer_nested_forward = lines[lines.find('=') + 1:]
-                        elif lines.startswith('PRIMER_RIGHT'):
-                            primer_nested = Primer(primer_nested_forward, lines[lines.find('=') + 1:])
-                            # checks if the new, nested primer pair is specific
-                            amplicon = get_amplicon_from_primer3output(primerF_nested, primer_nested)
-
-                            if nt.dinucleotide_repeat(primer_nested.forward) >= 6 or nt.dinucleotide_repeat(primer_nested.reverse) >= 6:
-                                stdoutput += '{} {} rejected, repeats\n'.format(primer_nested.forward,
-                                                                                primer_nested.reverse)
-                            else:
-                                process = subprocess.Popen(
-                                    [gfPCR, servername, str(serverport), pcr_location,
-                                     primer_nested.forward, primer_nested.reverse, 'stdout'],
-                                    stdout=subprocess.PIPE,
-                                    stdin=subprocess.PIPE)
-                                isPCRoutput_nested = '{};{}\n{}'.format(primer_nested.forward,
-                                                                        primer_nested.reverse,
-                                                                        process.communicate()[0])
-
-                                if check_specificity(primer_nested, amplicon, isPCRoutput_nested):
-                                    if nt.similarity(primer_nested.forward, primer_1st.forward) < max_similarity:
-                                        stdoutput += '{} {} found nested primer\n'.format(primer_nested.forward,
-                                                                                          primer_nested.reverse)
-                                        accepted_primers.append('{},{}'.format(primer_nested.forward,
-                                                                               primer_nested.reverse))
-                                        output += make_output(primer_nested, amplicon,
-                                                              isPCRoutput_nested, primer3_nested_output)
-                                        stdoutput += output + '\n'
-                                        break
-                                    else:
-                                        stdoutput += '{} {} too similar\n'.format(primer_nested.forward,
-                                                                                  primer_nested.reverse)
-                                else:
-                                    stdoutput += '{} {} not specific\n'.format(primer_nested.forward,
-                                                                               primer_nested.reverse)
-
-                if len(accepted_primers) < max_primerpairs:
-                    stdoutput += 'Not enough primer pairs could be found\n'
-                    max_primerpairs = 0
-            ####
-            # added in v1.03 for forced nested primers
-            elif nested == 1 and (i + 1 >= len(primer3_list) or (i != 0 and primer3_list[i + 1].startswith('SEQUENCE_ID'))) and len(accepted_nested_templates) > 0:
-                stdoutput += 'forced to trying to find nested primers\n'
-                # creates new primer3 file with fixed reverse primer
-                for accepted_nested_template in accepted_nested_templates:
-                    if len(accepted_primers) < max_primerpairs:
-                        primer_1st = Primer(accepted_nested_template[0:accepted_nested_template.find(',')],
-                                            accepted_nested_template[accepted_nested_template.find(',') + 1:])
-                        create_primer3_file(header, sequence, nt.find_repeats(sequence, max_repeats),
-                                            nt.exclude_list(sequence), primer_1st, primer3_directory, standard_primer_settings_filename)
-                        filename = 'primer3_{}.txt'.format(create_clean_filename(header))
-                        primer3_input = ''
-                        with open(primer3_directory + filename, 'ru') as temp_file:
-                            primer3_input += ''.join(temp_file.readlines())
-
-                        primer3_nested_output, comment = execute_primer3(primer3_input,
-                                                                         '{}nested{}'.format(filename,
-                                                                                             random.random()))
-                        stdoutput += comment
-                        primer3_nested_output += primer3_nested_output + '\n'
-                        primerF_nested = ''
-
-                        for lines in primer3_nested_output.split('\n'):
-                            if lines.find('SEQUENCE') > 0:
-                                if lines.startswith('PRIMER_LEFT'):
-                                    primer_nested_forward = lines[lines.find('=') + 1:]
-
-                                elif lines.startswith('PRIMER_RIGHT'):
-
-                                    primer_nested = Primer(primer_nested_forward, lines[lines.find('=') + 1:])
-                                    # checks if the new, nested primer pair is specific
-                                    amplicon = get_amplicon_from_primer3output(primer_nested, primer3_nested_output)
-
-                                    if nt.dinucleotide_repeat(primer_nested.forward) >= 6 or nt.dinucleotide_repeat(primer_nested.reverse) >= 6:
-                                        stdoutput += '{} {} rejected, repeats\n'.format(primer_nested.forward,
-                                                                                        primer_nested.reverse)
-                                    else:
-                                        process = subprocess.Popen([gfPCR, servername, str(serverport), pcr_location,
-                                                                    primer_nested.forward, primer_nested.reverse, 'stdout'],
-                                                                   stdout=subprocess.PIPE,
-                                                                   stdin=subprocess.PIPE)
-                                        isPCRoutput_nested = '{};{}\n{}'.format(primer_nested.forward,
-                                                                                primer_nested.reverse,
-                                                                                process.communicate()[0])
-
-                                        if check_specificity(primer_nested, amplicon, isPCRoutput_nested):
-                                            if nt.similarity(primerF_nested, primerF_1st) < max_similarity:
-                                                stdoutput += '{} {} found forced nested primer\n'.format(primer_1st.forward,
-                                                                                                         primer_nested.reverse)
-                                                accepted_primers.append('{},{}'.format(primer_1st.forward, primer_1st.reverse))
-                                                accepted_primers.append('{},{}'.format(primer_nested.forward, primer_nested.forward))
-
-                                                process = subprocess.Popen(
-                                                    [gfPCR, servername, str(serverport), pcr_location, primer_1st.forward,
-                                                     primer_1st.reverse, 'stdout'], stdout=subprocess.PIPE,
-                                                    stdin=subprocess.PIPE)
-                                                isPCRoutput = '{};{}\n{}'.format(primer_1st.forward,
-                                                                                 primer_1st.reverse,
-                                                                                 process.communicate()[0])
-                                                amplicon = get_amplicon_from_primer3output(primer_1st,
-                                                                                           primer3_output)
-                                                output += make_output(primer_1st, amplicon, isPCRoutput, primer3_output)
-                                                # should fix the problem with the doubled amplicon
-                                                amplicon = get_amplicon_from_primer3output(primer_nested, primer3_nested_output)
-                                                output += make_output(primer_nested, amplicon,
-                                                                      isPCRoutput_nested, primer3_nested_output)
-                                                stdoutput += output + '\n'
-                                                break
-                                            else:
-                                                stdoutput += '{} {} too similar\n'.format(primer_1st.forward,
-                                                                                          primer_nested.reverse)
-                                        else:
-                                            stdoutput += '{} {} not specific\n'.format(primer_nested.forward,
-                                                                                       primer_nested.reverse)
-
-                stdoutput += 'Primer3 for forced nested primers finished\n'
-
-    if (len(accepted_primers) < max_primerpairs and nested == -1) or (len(accepted_primers) < 2 and nested != -1):
-        stdoutput += 'not enough primer pairs found\n'
-
-    with open(str(os.getpid()) + ".tmp", "w") as temp:
-        temp.write(output)
-        temp.write(stdoutput)
-
-    return output, stdoutput
-
-
 def start_remote_server(*arguments):
     """
     Starts a remote AWS instance where primer3 and gfServer run
-    Returns the remote server URL if the server was started succesfully
+    Returns the remote server URL if the server was started successfully
     Returns '' if the start failed
     """
     stdout_logger = logging.getLogger('STDOUT')
@@ -708,7 +392,6 @@ def start_repeat_finder(started_via_commandline, *arguments):
     max_primerpairs = -1
     nested = 0
     output_filename = 'batchprimer_output.txt'
-    max_threads = 1
     remove_temp_files = False
     hostname = ''
     compute_host = ''
@@ -726,52 +409,6 @@ def start_repeat_finder(started_via_commandline, *arguments):
         sl = StreamToLogger(stderr_logger, logging.ERROR)
         sys.stderr = sl
         import_parameters(arguments)
-
-    # all input parameters are valid
-    parameters_legal = False
-
-    if not os.path.isfile(fasta_filename):
-        print(run_name + ' Fasta file could not be found')
-        print(fasta_filename)
-    elif not os.path.isfile(standard_primer_settings_filename):
-        print(os.path.isfile(standard_primer_settings_filename))
-        print(run_name + ' Primer3 settings file could not be found')
-    elif not os.path.isfile(primer3_exe):
-        print(run_name + ' Primer3.exe file could not be found')
-        print(primer3_exe)
-    elif not os.path.isfile(gfPCR):
-        print(run_name + ' gfPCR.exe file could not be found')
-        print(gfPCR)
-    elif not os.path.isdir(primer3_directory):
-        print(run_name + ' Primer3 directory does not exist')
-        print(primer3_directory)
-    elif serverport <= 0:
-        print(run_name + ' Please specificy a legal numerical value for the server port')
-    elif int(max_repeats) < 0:
-        print(run_name + ' Please specificy a legal numerical value for the max repeats')
-    elif max_primerpairs < 0:
-        print(run_name + ' Please specificy a legal numerical value for the max primer pairs')
-    elif max_threads < 1:
-        print(run_name + ' Please specific a legal numerical value for the maximum amount of threads')
-    # test if the in-silico PCR server is ready
-    elif not test_server(gfServer, servername, serverport):
-        if remote_server == '':
-            print(run_name + ' gfServer not ready, please start it')
-        else:
-            print(run_name + ' gfServer not ready, it is started now')
-            if start_remote_server(servername) != '':
-                print(run_name + ' Remote server was successfully started')
-                parameters_legal = True
-            else:
-                print(run_name + ' Remote server could not be started')
-    else:
-        parameters_legal = True
-
-    if not parameters_legal:
-        exit()
-
-    # location of hg18.2bit
-    pcr_location = gfPCR[0:len(gfPCR) - len('gfPCR')]
 
     #############################################
     ###passed all tests, now program can start###

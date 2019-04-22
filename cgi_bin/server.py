@@ -3,79 +3,56 @@
 import cgi
 import os
 import sys
-from random import SystemRandom
-from string import ascii_uppercase, ascii_lowercase, digits
-from shutil import copyfile
+import random
+import string
+import shutil
 import socket
 import urllib2
-import threading
-from time import sleep
-from threading import Thread
-from multiprocessing import Pool
-from functools import partial
+import urllib
+import time
+import ast
 
 global data_dir
 global run_name
 
-html = ''
 sequence_filename = ''
 config_filename = 'batchprimer.conf'
 input_args = []
 cgi_args = ['batchname', 'maxrepeats', 'primerpairs', 'maxsimilarity', 'nested', 'fastasequence']
-print_dots = False
 
 # dictionary with 'number of CPUs':extension
 server_extensions = {2: 'c4.large', 8: 'c4.2xlarge'}
 
 header = """\
 Content-Type: text/html\n
-<html><body>
-<p>
+<html>
+<header>
+        <link rel="stylesheet" type="text/css" href="results.css">
+</header>
+<body>
 """
 end = """\
-</p>
-</body></html>
+</body>
+</html>
 """
 html_code = ''
+
 
 def log(args):
     with open('log.txt', 'a') as f:
         if type(args) == type(list()):
-            f.write(' '.join(args))
+            for arg in args:
+                f.write(str(arg) + ' ')
         else:
             f.write(args)
         f.write('\n')
 
-class dots(threading.Thread):
-    """
-	a background thread for printing dots
-	"""
-
-    def __init__(self, dot):
-        threading.Thread.__init__(self)
-        self.runnable = dot
-        self.daemon = True
-
-    def run(self):
-        self.runnable()
-
-
-def dot():
-    """
-	prints a dot every second
-	"""
-    global print_dots
-    while True:
-        if print_dots:
-            html_output('.')
-        sleep(1)
-
 
 def cgi_result(data, environ):
     """fakes a cgi result
-	data: input data
-	environ: environment variables
-	"""
+    data: input data
+    environ: environment variables
+    """
     fake_stdin = StringIO(data)
     fake_stdin.seek(0)
     fake_form = cgi.FieldStorage(fp=fake_stdin, environ=environ)
@@ -84,8 +61,8 @@ def cgi_result(data, environ):
 
 def html_output(new_line):
     """
-	generates dynamic html output
-	"""
+    generates dynamic html output
+    """
     global html_code
     html_code += new_line
     html_output = header + html_code + end
@@ -95,16 +72,15 @@ def html_output(new_line):
 
 # writes a sequence or sequence file to the data directory
 def write_sequence(sequence, index=''):
-    if index != '':
+    if index:
         fasta_filename = data_dir + run_name + '_' + str(index)
         fasta_filename += '_sequence.fasta'
     else:
         fasta_filename = data_dir + run_name + '_sequence.fasta'
-    if sequence != '':
-        fasta_file = open(fasta_filename, 'w')
-        sequence = clean_sequence(sequence)
-        fasta_file.write(sequence)
-        fasta_file.close()
+    if sequence:
+        with open(fasta_filename, 'w') as fasta_file:
+            sequence = clean_sequence(sequence)
+            fasta_file.write(sequence)
     else:
         return ''
     return fasta_filename
@@ -112,11 +88,11 @@ def write_sequence(sequence, index=''):
 
 def clean_sequence(sequence):
     """
-	cleans a FASTA nucleotide sequence
-	"""
+    cleans a FASTA nucleotide sequence
+    """
     new_sequence = ''
     nucleotides = 'ATGC'
-    legal_header = ascii_lowercase + ascii_uppercase + digits + '_=:\'+- '
+    legal_header = string.ascii_lowercase + string.ascii_uppercase + string.digits + '_=:\'+- '
     for line in sequence.splitlines():
         if line.startswith('>'):
             new_sequence += '>'
@@ -131,8 +107,8 @@ def clean_sequence(sequence):
 
 def correct_fasta(sequence):
     """
-	checks if a FASTA file is correct
-	"""
+    checks if a FASTA file is correct
+    """
     header = False  # indicates whether a header was found
     sequence = sequence.strip()
     if not sequence.startswith('>'):
@@ -155,12 +131,8 @@ def correct_fasta(sequence):
     return True
 
 
-# starts the background thread for printing dots
-thread = dots(dot)
-thread.start()
-
 html_output(header)
-html_output('Your job was submitted. Please be patient....<br><br>\n')
+html_output('<div class="comment" id="submitted">Your job was submitted. Please be patient....<br><br></div>\n')
 
 # standard use via web
 if len(sys.argv) == 1:
@@ -192,8 +164,7 @@ elif form.getvalue('algorithm') == 'stable':
 elif form.getvalue('algorithm') == 'beta':
     from repeat_finder_beta import *
 else:
-    html += 'Algorithm version could not be determined. Exiting now.....'
-    html_output(html)
+    html_output('Algorithm version could not be determined. Exiting now.....')
     sys.exit(1)
 
 # read configuration file
@@ -204,7 +175,6 @@ try:
     fasta_fileitem = form['fastafile']
     primer3_fileitem = form['primer3file']
 except:
-    html += 'Error: Not started via a proper CGI form'
     html_output('Error: Not started via a proper CGI form')
     sys.exit()
 
@@ -213,55 +183,44 @@ try:
     if form.getvalue('nested'):
         nested = form.getvalue('nested')
 except:
-    html += 'Not started via a proper CGI form - Nested checkbox is missing'
     html_output('Not started via a proper CGI form - Nested checkbox is missing')
-# checks if the sequence is OK
-
-
-
-# checks if the input file is OK
 
 # creates a random name for each run
 run_name = ''
 if form.getvalue('private'):
     # create a long runname which is not shown in results
-    msg = '<br>Your result will not be public and can only be accessed via the direct link. If you lose this link, you cannot access your results.<br>'
-    html += msg
-    html_output(msg)
+    html_output(
+        '<br>Your result will not be public and can only be accessed via the direct link. If you lose this link, you cannot access your results.<br>')
     while os.path.isfile(run_name) or run_name == '':
-        run_name = ''.join(SystemRandom().choice(ascii_uppercase + digits) for _ in range(24))
+        run_name = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(24))
 else:
     while os.path.isfile(run_name) or run_name == '':
-        run_name = ''.join(SystemRandom().choice(ascii_uppercase + digits) for _ in range(6))
+        run_name = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(6))
 
 # Test if a sequence file was uploaded
 sequence = ''
 if fasta_fileitem.filename:
     for line in fasta_fileitem.file.readlines():
         sequence += line
-elif form.getvalue('fastasequence') != '':
+elif form.getvalue('fastasequence'):
     sequence = form.getvalue('fastasequence')
 else:
-    msg = 'Error: No valid FASTA sequence was provided<br>'
-    html += msg
-    html_output(msg)
+    html_output('Error: No valid FASTA sequence was provided<br>')
 
 # Test if a primer3 settings file was uploaded
 input_args.append('-PRIMER3_SETTINGS')
 if primer3_fileitem.filename:
     primer3_settings = primer3_fileitem.file.read()
     primer3_filename = data_dir + run_name + '_primer3.ini'
-    primer3_file = open(primer3_filename, 'w')
-    primer3_file.write(primer3_settings)
-    primer3_file.close()
-    input_args.append(primer3_filename)
+    with open(primer3_filename, 'w') as primer3_file:
+        primer3_file.write(primer3_settings)
 else:
-    input_args.append(config_args['PRIMER3_SETTINGS'])
+    primer3_filename = config_args['PRIMER3_SETTINGS']
+input_args.append(primer3_filename)
 
 if sequence.count('>') > 100:
-    msg = "Error: Please don't submit more than 100 sequences at once. Feel free to contact us at maximili.peters@mail.huji.ac.il to discuss further options.<br>"
-    html += msg
-    html_output(msg)
+    html_output(
+        "Error: Please don't submit more than 100 sequences at once. Feel free to contact us at maximili.peters@mail.huji.ac.il to discuss further options.<br>")
 else:
     # finds the suitable AWS instance type depending on the number of jobs
     server_extension = ''
@@ -281,52 +240,45 @@ input_args.append(config_args['PRIMER3_EXE'])
 input_args.append('-NESTED')
 input_args.append(nested)
 input_args.append('-MAXTHREADS')
-# input_args.append(config_args['MAXTHREADS'])
 input_args.append(1)
 
 if int(form.getvalue('maxrepeats')) > 1 and int(form.getvalue('maxrepeats')) < 7:
     input_args.append('-MAXREPEATS')
     input_args.append(form.getvalue('maxrepeats'))
 else:
-    html += 'Error: Please provide a value between 2 and 6 for the repeat length<br>'
     html_output('Error: Please provide a value between 2 and 6 for the repeat length<br>')
 if int(form.getvalue('primerpairs')) > 0 and int(form.getvalue('primerpairs')) < 101:
     input_args.append('-PRIMERPAIRS')
     input_args.append(form.getvalue('primerpairs'))
 else:
-    html += 'Error: Please provide a value between 1 and 100 for the number of primer pairs<br>'
     html_output('Error: Please provide a value between 1 and 100 for the number of primer pairs<br>')
 
 # write all input files
 # batchrun name
-if form.getvalue('batchname') != '':
-    name_file = open(data_dir + run_name + '_name.txt', 'w')
-    name_file.write(form.getvalue('batchname'))
-    name_file.close()
+if form.getvalue('batchname'):
+    with open(data_dir + run_name + '_name.txt', 'w') as name_file:
+        name_file.write(form.getvalue('batchname'))
 # primer3 settings
 if not primer3_fileitem.filename:
-    copyfile(config_args['PRIMER3_SETTINGS'], data_dir + run_name + '_primer3.ini')
+    shutil.copyfile(config_args['PRIMER3_SETTINGS'], data_dir + run_name + '_primer3.ini')
 # batchprimer settings
-batchprimer_file = open(data_dir + run_name + '_batchprimer.ini', 'w')
-for input_arg in input_args:
-    batchprimer_file.write(str(input_arg) + '\n')
-batchprimer_file.close()
+with open(data_dir + run_name + '_batchprimer.ini', 'w') as batchprimer_file:
+    for input_arg in input_args:
+        batchprimer_file.write(str(input_arg) + '\n')
 
-if not 'Error: ' in html:
+if not 'Error: ' in html_code:
     if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
-        html_output('Remote server will be started now. This might take a minute or two.<br>')
-        print_dots = True
+        html_output(
+            '<div class"=comment">Remote server will be started now. This might take a minute or two.<br></div>')
 
         new_servername = start_remote_server(config_args['GFSERVER'], config_args['SERVERNAME'],
                                              config_args['SERVERPORT'], 120, server_extension)
-        if new_servername == '':
-            html += 'Error: Compute server could not be started.<br><br>'
+        if not new_servername:
             html_output('Error: Compute server could not be started.<br><br>')
         else:
             config_args['SERVERNAME'] = new_servername
-            html_output('<br>Remote server is running now.<br><br>')
+            html_output('<div class="comment"><br>Remote server is running now.<br><br></div>')
 
-        print_dots = False
 remoteserver_url = ''
 
 if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
@@ -354,35 +306,31 @@ if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_ar
             config_args['SERVERNAME'] = instance.private_dns_name.split('.')[0]
             remoteserver_url = 'http://' + instance.public_dns_name
             if not test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']):
-                html += '<br>Server start was successful, but gfServer does not respond<br>'
                 html_output('<br>Server start was successful, but gfServer does not respond<br>')
 else:
     if config_args.get('SERVERURL'):
         remoteserver_url = config_args['SERVERURL']
     else:
-        remoteserver_url = 'localhost'
-if remoteserver_url != '':
+        remoteserver_url = 'http://localhost'
+baseurl = remoteserver_url + ':8004'
+if remoteserver_url:
     # checks if the REST server is responding
-    url = remoteserver_url + ':8003/cpuInfo'
-    reply = ''
+    url = baseurl + '/myIP'
     try:
         req = urllib2.Request(url, )
-        response = urllib2.urlopen(req)
-        reply = str(response.read())
+        reply = ast.literal_eval(urllib2.urlopen(req).read())
     except:
-        pass
-    if not 'CPU' in reply:
-        html += '<br>Rest server URL: ' + remoteserver_url
+        reply = dict()
+    if not 'IP' in reply.keys():
         html_output('<br>Rest server URL: ' + remoteserver_url)
-        html += '<br>Error: Rest server is not responding'
         html_output('<br>Error: Rest server is not responding')
+    else:
+        rest_url = reply['IP']
+        own_url = '52.29.102.142'
 else:
-    html += '<br>Error: Remote server has no URL<br>'
     html_output('<br>Error: Remote server has no URL<br>')
 
-if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and \
-        sequence_filename and \
-        not 'Error: ' in html:
+if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['SERVERPORT']) and sequence_filename and not 'Error: ' in html_code:
 
     input_args.append('-SERVERNAME')
     input_args.append(config_args['SERVERNAME'])
@@ -394,19 +342,15 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
     input_args.append(config_args['GFPCR'])
     input_args.append('-DATADIR')
     input_args.append(config_args['DATADIR'])
-    input_args.append('-REMOTESERVER')
-    input_args.append(remoteserver_url)
     input_args.append('-RUNNAME')
     input_args.append(run_name)
-    html_output('Hemi-NeSTR was just started. It will take about two minutes per sequence batch.<br>')
     html_output(
-        '<br><a target="_blank" href="../cgi-bin/results.py?result=' + run_name + '">Your results will be here</a><br>')
+        '<div class="comment" id="started">Hemi-NeSTR was just started. It will take about two minutes per sequence batch.<br></div>')
 
-    result_file = open(data_dir + run_name + '_results.txt', 'w')
-    result_file.write('Your job is still running. Just be patient and refresh the page in a couple of minutes.\n')
-    result_file.close()
+    with open(data_dir + run_name + '_results.txt', 'w') as result_file:
+        result_file.write('Your job is still running. Just be patient and refresh the page in a couple of minutes.\n')
 
-    sub_seqs = []
+    sub_seqs = list()
     offset = 0
 
     # needed to deal with different sequence formats (single or multiple)
@@ -418,60 +362,120 @@ if test_server(config_args['GFSERVER'], config_args['SERVERNAME'], config_args['
         if offset != -1:
             sub_seqs.append(sequence[offset:sequence.find('>', offset + 1)].strip())
 
-    input_args.append('-FASTA')
+    ##input_args.append('-FASTA')
     base_args = input_args[:]
 
-    # html_output('<br>a batch of jobs was started<br>')
-    print_dots = True
-
-    seqs = []
+    seqs = list()
     for i in range(len(sub_seqs)):
         input_args = base_args[:]
-        sequence = ''
-        sequence += sub_seqs[i] + '\n'
-        sequence_filename = write_sequence(sequence, str(i))
-        input_args.append(sequence_filename)
+        input_args.append('-RUNNAME')
+        input_args.append('{0}.{1}'.format(run_name, i))
         seqs.append(input_args)
     log(input_args)
-    partial1 = partial(start_repeat_finder, False)
-    pool = Pool(processes=config_args['MAXTHREADS'])
-
     batchprimer_result_dict = dict()
-    pool_iterator = pool.imap(partial1, seqs)
-    with result_file as open(data_dir + run_name + '_results.txt', 'a'):
-        for i in range(len(sub_seqs)):
-            html_output('<br>a job was just started<br>')
-            batchprimer_result_dict[i] = pool_iterator.next()
 
-            if i in batchprimer_result_dict.keys():
-                result_file.write(batchprimer_result_dict[i])
+    html_output("""
+          <h2>Status of run {0}</h2>
+          <table id="runname_{0}" class="table_result">
+            <thead>
+              <tr>
+                <th class="th_sequence">Sequence</th>
+                <th class="th_status">Status</th>
+                <th class="td_result">Results</th>
+              </tr>
+            </thead>
+            <tbody>""".format(run_name))
 
-
-    batchprimer_results = ''
+    # read primer3 input paramters for all runs
+    with open(primer3_filename, 'r') as f:
+        primer3_params = str(f.read())
+    # resp = urllib2.urlopen('http://{0}:8003/refreshIPs'.format(own_url))
     for i in range(len(sub_seqs)):
-        batchprimer_results += batchprimer_result_dict[i] + '\n'
-    with result_file as open(data_dir + run_name + '_results.txt', 'w'):
-        result_file.write(batchprimer_results)
+        seq_name = sub_seqs[i].splitlines()[0]
+        seq_name = seq_name[0:seq_name.find(' ')][1:20]
 
+        html_output("""
+              <tr>
+                <td id="sequence{0}" class="td_sequence">{1}</td>
+                <td id="status{0}" class="td_status">unknown</td>
+                <td id="result{0}" class="td_result"></td>
+              </tr>
+              """.format(i, seq_name))
+        html_output("""<script>function update{0}() {{
+              function createRequest() {{
+                var result = null;
+                if (window.XMLHttpRequest) {{
+                    // FireFox, Safari, etc.
+                    result = new XMLHttpRequest();
+                    if (typeof result.overrideMimeType != "undefined") {{
+                        result.overrideMimeType("text/xml"); // Or anything else
+                    }}
+                }} else if (window.ActiveXObject) {{
+                    // MSIE
+                    result = new ActiveXObject("Microsoft.XMLHTTP");
+                }}
+                return result;
+            }}
 
-    print_dots = False
+                var req = createRequest();
+                req.onreadystatechange = function () {{
+                    if (req.readyState !== 4) {{
+                        return;
+                    }}
+                    var status = document.getElementById("status{0}");
+                    var resp = JSON.parse(req.responseText);
+                    status.innerHTML = resp.status;
+                    if (resp.status === "finished") {{
+                        clearInterval(t{0});
+                        status = document.getElementById("result{0}");
+                        status.innerHTML = resp.result.replace(/\\n/g, "<br />");
+                    }}
+                }};
+                var url = "http://mpeters.net/cgi-bin/status.py?run_name={1}.{0}&remote_ip={2}";
+                req.open("GET", url, true);
+                req.send();
+                //return job_status;
+            }}
+              var t{0} = setInterval(update{0}, 1000);</script>
+              """.format(i, run_name, rest_url))
+        params = {'arguments': seqs[i], 'run_name': run_name + '.{}'.format(i)}
+        params['sequence'] = clean_sequence(sub_seqs[i] + '\n')
+        params['primer3_parameters'] = primer3_params
+        params_enc = urllib.urlencode(params)
+        repeat_finder_request = urllib2.Request(baseurl + '/repeat_finder', params_enc)
 
-    html_output('<br>Your job is finished and the link above should work now.<br>')
-    # print ('<meta http-equiv="refresh" content="1;url=results.py">\n'
-    # html += '<script type="text/javascript">\n'
-    # html_output('<script type="text/javascript">\n')
-    # print ('window.location.href = "results.py"\n'
-    # html += '</script><title>Page Redirection</title></head><body>'
-    # html_output('</script><title>Page Redirection</title></head><body>')
-    # html += 'You should be redirected automatically, if not go to the <a href="results.py">results</a>'
-    # html_output('You should be redirected automatically, if not go to the <a href="results.py">results</a>')
-    html += '</body></html>'
-    html_output('</body></html>')
+        primer3_response = urllib2.urlopen(repeat_finder_request)
 
-    result_file.close()
+    html_output(
+        '<br /><a id="results" target="_blank" href="../cgi-bin/results.py?result=' + run_name + '">Your results will be here</a><br />')
+
+    results = dict()
+    while len(results) < len(sub_seqs):
+        for i in range(len(sub_seqs)):
+            html_output(str(i in results))
+            if '=====' not in results.get(i, ''):
+                req = urllib2.Request('{0}/job_result?run_name={1}.{2}'.format(baseurl, run_name, i), )
+                reply = ast.literal_eval(urllib2.urlopen(req).read())
+                if reply.get('status') == 'finished':
+                    results[i] = reply.get('results')
+                sleep(1)
+
+    with open(data_dir + run_name + '_results.txt', 'w') as result_file:
+        for i in range(len(sub_seqs)):
+            result_file.write(results[i] + '\n')
+    html_output("""
+    <script>
+        var comments = document.getElementsByClassName("comment");
+        var i;
+        for (i = 0; i < comments.length; i += 1) {
+            comments[i].hidden = true;
+        }
+        document.getElementById("results").innerHTML = "Your results are here";
+    </script>
+    """)
 elif sequence_filename:
-    html += 'Server is not ready, please try again later.<br>'
     html_output('Server is not ready, please try again later.<br>')
 
-print(end)
+html_output(end)
 sys.exit(0)
+
