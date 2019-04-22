@@ -38,6 +38,36 @@ logging.basicConfig(
 )
 
 
+def read_configfile(config_filename):
+    """
+    reads the config file with all global entries
+    """
+    config = ConfigParser.RawConfigParser()
+    config.read(config_filename)
+    value_map = {'PRIMER3_SETTINGS': str,
+                 'PRIMER3_DIRECTORY': str,
+                 'SERVERNAME': str,
+                 'SERVERPORT': str,
+                 'GFSERVER': str,
+                 'GFPCR': str,
+                 'DATADIR': str,
+                 'MAXTHREADS': int,
+                 'WAITINGPERIOD': float,
+                 'TIMEOUT': int,
+                 'RUNNAME': str
+                 }
+    output = {}
+    for section in config.sections():
+        for option in config.options(section):
+            _option = option.upper()
+            if _option in value_map:
+                output[_option] = value_map[_option](config.get(section, option).strip())
+            else:
+                raise ValueError('getConfig: unknown conf entry: {}'.format(option))
+
+    return output
+
+
 
 
 def parse_args(args):
@@ -290,7 +320,7 @@ def make_output(primer, amplicon, isPCRoutput, primer3_output):
     return output
 
 
-def start_remote_server(*arguments):
+def start_remote_server(*arguments, stdout=sys.stdout):
     """
     Starts a remote AWS instance where primer3 and gfServer run
     Returns the remote server URL if the server was started successfully
@@ -318,11 +348,8 @@ def start_remote_server(*arguments):
             timeout = arguments[3]
             server_extension = arguments[4]
         waiting_period = 0.25
-    print('Start remote server<br />')
-    print('Server name: {}'.format(servername))
-    print('<br />gfServer: {}'.format(gfServer))
-    print('<br />Server port: {}'.format(serverport))
-    print('<br />Time out: {}'.format(timeout))
+    stdout.write('Start remote server<br />{sep}Server name: {}{sep}<br />gfServer: {}{sep}'
+                 '<br />Server port: {}{sep}<br />Time out: {}{sep}'.format(servername, gfServer, serverport, timeout, sep=os.linesep))
 
     aws = read_aws_conf()
     session = boto3.session.Session(aws_access_key_id=aws['aws_access_key_id'],
@@ -332,7 +359,7 @@ def start_remote_server(*arguments):
 
     instances = ec2.instances.all()
     if len(list(instances)) < 2:
-        print('No second AWS instance was found!')
+        stdout.write('No second AWS instance was found!{sep}'.format(sep=os.linesep))
         return ''
 
     hostname = socket.gethostbyaddr(socket.gethostname())[0]
@@ -350,7 +377,7 @@ def start_remote_server(*arguments):
                                 instance_name = tag['Value']
             if instance_name == servername + server_extension:
                 servername = instance.private_dns_name
-                print('<br /> Servername: {}<br />'.format(servername))
+                stdout.write('<br /> Servername: {}<br />{sep}'.format(servername, sep=os.linesep))
                 compute_host = instance.id
                 instance.start()
                 # wait until the instance is up and running
@@ -359,10 +386,10 @@ def start_remote_server(*arguments):
                     time.sleep(waiting_period)
                     local_timeout += -waiting_period
                 if local_timeout < 0:
-                    print('Server start was unsuccesful, the timeout period was exceeded')
+                    stdout.write('Server start was unsuccessful, the timeout period was exceeded{sep}'.format(sep=os.linesep))
                     return ''
                 if not test_server(gfServer, servername, serverport):
-                    print('Server start was successful, but gfServer does not respond')
+                    stdout.write('Server start was successful, but gfServer does not respond{sep}'.format(sep=os.linesep))
                     return ''
                 else:
                     return instance_name
