@@ -320,7 +320,7 @@ def make_output(primer, amplicon, isPCRoutput, primer3_output):
     return output
 
 
-def start_remote_server(*arguments, stdout=sys.stdout):
+def start_remote_server(stdout=sys.stdout, *arguments):
     """
     Starts a remote AWS instance where primer3 and gfServer run
     Returns the remote server URL if the server was started successfully
@@ -349,7 +349,8 @@ def start_remote_server(*arguments, stdout=sys.stdout):
             server_extension = arguments[4]
         waiting_period = 0.25
     stdout.write('Start remote server<br />{sep}Server name: {}{sep}<br />gfServer: {}{sep}'
-                 '<br />Server port: {}{sep}<br />Time out: {}{sep}'.format(servername, gfServer, serverport, timeout, sep=os.linesep))
+                 '<br />Server port: {}{sep}<br />Time out: {}{sep}'.format(servername, gfServer, serverport, timeout,
+                                                                            sep=os.linesep))
 
     aws = read_aws_conf()
     session = boto3.session.Session(aws_access_key_id=aws['aws_access_key_id'],
