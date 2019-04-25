@@ -12,24 +12,26 @@ import boto3
 
 ip_list = []
 own_ip = ''
+
+
 def get_own_ip():
     try:
         # AWS internal URL
         own_ip = urllib2.urlopen("http://169.254.169.254/latest/meta-data/public-ipv4").read()
     except:
-        own_ip = ''
-    if not own_ip:
+        own_ip = None
+    if own_ip is None:
         # get own URL
         own_ip = [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in
                   [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
-    return (own_ip)
+    return own_ip
 
 
 def send_header(target):
     target.send_response(200)
     target.send_header("Content-type:", "text/html")
     target.send_header('Access-Control-Allow-Origin', '*')
-    target.wfile.write("\n")
+    target.end_header()
 
 
 class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -62,7 +64,7 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             output['CPU Utilization'] = int(psutil.cpu_percent())
             output['CPU Cores'] = int(psutil.cpu_count())
             json.dump(output, self.wfile)
-        # returns the own IP adress
+        # returns the own IP address
         elif self.path == '/myIP':
             send_header(self)
             output['IP'] = own_ip
@@ -75,10 +77,8 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             ec2 = session.resource('ec2')
             instances = ec2.instances.all()
 
-            ip_list
             for instance in instances:
                 self.ip_list.append(instance.public_ip_address)
-
 
         elif '/job_result' in self.path:
             send_header(self)
@@ -126,10 +126,13 @@ class MyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         # add job type to postvars
 
 
-
-if __name__ == '__main__':
+def main():
     own_ip = get_own_ip()
     print(own_ip)
     # starts server
     server = BaseHTTPServer.HTTPServer(('', 8003), MyRequestHandler)
     server.serve_forever()
+
+
+if __name__ == '__main__':
+    main()
