@@ -49,6 +49,7 @@ def read_aws_conf(locations=('/var/www/data/', '/home/ubuntu/.aws/')):
                 pass
     return aws
 
+
 def make_output(primer, amplicon, isPCRoutput, primer3_output):
     """
     takes primers, amplicon, isPCR output and primer3 output as input

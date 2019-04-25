@@ -1,4 +1,5 @@
 import ast
+import string
 
 
 with open('ssr_list.txt', 'r') as f:
@@ -294,3 +295,48 @@ def primer_stats(primer, primer3output):
         raise RuntimeError('Primer not found in output')
     return '%.2f' % float(primerF_TM), '%.2f' % float(primerR_TM), '%.2f' % float(primerF_GC), '%.2f' % float(
         primerR_GC), '%.2f' % float(product_TM)
+
+
+def is_valid_fasta(sequence):
+    """
+    checks if a FASTA file is correct
+    """
+    header = False  # indicates whether a header was found
+    sequence = sequence.strip()
+    if not sequence.startswith('>'):
+        return False
+    fasta_lines = sequence.split('\n')
+    if len(fasta_lines) < 2:
+        return False
+    for fasta_line in fasta_lines:
+        if fasta_line.startswith('>'):
+            if header:
+                return False
+            header = True
+        else:
+            if not header:
+                return False
+            header = False
+            fasta_line = fasta_line.upper()
+            if not all(nuc in 'ATGC\n\r' for nuc in fasta_line):
+                return False
+    return True
+
+
+def clean_sequence(sequence):
+    """
+    cleans a FASTA nucleotide sequence
+    """
+    new_sequence = ''
+    nucleotides = 'ATGC'
+    legal_header = string.ascii_lowercase + string.ascii_uppercase + string.digits + "_=:'+- "
+    for line in sequence.splitlines():
+        if line.startswith('>'):
+            new_sequence += '>'
+            new_sequence += ''.join(header for header in line if header in legal_header)
+            new_sequence += '\n'
+        else:
+            line = line.upper()
+            new_sequence += ''.join(nuc for nuc in line if nuc in nucleotides)
+            new_sequence += '\n'
+    return new_sequence
